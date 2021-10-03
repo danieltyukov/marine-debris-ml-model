@@ -82,7 +82,7 @@ The model checkpoints and outputs for this task will save in the `training` fold
 
 ### 6. Visualize the Model
 
-Using this [script](https://github.com/danieltyukov/marine-debris-ml-model/blob/v0_2/inference_utils/tf_od_predict_image_aug_to_geo_corrected.py), create the marine debris detection model inference graph with:
+Using this [script](https://github.com/danieltyukov/marine-debris-ml-model/blob/main/inference_utils/tf_od_predict_image_aug_to_geo_corrected.py), create the marine debris detection model inference graph with:
 
 ```shell
 python export_inference_graph.py --input_type image_tensor \
