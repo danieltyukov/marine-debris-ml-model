@@ -130,4 +130,4 @@ Detections geo-registered and vectorized to GeoJSON format:
 
 You can use the [code](https://github.com/danieltyukov/marine-debris-ml-model/tree/main/evaluation_utils) in this folder to compute standard evaluation metrics with your model. Runtime and background instructions live [here](https://github.com/danieltyukov/marine-debris-ml-model/tree/main/evaluation_utils/evaluation.md).
 
-forked from: [forked](https://github.com/NASA-IMPACT/marine_debris_ML)
+forked from: [here](https://github.com/NASA-IMPACT/marine_debris_ML)
