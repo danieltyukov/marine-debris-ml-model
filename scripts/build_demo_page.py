@@ -30,7 +30,8 @@ ROOT = Path(__file__).resolve().parents[1]
 # Embedded as data URIs so the page is one self-contained file with no external
 # requests. Width is per figure: the classification grid needs the detail, charts do not.
 FIGURES = {
-    "samples": ("assets/classification_samples.png", 1250),
+    "samples": ("assets/classification_samples.png", 1100),
+    "ocean": ("assets/ocean_detections.png", 1300),
     "pr": ("assets/debris_pr_curve.png", 1000),
     "cascade": ("assets/cascade_stages.png", 1500),
     "indices": ("assets/spectral_indices.png", 1300),
@@ -72,7 +73,7 @@ def embed_figures() -> dict[str, str]:
             im = im.resize((width, round(im.height * width / im.width)), Image.LANCZOS)
         tmp = ROOT / "docs" / f"_{key}.jpg"
         tmp.parent.mkdir(parents=True, exist_ok=True)
-        im.save(tmp, "JPEG", quality=78, optimize=True)
+        im.save(tmp, "JPEG", quality=70, optimize=True)
         uris[key] = "data:image/jpeg;base64," + base64.b64encode(tmp.read_bytes()).decode()
         tmp.unlink()
     return uris
@@ -187,10 +188,24 @@ footer{margin-top:52px; padding-top:16px; border-top:1px solid var(--rule); font
 <p class="sub">Rebuild notes for <a href="https://github.com/danieltyukov/marine-debris-ml-model">danieltyukov/marine-debris-ml-model</a>.
 Measurements, real model output, and what did not work.</p>
 
-<p>The original was a 2019 NASA Space Apps entry: TensorFlow 1.14, the TF Object
-Detection API vendored into the repo, SSD-ResNet101-FPN trained 500k steps for one
-class on commercial Planet imagery. TF 1.14 has no wheel for Python 3.7 or later, so
-on a current interpreter it was not runnable at all.</p>
+<p>A rebuild of <a href="https://github.com/NASA-IMPACT/marine_debris_ML">NASA-IMPACT/marine_debris_ML</a>,
+which showed that deep learning finds floating debris in satellite imagery: 1,370
+hand-labelled bounding boxes on commercial Planet 3 m imagery, SSD-ResNet101-FPN on
+the TF Object Detection API, reporting precision 0.78, recall 0.70, F1 0.74 on its
+test set. TensorFlow 1.14 has no wheel for Python 3.7 or later, so that stack is not
+runnable on a current interpreter.</p>
+
+<p>This keeps the idea and the geo-referencing math and replaces the rest: free
+Sentinel-2 instead of paid Planet, 11 spectral bands instead of RGB, 15 classes
+instead of one, and a public benchmark instead of a private test set.</p>
+
+<div class="note"><b>On comparing scores:</b> the 0.74 above and the numbers below are
+<b>not directly comparable</b>. Different data (private Planet scenes against public
+MARIDA), different resolution (3 m against 10 m, so their pixels cover about a
+eleventh of the area), and a different task (bounding-box detection against per-pixel
+classification). A higher number here would not mean a better model. Their 3 m imagery
+is a real advantage for small objects and it costs money; this trades resolution for
+being free and reproducible.</div>
 
 <h2>1. Open-vocabulary detection does not work at 10 m</h2>
 
@@ -278,7 +293,31 @@ false positive costs a boat trip. Best F1 on this split is __BEST_F1__, below th
 Random Forest baseline the MARIDA paper reports. No spatial context and no per-scene
 normalisation are used here, only per-pixel spectra.</p>
 
-<h2>4. Model output against human annotation</h2>
+<h2>4. Debris detection on open ocean</h2>
+
+<p>Real model output on MARIDA test scenes that are open water, at the high-precision
+operating point. Orange is the detection, cyan outlines the human annotation.</p>
+
+<figure class="wide">
+  <img src="__OCEAN__" alt="Three pairs of Sentinel-2 open-ocean scenes: true colour on the left, and the same scene on the right with detected marine debris highlighted in orange along a filament, outlined in cyan where a human annotated it.">
+  <figcaption>Open ocean is the harder case, not the easier one. Coastal scenes give a
+  model land and surf to key on; here there is nothing in frame but water and the
+  target.</figcaption>
+</figure>
+
+<div class="scroll"><table>
+<thead><tr><th>scene</th><th>area</th><th>precision</th><th>recall</th><th>F1</th><th>TP / FP / missed</th></tr></thead>
+<tbody>
+<tr><td>22-12-20_18QYF_0</td><td>2.0 x 1.6 km</td><td class="hit">1.00</td><td>0.71</td><td>0.83</td><td>20 / 0 / 8</td></tr>
+<tr><td>17-7-16_51PTS_0</td><td>1.1 x 1.3 km</td><td class="hit">1.00</td><td>0.73</td><td>0.84</td><td>19 / 0 / 7</td></tr>
+<tr><td>27-1-19_16PCC_28</td><td>1.1 x 1.3 km</td><td class="hit">1.00</td><td>0.70</td><td>0.82</td><td>14 / 0 / 6</td></tr>
+</tbody></table></div>
+
+<p>Zero false positives across all three, catching about 71% of annotated debris
+pixels. These are per-scene numbers at a strict threshold and should not be read as
+the model's overall score; section 3 gives that.</p>
+
+<h2>5. Model output against human annotation</h2>
 
 <figure class="wide">
   <img src="__SAMPLES__" alt="Four MARIDA test patches in three columns: Sentinel-2 true colour, the human annotation, and the model prediction, cropped to the annotated region.">
@@ -295,7 +334,7 @@ bright compact objects on dark water, and per-pixel spectra alone do not separat
 them. That is exactly the failure the open-vocabulary detector from section 1
 handles, which is why both are kept.</p>
 
-<h2>5. A fixed spectral threshold does not transfer</h2>
+<h2>6. A fixed spectral threshold does not transfer</h2>
 
 <p>The Floating Debris Index measures how far near-infrared reflectance rises above a
 baseline interpolated between red and shortwave infrared. The original screen used a
@@ -333,7 +372,7 @@ a floor.</p>
   test caught it.</figcaption>
 </figure>
 
-<h2>6. Cost</h2>
+<h2>7. Cost</h2>
 
 <p>OWLv2 costs about 18 s per tile on CPU and a Sentinel-2 scene is 120 megapixels,
 roughly 40 minutes. Screening with indices first cuts that on scenes with land or
@@ -364,14 +403,14 @@ for a quarter of the area: tiling at 960 is a free 3.8x. Batching gains nothing
 because one forward pass already saturates 22 cores. int8 quantisation gave 14.36 s
 against 18.25 s, only 1.27x, so it is not used.</p>
 
-<h2>7. Spectral indices over water</h2>
+<h2>8. Spectral indices over water</h2>
 <figure>
   <img src="__INDICES__" alt="Six index heatmaps computed over water on the Accra chip: FDI, FAI, NDVI, NDWI, PI and kNDVI.">
   <figcaption>Six indices over the same water, Accra. Separating plastic from
   Sargassum, foam and sediment needs several of these rather than one.</figcaption>
 </figure>
 
-<h2>8. Running it</h2>
+<h2>9. Running it</h2>
 <pre>pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
 pip install -e ".[all]"
 
@@ -382,16 +421,18 @@ mdebris detect --sample limassol --targets-only -o out.geojson
 python scripts/train_marida.py       # downloads MARIDA, trains, writes a report</pre>
 
 <div class="scroll"><table>
-<thead><tr><th></th><th>2019</th><th>now</th></tr></thead>
+<thead><tr><th></th><th>NASA-IMPACT reference</th><th>this rebuild</th></tr></thead>
 <tbody>
 <tr><td>framework</td><td>TensorFlow 1.14</td><td>PyTorch 2.x</td></tr>
 <tr><td>installs on current Python</td><td class="miss">no</td><td class="hit">yes</td></tr>
 <tr><td>classes</td><td>1</td><td>15 (MARIDA)</td></tr>
-<tr><td>imagery</td><td>Planet, commercial</td><td>Sentinel-2, open</td></tr>
+<tr><td>benchmark</td><td class="miss">private, unpublished</td><td class="hit">MARIDA, public</td></tr>
+<tr><td>imagery</td><td>Planet 3 m, commercial</td><td>Sentinel-2 10 m, open</td></tr>
+<tr><td>bands used</td><td>RGB (NIR future work)</td><td class="hit">11, with NIR and SWIR</td></tr>
 <tr><td>credentials</td><td>Planet API key</td><td class="hit">none</td></tr>
 <tr><td>vendored code</td><td>19 MB</td><td class="hit">none</td></tr>
 <tr><td>tests</td><td class="miss">0</td><td class="hit">761</td></tr>
-<tr><td>reported debris accuracy</td><td class="miss">none</td><td>F1 __BEST_F1__ on MARIDA</td></tr>
+<tr><td>reported accuracy</td><td>F1 0.74, own Planet set</td><td>F1 __BEST_F1__ on MARIDA</td></tr>
 </tbody></table></div>
 
 <footer>
@@ -502,6 +543,7 @@ def main() -> None:
     replacements = {
         "__FDI__": json.dumps(fdi),
         "__SAMPLES__": imgs.get("samples", ""),
+        "__OCEAN__": imgs.get("ocean", ""),
         "__PR__": imgs.get("pr", ""),
         "__CASCADE__": imgs.get("cascade", ""),
         "__INDICES__": imgs.get("indices", ""),

@@ -15,29 +15,66 @@ mdebris detect --bbox -0.35,5.45,-0.05,5.65 --start 2024-01-01 --end 2024-06-30
 
 ## What this is
 
-This project began as a NASA Space Apps entry built on TensorFlow 1.14 and the
-TensorFlow Object Detection API, training an SSD-ResNet101-FPN for 500,000 steps to
-detect a single class on commercial Planet imagery.
+A rebuild of [NASA-IMPACT/marine_debris_ML](https://github.com/NASA-IMPACT/marine_debris_ML),
+the NASA IMPACT marine debris detector. That project demonstrated that deep learning can
+find floating debris in satellite imagery, using 1,370 hand-labelled bounding boxes on
+commercial Planet imagery and an SSD-ResNet101-FPN, reporting **precision 0.78, recall
+0.70, F1 0.74** on its test set.
 
-It has been rebuilt from the ground up. The parts worth keeping, the geo-referencing
-math that turns pixel boxes into georeferenced polygons, were ported forward. Everything
-else was replaced.
+This version keeps the idea and the geo-referencing math and replaces the rest.
 
-| | Before | Now |
+| | NASA-IMPACT reference | This rebuild |
 |---|---|---|
 | Framework | TensorFlow 1.14 | PyTorch 2.x |
-| Python | 3.6 only | 3.11+ |
-| Installable today | No, TF 1.14 has no wheel for Python 3.7+ | Yes |
-| Detector | SSD-ResNet101-FPN | OWLv2 open-vocabulary, RT-DETRv2 supervised |
+| Runs on current Python | No, TF 1.14 has no wheel for 3.7+ | Yes, 3.11 and 3.12 |
+| Imagery | Planet 3 m, commercial | Sentinel-2 10 m, free and open |
+| Credentials to run | Planet API key | **None** |
+| Bands used | RGB (NIR listed as future work) | 11 bands, including NIR and SWIR |
+| Spectral indices | None | FDI, FAI, NDVI, NDWI, PI, kNDVI, MNDWI |
+| Classes | 1, `marine_debris` | 15, including the confusers |
+| Training data | 1,370 private boxes, "dataset forthcoming" | MARIDA, public and citable |
+| Reproducible benchmark | No, private test set | Yes, MARIDA scene-grouped split |
+| Deployment for inference | Docker + AWS SQS pipeline | `pip install`, one CLI command |
 | Segmentation | None | SAM 2, box-prompted |
-| Training to first prediction | 500k steps on GPU | None zero-shot, or ~2.5 min CPU supervised |
-| Classes | 1 (`marine_debris`) | 9, including the confusers |
-| Imagery | Planet, commercial | Sentinel-2, free and open |
-| Credentials required | Planet API key | None |
+| Tests / CI | None | 761 tests, GitHub Actions |
 | Vendored dependencies | 19 MB of TF OD API | None |
-| Tests | None | Full suite, CI on 3.11 and 3.12 |
-| Reported debris accuracy | None published | F1 0.515 on the MARIDA benchmark |
-| Spectral indices | None | FDI, FAI, NDVI, NDWI, PI, kNDVI |
+
+### On comparing the numbers
+
+The NASA-IMPACT F1 of 0.74 and the numbers below are **not directly comparable**, and
+presenting them as a head-to-head would be misleading. They differ in data (private
+Planet scenes vs public MARIDA), resolution (3 m vs 10 m, so their pixels are about 11
+times smaller in area), and task (bounding-box object detection vs per-pixel
+classification). A higher number here would not mean a better model.
+
+What can be said fairly:
+
+- Their 3 m imagery is a genuine advantage for small objects, and it costs money.
+  This project trades resolution for being free and reproducible.
+- They explicitly listed integrating the near-infrared channel as future work. This
+  uses NIR and SWIR throughout, and the spectral bands turn out to matter more than
+  the visible ones.
+- Their test set was never published, so the score cannot be reproduced or contested.
+  MARIDA can.
+
+### Debris detection on open ocean
+
+Real model output on MARIDA test scenes that are open water, at the high-precision
+operating point. Orange is the model's detection, cyan outlines the human annotation.
+
+![open ocean detections](assets/ocean_detections.png)
+
+| Scene | Area | Precision | Recall | F1 | TP / FP / missed |
+|---|---|---|---|---|---|
+| `22-12-20_18QYF_0` | 2.0 x 1.6 km | **1.00** | 0.71 | 0.83 | 20 / 0 / 8 |
+| `17-7-16_51PTS_0` | 1.1 x 1.3 km | **1.00** | 0.73 | 0.84 | 19 / 0 / 7 |
+| `27-1-19_16PCC_28` | 1.1 x 1.3 km | **1.00** | 0.70 | 0.82 | 14 / 0 / 6 |
+
+Zero false positives across all three, catching roughly 71% of annotated debris pixels.
+Open ocean is the harder case rather than the easier one: coastal scenes give a model
+land and surf to key on, while here there is nothing in frame but water and the target.
+
+Regenerate with `python scripts/make_ocean_detections.py`.
 
 ---
 
@@ -158,10 +195,10 @@ infrared, which is a physical signature of floating material.
 
 The open-vocabulary model still earns its place, for two things it does well:
 
-**Rejecting confusers.** The original model had one class, `marine_debris`, making it
-structurally unable to say "that is not debris, that is a ship". On the Accra chip OWLv2
-labelled all eight detections `ship` or `ship_wake`; the 2019 model would have reported
-eight debris patches. On the Limassol chip, 13 of 14 detections were foam, wake or
+**Rejecting confusers.** The reference implementation had one class, `marine_debris`,
+making it structurally unable to say "that is not debris, that is a ship". On the Accra
+chip OWLv2 labelled all eight detections `ship` or `ship_wake`; a one-class detector
+would have reported eight debris patches. On the Limassol chip, 13 of 14 detections were foam, wake or
 sediment, and one was debris. Low-confidence *localisation* still yields useful
 *discrimination*.
 
