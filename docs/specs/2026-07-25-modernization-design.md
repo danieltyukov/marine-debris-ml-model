@@ -98,13 +98,52 @@ because a 512 px tile pays the full 960x960 compute anyway. And **batching is wo
 here**: 22 CPU cores are already saturated by a single forward pass, so batch 2 gains 8%
 and batch 4 gains nothing. The pipeline therefore streams tiles one at a time.
 
-### 3.2.1 Why the cascade is not optional
+### 3.2.1 The cascade, and what it actually buys
 
 A full Sentinel-2 tile is 10,980 x 10,980 px, about 120 megapixels. At the measured
-0.050 MP/s that is roughly **40 minutes of transformer time per scene** on CPU. Screening
-with spectral indices first, where typically only a small percentage of tiles are
-simultaneously water, cloud-free and high-FDI, cuts that to minutes. The cascade is what
-makes the project usable without a GPU.
+0.050 MP/s that is roughly **40 minutes of transformer time per scene** on CPU.
+
+Measured on a real coastal chip (`S2A_MSIL2A_20240527T100601_R022_T30NZM`, 53.7% water,
+13.1% cloud, 36 tiles of 960 px): **20 of 36 tiles accepted, 44% of detector calls
+avoided**, 11.1 min down to 6.2 min.
+
+An earlier draft of this document claimed the cascade cuts 40 minutes "to minutes". Real
+data does not support that, and the claim has been corrected. The saving tracks how much
+of a scene is land or cloud: large on coastal and cloudy scenes, small on open ocean.
+
+### 3.2.2 A fixed FDI threshold does not work, and the measurement that proved it
+
+The original design used a constant `fdi_threshold = 0.006`. Measured against a real
+1920 x 1920 chip of pure open ocean off Accra with no known debris, FDI over water was:
+
+| statistic | value |
+|---|---|
+| mean | +0.00178 |
+| p50 | +0.00157 |
+| p99 | +0.00917 |
+| p99.9 | +0.01316 |
+
+At 0.006 the screen flagged **6.35% of pure water** as candidate and accepted every
+tile, so the cascade would have delivered no speedup while appearing to work. FDI
+magnitude shifts with atmospheric correction, sun angle, sea state and water type, so a
+constant tuned on one scene is wrong on the next.
+
+The screen now derives its cutoff from a high percentile (default p99.9) of each scene's
+own water-FDI distribution, with the old constant retained only as an absolute floor.
+On the same chip this cut candidate pixels from 234,262 to 3,686, a 63x reduction:
+
+| mode | threshold | candidate px |
+|---|---|---|
+| fixed 0.006 | 0.00600 | 234,262 |
+| adaptive p99.9 | 0.01311 | 3,686 |
+| adaptive p99.99 | 0.01997 | 372 |
+
+Acceptance additionally requires a connected candidate region of at least 8 px, since
+scattered single pixels are sun glint and sensor noise while a real debris patch is
+spatially coherent.
+
+Choosing the operating point properly requires labelled data. MARIDA provides it, and
+tuning against MARIDA is tracked as follow-up work rather than claimed as done.
 
 ### 3.3 Package layout
 

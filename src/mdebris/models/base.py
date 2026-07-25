@@ -23,15 +23,12 @@ from __future__ import annotations
 import logging
 from abc import ABC, abstractmethod
 from collections.abc import Iterable, Sequence
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import numpy as np
 
 from mdebris.config import settings
-from mdebris.types import BBox, Detection, SurfaceClass
-
-if TYPE_CHECKING:  # pragma: no cover - typing only, keeps torch out of import time
-    import torch
+from mdebris.types import BBox, Detection
 
 __all__ = [
     "BaseDetector",
@@ -372,35 +369,3 @@ class BaseDetector(ABC):
     def __repr__(self) -> str:
         state = "loaded" if self.is_loaded else "lazy"
         return f"{type(self).__name__}(model_id={self.model_id!r}, device={self._device!r}, {state})"
-
-
-def _resolve_label(
-    text_label: str | None, index: int, lookup: dict[str, SurfaceClass], order: Sequence[str]
-) -> SurfaceClass:
-    """Map a detector's emitted prompt back to a SurfaceClass.
-
-    Kept as a helper because OWLv2 returns an index into the prompt list while
-    GroundingDINO returns a (sometimes partial) phrase, and both need to land on the
-    same enum.
-    """
-    if text_label is not None:
-        if (hit := lookup.get(text_label.strip().lower())) is not None:
-            return hit
-        # GroundingDINO splits and re-merges the prompt string, so an emitted phrase
-        # can be a fragment of the prompt that produced it. Longest containing prompt
-        # wins, which avoids a short prompt shadowing a more specific one.
-        low = text_label.strip().lower()
-        best: tuple[int, SurfaceClass] | None = None
-        for prompt, cls in lookup.items():
-            if (low in prompt or prompt in low) and (best is None or len(prompt) > best[0]):
-                best = (len(prompt), cls)
-        if best is not None:
-            return best[1]
-    if 0 <= index < len(order):
-        return lookup.get(order[index], SurfaceClass.UNKNOWN)
-    return SurfaceClass.UNKNOWN
-
-
-def tensor_to_list(t: torch.Tensor) -> list[Any]:
-    """Detach and convert without every call site repeating the incantation."""
-    return t.detach().cpu().tolist()

@@ -1,0 +1,52 @@
+{
+  "name": "limassol",
+  "description": "Akrotiri Bay off Limassol, Cyprus. This is the coastal water used by the Cyprus University of Technology Plastic Litter Project, which floated plastic targets of known size and measured how they appear to Sentinel-2.",
+  "scene_id": "S2A_MSIL2A_20240805T082601_R021_T36SVD_20240805T144559",
+  "collection": "sentinel-2-l2a",
+  "datetime": "2024-08-05T08:26:01.024000Z",
+  "platform": "Sentinel-2A",
+  "cloud_cover": 0.004436,
+  "source": "planetary-computer",
+  "bands": [
+    "B02",
+    "B03",
+    "B04",
+    "B06",
+    "B08",
+    "B11",
+    "SCL"
+  ],
+  "width": 512,
+  "height": 512,
+  "gsd_m": 10,
+  "crs": "EPSG:32636",
+  "transform": [
+    10.0,
+    0.0,
+    497430.0,
+    0.0,
+    -10.0,
+    3831250.0
+  ],
+  "bounds": [
+    497430.0,
+    3826130.0,
+    502550.0,
+    3831250.0
+  ],
+  "bbox_wgs84": [
+    32.97196406648373,
+    34.576946217951104,
+    33.02781775506816,
+    34.62312177554541
+  ],
+  "centre_lonlat": [
+    33.0,
+    34.6
+  ],
+  "reflectance_scale": 0.0001,
+  "reflectance_offset": -0.1,
+  "processing_baseline_offset_applied": true,
+  "license": "Contains modified Copernicus Sentinel data. Sentinel-2 L2A is free and open under the Copernicus Sentinel Data Terms and Conditions (https://sentinels.copernicus.eu/web/sentinel/terms-conditions), which permit redistribution and modification with attribution.",
+  "attribution": "Copernicus Sentinel data, processed by ESA, hosted by Microsoft Planetary Computer"
+}

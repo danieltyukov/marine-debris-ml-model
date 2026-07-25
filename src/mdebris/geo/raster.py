@@ -84,7 +84,9 @@ def _resampling(method: str | Resampling) -> Resampling:
         return Resampling[str(method).lower()]
     except KeyError as exc:
         options = ", ".join(sorted(r.name for r in Resampling))
-        raise ValueError(f"unknown resampling method {method!r}; expected one of {options}") from exc
+        raise ValueError(
+            f"unknown resampling method {method!r}; expected one of {options}"
+        ) from exc
 
 
 def window_transform(window: WindowLike, source: Affine | str | Path) -> Affine:
@@ -201,7 +203,9 @@ def read_bands(
         ref_win = _as_window(window) if window is not None else Window(0, 0, ref.width, ref.height)
         ref_crs = ref.crs
         geo_bounds = rio_windows.bounds(ref_win, ref.transform)
-    shape = target_shape or (int(round(ref_win.height)), int(round(ref_win.width)))
+    # Window dimensions can be numpy floats, so round through float to land on a
+    # plain int that rasterio's out_shape accepts.
+    shape = target_shape or (round(float(ref_win.height)), round(float(ref_win.width)))
 
     out: dict[str, np.ndarray] = {}
     for name, href in hrefs.items():

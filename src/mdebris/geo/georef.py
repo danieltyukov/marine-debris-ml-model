@@ -18,7 +18,7 @@ scaffolding around it is not, because it hid three real bugs:
 from __future__ import annotations
 
 import json
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -138,7 +138,7 @@ def georeference_detections(
     return dets
 
 
-def _wgs84_transformer(src_crs: Any | None):
+def _wgs84_transformer(src_crs: Any | None) -> Callable[..., Any] | None:
     """Build a coordinate transform to EPSG:4326, or None when already there."""
     if src_crs is None:
         return None

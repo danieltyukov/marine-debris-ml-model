@@ -44,11 +44,23 @@ else was replaced.
 
 The core constraint is that a modern vision transformer costs about 18 seconds per tile
 on CPU, while a full Sentinel-2 scene is 120 megapixels. Running the detector everywhere
-would take roughly 40 minutes per scene. Almost all of that scene is land, cloud or empty
-water that cannot contain floating debris.
+would take roughly 40 minutes per scene. Much of that scene is land, cloud or empty water
+that cannot contain floating debris.
 
 So the pipeline is a cascade. Cheap arithmetic screens the whole scene, and the expensive
 model only looks where something interesting might be.
+
+Measured on a real coastal scene off Accra
+(`S2A_MSIL2A_20240527T100601_R022_T30NZM`, 53.7% water, 13.1% cloud, 36 tiles):
+
+| | Tiles detected on | Detector time |
+|---|---|---|
+| Without cascade | 36 / 36 | 11.1 min |
+| With cascade | 20 / 36 | 6.2 min |
+
+That is **44% of detector calls avoided** on this scene. The saving scales with how much
+of the scene is land or cloud, so it is largest on coastal and cloudy scenes and smallest
+on open ocean, which is the cascade's worst case rather than its best.
 
 ```mermaid
 flowchart TD

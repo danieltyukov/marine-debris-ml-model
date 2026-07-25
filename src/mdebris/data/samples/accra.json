@@ -1,0 +1,52 @@
+{
+  "name": "accra",
+  "description": "The Accra coastline, Ghana, where the Odaw river and Korle lagoon discharge into the Gulf of Guinea. River outfalls into the sea are the main pathway by which land plastic becomes marine plastic, which is why this coast recurs in the Sentinel-2 marine-litter literature.",
+  "scene_id": "S2A_MSIL2A_20240407T100551_R022_T30NZM_20240407T174137",
+  "collection": "sentinel-2-l2a",
+  "datetime": "2024-04-07T10:05:51.024000Z",
+  "platform": "Sentinel-2A",
+  "cloud_cover": 10.564023,
+  "source": "planetary-computer",
+  "bands": [
+    "B02",
+    "B03",
+    "B04",
+    "B06",
+    "B08",
+    "B11",
+    "SCL"
+  ],
+  "width": 512,
+  "height": 512,
+  "gsd_m": 10,
+  "crs": "EPSG:32630",
+  "transform": [
+    10.0,
+    0.0,
+    807680.0,
+    0.0,
+    -10.0,
+    616760.0
+  ],
+  "bounds": [
+    807680.0,
+    611640.0,
+    812800.0,
+    616760.0
+  ],
+  "bbox_wgs84": [
+    -0.22320336550674383,
+    5.526808453412849,
+    -0.17681309739394027,
+    5.573289512769022
+  ],
+  "centre_lonlat": [
+    -0.2,
+    5.55
+  ],
+  "reflectance_scale": 0.0001,
+  "reflectance_offset": -0.1,
+  "processing_baseline_offset_applied": true,
+  "license": "Contains modified Copernicus Sentinel data. Sentinel-2 L2A is free and open under the Copernicus Sentinel Data Terms and Conditions (https://sentinels.copernicus.eu/web/sentinel/terms-conditions), which permit redistribution and modification with attribution.",
+  "attribution": "Copernicus Sentinel data, processed by ESA, hosted by Microsoft Planetary Computer"
+}

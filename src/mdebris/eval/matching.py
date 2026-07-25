@@ -127,10 +127,14 @@ def match_detections(
     """Greedily match predictions to ground truths by descending score.
 
     Args:
-        preds: Predicted detections. Order is irrelevant to the result: the function
-            sorts by score internally, so shuffling the input cannot change the
-            true-positive count (it can only change which of two equally scored,
-            equally overlapping predictions is credited).
+        preds: Predicted detections. When every score is distinct the result does not
+            depend on input order at all, because the function sorts by score
+            internally. When two predictions carry exactly the same score the tie is
+            broken by input order, and greedy matching being what it is, that can
+            change which of them is credited and (in contrived cases) the total
+            true-positive count. The behaviour is deterministic, and pycocotools has
+            the same property; it is a property of greedy matching, not a defect
+            here.
         gts: Ground-truth detections. Their ``score`` field is ignored.
         iou_threshold: Minimum IoU for a match. The test is ``iou >= iou_threshold``.
         class_agnostic: When ``False`` (the default, and what AP requires) a
