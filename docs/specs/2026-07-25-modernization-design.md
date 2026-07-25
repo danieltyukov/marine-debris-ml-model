@@ -193,6 +193,39 @@ Companion indices: NDWI for water masking, NDVI to separate vegetation, FAI for 
 PI for plastic, kNDVI as a nonlinear vegetation contrast. Distinguishing debris from
 *Sargassum* and foam is the central scientific difficulty and needs several indices, not one.
 
+### 3.4.1 The Sentinel-2 reflectance offset
+
+From ESA processing baseline 04.00 (January 2022), Sentinel-2 L2A products carry
+`BOA_ADD_OFFSET = -1000`. Reflectance is therefore
+
+```
+reflectance = DN * 0.0001 - 0.1        (baseline >= 04.00)
+reflectance = DN * 0.0001              (earlier baselines)
+```
+
+The naive `DN / 10000` is wrong by +0.1 on every band, which is about 17x the default
+FDI threshold. Verified on `S2A_MSIL2A_20240527T100601_R022_T30NZM`, baseline 05.10:
+raw DN over deep open water was B03 1235, B04 1170, B08 1143, B11 1149. Dividing by
+10,000 yields 0.12 for ocean, which is physically impossible; the offset form yields
+0.014 to 0.023, which is correct.
+
+Which indices this actually breaks, measured on the same chip:
+
+| index | affected | reason |
+|---|---|---|
+| FDI, FAI | **no, bit-identical** | a difference of differences, so a constant offset cancels |
+| NDVI, NDWI, PI, kNDVI, MNDWI | magnitude changes, sign preserved | ratios: numerator unchanged, denominator grows by 0.2 |
+
+The cascade measurements in 3.2.1 and 3.2.2 are therefore unaffected: they depend on
+FDI, which is invariant, and on `water_mask` testing `NDWI > 0`, which is a sign test.
+Water fraction measured 1.000 under both scalings. Any threshold on the *magnitude* of
+a ratio index would have been silently wrong, which is exactly the class of bug that
+never raises an exception.
+
+The offset must not be applied unconditionally: pre-04.00 scenes need offset 0.0, and
+some providers pre-harmonise. Conversion is driven by scene metadata rather than a
+hardcoded constant.
+
 ### 3.5 Taxonomy
 
 The single `marine_debris` class is replaced by a prompt set covering the confusers that

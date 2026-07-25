@@ -37,7 +37,7 @@ SAMPLE_NAMES = list_samples()
 
 
 def test_chips_are_bundled_for_every_hotspot() -> None:
-    assert SAMPLE_NAMES == sorted(h.name for h in HOTSPOTS)
+    assert sorted(h.name for h in HOTSPOTS) == SAMPLE_NAMES
 
 
 def test_every_chip_has_a_provenance_sidecar() -> None:

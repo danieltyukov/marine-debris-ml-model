@@ -294,7 +294,7 @@ class StacClient:
             try:
                 items = self._search_one(
                     endpoint,
-                    bbox=bbox,
+                    bbox=box,
                     start=start,
                     end=end,
                     collection=collection,
@@ -336,7 +336,7 @@ class StacClient:
         self,
         endpoint: str,
         *,
-        bbox: GeoBBox | Sequence[float],
+        bbox: tuple[float, ...],
         start: str,
         end: str,
         collection: str | None,
@@ -344,9 +344,7 @@ class StacClient:
         limit: int,
     ) -> list[Item]:
         client = self._open(endpoint)
-        box = tuple(bbox.as_tuple() if isinstance(bbox, GeoBBox) else bbox)
-        if len(box) != 4:
-            raise StacError(f"bbox needs 4 values (west, south, east, north), got {len(box)}")
+        box = bbox
         cloud = settings.max_cloud_cover if max_cloud is None else max_cloud
         query = {"eo:cloud_cover": {"lt": float(cloud)}} if cloud is not None else None
         try:
@@ -472,6 +470,23 @@ class StacClient:
         if hasattr(scene, "assets"):
             return scene
         raise TypeError(f"expected a scene id, SceneRef or STAC Item, got {type(scene).__name__}")
+
+
+def _as_bbox(bbox: GeoBBox | Sequence[float]) -> tuple[float, ...]:
+    """Coerce an area of interest to a ``(west, south, east, north)`` tuple.
+
+    Raises:
+        StacError: if the sequence is not four numbers.
+    """
+    if isinstance(bbox, GeoBBox):
+        return bbox.as_tuple()
+    try:
+        box = tuple(float(v) for v in bbox)
+    except (TypeError, ValueError) as exc:
+        raise StacError(f"bbox must be four numbers or a GeoBBox, got {bbox!r}") from exc
+    if len(box) != 4:
+        raise StacError(f"bbox needs 4 values (west, south, east, north), got {len(box)}")
+    return box
 
 
 def _signer():

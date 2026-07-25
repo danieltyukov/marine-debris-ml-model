@@ -317,10 +317,17 @@ def test_scene_not_found_is_a_stac_error() -> None:
     assert issubclass(SceneNotFoundError, StacError)
 
 
-def test_bad_bbox_length_is_rejected_before_any_request() -> None:
+def test_bad_bbox_is_rejected_before_any_request() -> None:
+    """Reported as a bad bbox, not as an endpoint failure, even with a dead endpoint."""
     client = StacClient("https://stac.invalid.localhost/v1", fallback_endpoint="")
-    with pytest.raises(StacError, match="bbox needs 4 values|network unavailable"):
+    with pytest.raises(StacError, match="bbox needs 4 values"):
         client.search([1.0, 2.0, 3.0], "2024-01-01", "2024-06-30")
+    with pytest.raises(StacError, match="must be four numbers"):
+        client.search(["west", "south", "east", "north"], "2024-01-01", "2024-06-30")  # type: ignore[list-item]
+
+
+def test_geobbox_and_a_plain_tuple_are_interchangeable() -> None:
+    assert ACCRA.as_tuple() == (-0.35, 5.45, -0.05, 5.65)
 
 
 # -- network ----------------------------------------------------------------------

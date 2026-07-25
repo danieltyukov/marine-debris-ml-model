@@ -7,11 +7,12 @@ precision, recall, mAP and F1 with the legacy ``*_@0.5IOU`` column names.
 
 Two notes on legacy fidelity:
 
-* The legacy ``eval_cmatrix_f1_map.py`` printed its confusion matrix to stdout and
-  wrote only the per-category score table to CSV, even though ``evaluation.md``
-  described the CSV as containing "the confusion matrix and scores". :func:`to_csv`
-  can emit either table; ``table="scores"`` reproduces the file that script actually
-  wrote, index column and all.
+* The legacy ``eval_cmatrix_f1_map.py`` (removed from the tree; readable with
+  ``git show 9509b0e:evaluation_utils/eval_cmatrix_f1_map.py``) printed its confusion
+  matrix to stdout and wrote only the per-category score table to CSV, even though
+  ``evaluation.md`` described the CSV as containing "the confusion matrix and scores".
+  :func:`to_csv` can emit either table; ``table="scores"`` reproduces the file that
+  script actually wrote, index column and all.
 * The legacy ``map_@0.5IOU`` column did not contain an average precision. Its
   computation collapsed to the scalar precision (see
   :func:`mdebris.eval.metrics.average_precision` for what AP actually is), which is

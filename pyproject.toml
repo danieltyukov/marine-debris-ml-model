@@ -90,7 +90,7 @@ Repository = "https://github.com/danieltyukov/marine-debris-ml-model"
 where = ["src"]
 
 [tool.setuptools.package-data]
-mdebris = ["py.typed", "data/samples/*.json"]
+mdebris = ["py.typed", "data/samples/*.json", "data/samples/*.tif"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

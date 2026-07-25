@@ -549,14 +549,19 @@ class TestOWLv2Real:
         full = np.asarray(Image.open(ASSET_SCENE).convert("RGB"))
         scene = full[19:569, 665:1451]
 
+        # A low threshold on purpose. Zero-shot scores on 3 m ocean imagery are small
+        # in absolute terms, and the claim under test is about which label a box gets,
+        # not about how confident the model is.
+        threshold = 0.02
+
         with_confusers = OWLv2Detector(prompts=DEFAULT_PROMPTS)
-        found = with_confusers.detect(scene, threshold=0.05)
+        found = with_confusers.detect(scene, threshold=threshold)
         assert found, "no detections on the reference scene; thresholds may have drifted"
 
         targets_only = OWLv2Detector(prompts=DEFAULT_PROMPTS.targets_only())
         targets_only.model = with_confusers.model
         targets_only.processor = with_confusers.processor
-        naive = targets_only.detect(scene, threshold=0.05)
+        naive = targets_only.detect(scene, threshold=threshold)
 
         # Without confusers every detection is necessarily debris: there is no other
         # label available. That is the failure mode, stated as an assertion.

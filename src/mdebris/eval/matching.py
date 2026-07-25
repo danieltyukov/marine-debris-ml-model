@@ -17,7 +17,9 @@ a confident prediction gets first pick, so lowering the score cut-off can only a
 detections to the tail of the ranking and never re-shuffle the decisions already
 made above it. That monotonicity is exactly the property an AP integral assumes.
 
-Two deliberate departures from the legacy ``eval_cmatrix_f1_map.py``:
+Two deliberate departures from the legacy TF Object Detection script, which no longer
+exists in the tree but can be read with
+``git show 9509b0e:evaluation_utils/eval_cmatrix_f1_map.py``:
 
 * Legacy sorted candidate pairs by descending **IoU**, not by score. Under that rule
   a low-confidence prediction with a slightly tighter box outranks a high-confidence
