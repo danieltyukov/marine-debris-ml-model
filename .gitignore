@@ -136,3 +136,15 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+# --- mdebris 2.0 ---
+.venv/
+venv/
+outputs/
+*.geojson
+!src/mdebris/data/samples/*.geojson
+.cache/
+.pytest_cache/
+.ruff_cache/
+*.tif
+!src/mdebris/data/samples/*.tif
+.env

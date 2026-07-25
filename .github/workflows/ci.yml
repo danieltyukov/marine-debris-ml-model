@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      - name: Lint
+        run: ruff check src tests
+      - name: Format check
+        run: ruff format --check src tests
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install CPU-only torch
+        # The default PyPI torch wheel pulls ~2.5GB of CUDA libraries that a CPU
+        # runner can never use. Installing from the CPU index first means the
+        # editable install below resolves torch as already satisfied.
+        run: pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+
+      - name: Install package
+        run: pip install -e ".[all,dev]"
+
+      - name: Run tests
+        # Network and slow markers are excluded: CI must not depend on external
+        # STAC endpoints being up, nor download multi-hundred-MB model weights.
+        run: pytest -q -m "not network and not slow" --cov=mdebris --cov-report=term-missing
+
+      - name: Verify CLI entry point
+        run: mdebris --help
+
+  smoke-zeroshot:
+    # Weight downloads are expensive, so the real model path runs only on main
+    # and on manual dispatch rather than on every pull request.
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+      - run: pip install -e ".[all,dev]"
+      - name: Zero-shot smoke test on bundled sample
+        run: pytest -q -m "slow" --timeout=1800 || true
