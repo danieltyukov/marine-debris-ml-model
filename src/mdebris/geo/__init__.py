@@ -11,6 +11,7 @@ from mdebris.geo.georef import (
     detections_to_geodataframe,
     georeference_detections,
     pixel_bbox_to_polygon,
+    read_geojson,
     write_geojson,
 )
 from mdebris.geo.raster import (
@@ -48,6 +49,7 @@ __all__ = [
     "pixel_bbox_to_polygon",
     "raster_profile",
     "read_bands",
+    "read_geojson",
     "read_window",
     "tile_affine",
     "tile_bounds",

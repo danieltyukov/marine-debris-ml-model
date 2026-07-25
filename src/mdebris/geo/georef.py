@@ -42,6 +42,7 @@ __all__ = [
     "detections_to_geodataframe",
     "georeference_detections",
     "pixel_bbox_to_polygon",
+    "read_geojson",
     "write_geojson",
 ]
 
@@ -315,3 +316,79 @@ def detections_to_geodataframe(ds: DetectionSet) -> gpd.GeoDataFrame:
     frame = pd.DataFrame([f["properties"] for f in features])
     geoms = [d.geometry for d in ds.detections if d.geometry is not None]
     return gpd.GeoDataFrame(frame, geometry=geoms, crs=WGS84)
+
+
+def read_geojson(path: str | Path) -> DetectionSet:
+    """Read a DetectionSet back from a GeoJSON file written by :func:`write_geojson`.
+
+    Round-tripping matters for evaluation: predictions and ground truth both arrive as
+    GeoJSON on disk, and the scorer needs Detection objects with pixel boxes to compute
+    IoU. Geographic polygons are converted back to a pixel-space bounding box in degrees
+    so that IoU remains meaningful between two sets in the same CRS.
+
+    Properties that the writer emitted (score, label, tile, scene_id, index values) are
+    restored where present. Unknown labels fall back to ``SurfaceClass.UNKNOWN`` rather
+    than raising, so a file produced by another tool still loads.
+
+    Args:
+        path: Path to a GeoJSON FeatureCollection.
+
+    Returns:
+        The detections, with ``geometry`` populated and ``bbox`` derived from it.
+
+    Raises:
+        ValueError: If the file is not a FeatureCollection.
+    """
+    import json as _json
+
+    from shapely.geometry import shape
+
+    from mdebris.types import BBox, Detection, DetectionSet, SceneRef, SurfaceClass
+
+    data = _json.loads(Path(path).read_text(encoding="utf-8"))
+    if data.get("type") != "FeatureCollection":
+        raise ValueError(
+            f"{path} is not a GeoJSON FeatureCollection, got type={data.get('type')!r}"
+        )
+
+    detections: list[Detection] = []
+    scene: SceneRef | None = None
+    for feature in data.get("features", []):
+        geometry = feature.get("geometry")
+        if geometry is None:
+            continue
+        geom = shape(geometry)
+        props = dict(feature.get("properties") or {})
+        minx, miny, maxx, maxy = geom.bounds
+
+        try:
+            label = SurfaceClass(props.get("label", "marine_debris"))
+        except ValueError:
+            label = SurfaceClass.UNKNOWN
+
+        if scene is None and props.get("scene_id"):
+            scene = SceneRef(
+                scene_id=str(props["scene_id"]),
+                collection=str(props.get("collection", "sentinel-2-l2a")),
+                datetime=props.get("datetime"),
+            )
+
+        reserved = {"score", "label", "model", "tile", "scene_id", "collection", "datetime"}
+        indices = {
+            k: float(v)
+            for k, v in props.items()
+            if k not in reserved and isinstance(v, (int, float)) and not isinstance(v, bool)
+        }
+
+        detections.append(
+            Detection(
+                bbox=BBox(xmin=minx, ymin=miny, xmax=maxx, ymax=maxy),
+                score=float(props.get("score", 1.0)),
+                label=label,
+                geometry=geom,
+                indices=indices,
+                source_model=str(props.get("model", "")),
+            )
+        )
+
+    return DetectionSet(detections=detections, scene=scene, meta=dict(data.get("properties") or {}))
