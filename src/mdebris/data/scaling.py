@@ -81,15 +81,16 @@ def to_reflectance(
     array: Any,
     *,
     scale: float = REFLECTANCE_SCALE,
-    offset: float = BOA_OFFSET,
+    offset: float,
 ) -> np.ndarray:
     """Convert stored integers to surface reflectance as ``dn * scale + offset``.
 
-    The default ``offset`` of -0.1 is correct for Sentinel-2 L2A processed under baseline
-    04.00 or later, which is everything acquired since January 2022 and therefore
-    everything the default pipeline searches. It is **wrong for older scenes**, which need
-    ``offset=0.0``. Do not rely on the default when the acquisition date is not known:
-    derive the parameters with :func:`reflectance_params_for_item` and pass them in.
+    ``offset`` is deliberately required and has no default. -0.1 is correct for Sentinel-2
+    L2A under processing baseline 04.00 or later (everything acquired since January 2022)
+    and wrong for older scenes, which need 0.0. A default either way would silently corrupt
+    half the archive, in whichever direction it was chosen, without ever raising. Derive the
+    value with :func:`reflectance_params_for_item` or
+    :func:`reflectance_params_for_baseline` and pass it in.
 
     Args:
         array: Stored band values, any integer or float dtype.
@@ -107,7 +108,7 @@ def to_reflectance(
 
     Example:
         >>> values = np.array([1000, 2000, 11000], dtype="uint16")
-        >>> bool(np.allclose(to_reflectance(values), [0.0, 0.1, 1.0]))
+        >>> bool(np.allclose(to_reflectance(values, offset=BOA_OFFSET), [0.0, 0.1, 1.0]))
         True
         >>> bool(np.allclose(to_reflectance(values, offset=0.0), [0.1, 0.2, 1.1]))
         True

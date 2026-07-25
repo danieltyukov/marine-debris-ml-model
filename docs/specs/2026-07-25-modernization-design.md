@@ -213,7 +213,7 @@ Which indices this actually breaks, measured on the same chip:
 
 | index | affected | reason |
 |---|---|---|
-| FDI, FAI | **no, bit-identical** | a difference of differences, so a constant offset cancels |
+| FDI, FAI | **no**, max difference 8.9e-08 | a difference of differences, so a constant offset cancels analytically; the residual is float32 rounding |
 | NDVI, NDWI, PI, kNDVI, MNDWI | magnitude changes, sign preserved | ratios: numerator unchanged, denominator grows by 0.2 |
 
 The cascade measurements in 3.2.1 and 3.2.2 are therefore unaffected: they depend on

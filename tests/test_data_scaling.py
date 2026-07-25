@@ -44,12 +44,12 @@ def item(assets: dict, baseline: str | None = "05.10") -> dict:
 
 def test_to_reflectance_applies_scale_and_offset() -> None:
     values = np.array([1000, 2000, 11000], dtype="uint16")
-    assert to_reflectance(values) == pytest.approx([0.0, 0.1, 1.0], abs=1e-6)
+    assert to_reflectance(values, offset=BOA_OFFSET) == pytest.approx([0.0, 0.1, 1.0], abs=1e-6)
 
 
 def test_to_reflectance_returns_float32() -> None:
     """Reflectance stays float32; float64 would double every array in the pipeline."""
-    assert to_reflectance(np.array([1234], dtype="uint16")).dtype == np.float32
+    assert to_reflectance(np.array([1234], dtype="uint16"), offset=BOA_OFFSET).dtype == np.float32
 
 
 def test_to_reflectance_honours_an_explicit_zero_offset() -> None:
@@ -66,12 +66,14 @@ def test_the_two_encodings_differ_by_exactly_the_offset() -> None:
 def test_the_naive_conversion_is_what_makes_ocean_look_absurd() -> None:
     """Documents the actual bug: raw DN 1150 over deep water."""
     water_dn = np.array([1150], dtype="uint16")
-    assert to_reflectance(water_dn) == pytest.approx([0.015], abs=1e-6)  # plausible sea
+    assert to_reflectance(water_dn, offset=BOA_OFFSET) == pytest.approx(
+        [0.015], abs=1e-6
+    )  # plausible sea
     assert to_reflectance(water_dn, offset=0.0) == pytest.approx([0.115], abs=1e-6)  # absurd
 
 
 def test_to_reflectance_accepts_a_plain_list() -> None:
-    assert to_reflectance([1000, 2000]) == pytest.approx([0.0, 0.1], abs=1e-6)
+    assert to_reflectance([1000, 2000], offset=BOA_OFFSET) == pytest.approx([0.0, 0.1], abs=1e-6)
 
 
 # -- baseline derivation ----------------------------------------------------------
