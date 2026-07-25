@@ -30,12 +30,13 @@ else was replaced.
 | Installable today | No, TF 1.14 has no wheel for Python 3.7+ | Yes |
 | Detector | SSD-ResNet101-FPN | OWLv2 open-vocabulary, RT-DETRv2 supervised |
 | Segmentation | None | SAM 2, box-prompted |
-| Training to first prediction | 500k steps on GPU | None, zero-shot |
+| Training to first prediction | 500k steps on GPU | None zero-shot, or ~2.5 min CPU supervised |
 | Classes | 1 (`marine_debris`) | 9, including the confusers |
 | Imagery | Planet, commercial | Sentinel-2, free and open |
 | Credentials required | Planet API key | None |
 | Vendored dependencies | 19 MB of TF OD API | None |
 | Tests | None | Full suite, CI on 3.11 and 3.12 |
+| Reported debris accuracy | None published | F1 0.515 on the MARIDA benchmark |
 | Spectral indices | None | FDI, FAI, NDVI, NDWI, PI, kNDVI |
 
 ---
@@ -104,6 +105,49 @@ shape and context cues the model depends on are simply not present.
 This is why the marine-litter literature uses index thresholding rather than deep
 learning at Sentinel-2 resolution. The physics carries the signal; a photographic prior
 does not.
+
+### The trained model
+
+"No training required" is good for adoption and bad for accuracy, and the table above
+would oversell it without this section. A supervised classifier was trained on
+**MARIDA** (Kikaki et al. 2022), the public Sentinel-2 marine-debris benchmark, using
+its own scene-grouped split so no test scene leaks into training.
+
+Gradient boosting over 18 per-pixel features: 11 reflectance bands plus FDI, FAI,
+NDVI, NDWI, PI, kNDVI and MNDWI. **429412 training pixels, 194863 held-out test pixels,
+76 seconds to fit on CPU with no GPU.**
+
+| | precision | recall | F1 |
+|---|---|---|---|
+| Marine Debris, `argmax` default | 0.160 | 0.929 | 0.273 |
+| Marine Debris, best-F1 threshold | **0.944** | 0.354 | **0.515** |
+
+![debris precision-recall](assets/debris_pr_curve.png)
+
+A single F1 misrepresents this. Debris is 0.2% of labelled pixels, so balanced class
+weighting pushes the default hard toward recall. Sweeping the probability threshold
+reaches **precision 0.944 at recall 0.354** instead. Which end is right depends on the
+job: wide-area screening wants recall because a human reviews the hits, while
+dispatching a cleanup vessel wants precision because a false positive costs a boat trip.
+
+Best F1 of 0.515 sits below the Random Forest baseline the MARIDA paper reports. This
+uses per-pixel spectra only, with no spatial context and no per-scene normalisation.
+
+The most informative features are **B05** (red edge, 705 nm) and **B01** (coastal
+aerosol, 443 nm), both outranking every named index. Neither appears in the FDI
+formula, so the hand-built indices are not using all the available signal.
+
+![classification samples](assets/classification_samples.png)
+
+Real test-split output, cropped to the annotation. Rows 1 and 3 are debris filaments
+at 95.6% and 95.5% agreement. Row 3 shows the honest failure: the bright object is a
+**ship**, annotated pink, and the model paints it amber as debris. Per-pixel spectra
+cannot separate a vessel from a debris raft, which is precisely what the
+open-vocabulary detector is kept for.
+
+```bash
+python scripts/train_marida.py      # downloads MARIDA, trains, writes docs/marida_report.md
+```
 
 ### What that means for the design
 

@@ -151,3 +151,6 @@ outputs/
 
 # the GitHub Pages site
 !docs/**
+
+# trained model artifacts: joblib is pickle-based, never distribute one
+models/

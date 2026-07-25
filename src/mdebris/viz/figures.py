@@ -35,7 +35,7 @@ from mdebris.viz.plots import (
 
 log = logging.getLogger(__name__)
 
-__all__ = ["ASSETS", "generate_all"]
+__all__ = ["ASSETS", "figure_debris_pr", "generate_all"]
 
 ASSETS = Path("assets")
 
@@ -334,6 +334,8 @@ def generate_all(outdir: Path = ASSETS, *, skip_models: bool = False) -> dict[st
     plt.close("all")
     written["before_after"] = figure_before_after(out=outdir / "before_after.png")
     plt.close("all")
+    written["debris_pr_curve"] = figure_debris_pr(out=outdir / "debris_pr_curve.png")
+    plt.close("all")
 
     if not skip_models:
         written["detections"] = figure_detections(out=outdir / "detections.png")
@@ -359,3 +361,76 @@ def main() -> None:
 
 if __name__ == "__main__":  # pragma: no cover
     main()
+
+
+def figure_debris_pr(
+    report_json: Path | str = Path("docs/marida_report_balanced.json"),
+    out: Path | None = None,
+) -> Path | None:
+    """Precision-recall curve for the Marine Debris class on the MARIDA test split.
+
+    A classifier is a family of operating points, not one number. Reporting only the
+    argmax F1 would understate this model badly: argmax gives precision 0.16 at recall
+    0.93, while thresholding on probability reaches precision 0.94 at recall 0.35.
+    Which end is right depends on the job. Wide-area screening wants recall because a
+    human reviews the hits; dispatching a cleanup vessel wants precision because a
+    false positive costs a boat trip.
+    """
+    import json
+
+    path = Path(report_json)
+    if not path.exists():
+        log.warning("skipping the PR figure, %s is missing (run scripts/train_marida.py)", path)
+        return None
+    data = json.loads(path.read_text())
+    curve = data.get("debris_pr_curve") or []
+    if not curve:
+        log.warning("skipping the PR figure, no debris_pr_curve in %s", path)
+        return None
+
+    recall = [p["recall"] for p in curve]
+    precision = [p["precision"] for p in curve]
+    f1 = [p["f1"] for p in curve]
+    best = max(range(len(f1)), key=lambda i: f1[i])
+    argmax_point = data.get("per_class", {}).get("Marine Debris", {})
+
+    fig, ax = plt.subplots(figsize=(8.5, 6))
+    ax.plot(recall, precision, color="#0072B2", lw=2, label="threshold sweep")
+    ax.scatter(
+        [recall[best]],
+        [precision[best]],
+        s=150,
+        color="#E69F00",
+        zorder=4,
+        edgecolor="white",
+        linewidth=1.5,
+        label=f"best F1 {f1[best]:.3f} (P {precision[best]:.2f}, R {recall[best]:.2f})",
+    )
+    if argmax_point:
+        ax.scatter(
+            [argmax_point.get("recall", 0)],
+            [argmax_point.get("precision", 0)],
+            s=150,
+            color="#D55E00",
+            marker="s",
+            zorder=4,
+            edgecolor="white",
+            linewidth=1.5,
+            label=(
+                f"argmax default (P {argmax_point.get('precision', 0):.2f}, "
+                f"R {argmax_point.get('recall', 0):.2f})"
+            ),
+        )
+    ax.set_xlabel("recall")
+    ax.set_ylabel("precision")
+    ax.set_xlim(0, 1.02)
+    ax.set_ylim(0, 1.05)
+    ax.grid(alpha=0.25)
+    ax.spines[["top", "right"]].set_visible(False)
+    ax.set_title(
+        f"Marine Debris on the MARIDA test split, {data.get('n_test', 0):,} held-out pixels",
+        fontsize=12,
+        pad=12,
+    )
+    ax.legend(fontsize=9, loc="lower left")
+    return save_figure(fig, out or ASSETS / "debris_pr_curve.png")

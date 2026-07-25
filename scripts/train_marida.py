@@ -84,6 +84,12 @@ def main() -> None:
     parser.add_argument("--max-patches", type=int, default=None)
     parser.add_argument("--min-confidence", type=int, default=0)
     parser.add_argument("--max-iter", type=int, default=300)
+    parser.add_argument(
+        "--class-weight",
+        default="balanced",
+        help="'balanced' or 'none'. Balanced trades precision for recall on rare classes.",
+    )
+    parser.add_argument("--tag", default="", help="Suffix for output filenames.")
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(message)s")
 
@@ -108,7 +114,8 @@ def main() -> None:
 
     log.info("fitting")
     started = time.perf_counter()
-    clf = SpectralClassifier(max_iter=args.max_iter).fit(
+    weight = None if args.class_weight.lower() in {"none", "null", ""} else args.class_weight
+    clf = SpectralClassifier(max_iter=args.max_iter, class_weight=weight).fit(
         x_train, y_train, class_names=list(MARIDA_CLASSES)
     )
     elapsed = time.perf_counter() - started
@@ -134,9 +141,51 @@ def main() -> None:
     except Exception as exc:
         log.warning("skipping feature importance: %s", exc)
 
+    # A single F1 hides that the model is a family of operating points. Debris is
+    # 0.2% of labelled pixels, so the precision/recall balance is a deployment
+    # decision (wide-area screening versus cleanup tasking), not a model property.
+    debris_curve = []
+    try:
+        from sklearn.metrics import precision_recall_curve
+
+        classes = list(clf._model.classes_)
+        if "Marine Debris" in classes:
+            scores = clf.predict_proba(x_test)[:, classes.index("Marine Debris")]
+            precision, recall, thresholds = precision_recall_curve(
+                (y_test == "Marine Debris").astype(int), scores
+            )
+            f1 = np.divide(
+                2 * precision * recall,
+                precision + recall,
+                out=np.zeros_like(precision),
+                where=(precision + recall) > 0,
+            )
+            best = int(np.argmax(f1))
+            log.info(
+                "best debris F1 %.3f at probability threshold %.3f (P %.3f, R %.3f)",
+                f1[best],
+                thresholds[min(best, len(thresholds) - 1)],
+                precision[best],
+                recall[best],
+            )
+            step = max(1, len(precision) // 200)
+            debris_curve = [
+                {"precision": float(precision[i]), "recall": float(recall[i]), "f1": float(f1[i])}
+                for i in range(0, len(precision), step)
+            ]
+            report.per_class.setdefault("Marine Debris", {})["best_f1"] = float(f1[best])
+            report.per_class["Marine Debris"]["best_f1_threshold"] = float(
+                thresholds[min(best, len(thresholds) - 1)]
+            )
+    except Exception as exc:
+        log.warning("skipping the debris PR curve: %s", exc)
+
     print()
     print(report.to_markdown())
 
+    if args.tag:
+        args.out = args.out.with_name(f"{args.out.stem}_{args.tag}{args.out.suffix}")
+        args.report = args.report.with_name(f"{args.report.stem}_{args.tag}{args.report.suffix}")
     args.out.parent.mkdir(parents=True, exist_ok=True)
     clf.save(args.out)
     log.info("\nsaved model to %s", args.out)
@@ -159,6 +208,9 @@ def main() -> None:
                 "macro_f1": report.macro_f1,
                 "per_class": report.per_class,
                 "train_seconds": report.train_seconds,
+                "class_weight": args.class_weight,
+                "debris_pr_curve": debris_curve,
+                "feature_importance": report.feature_importance,
             },
             indent=2,
         ),

@@ -1,12 +1,18 @@
-"""Build docs/index.html, the GitHub Pages report.
+"""Build docs/index.html, the GitHub Pages technical report.
 
-Injects the real measured FDI distribution and the compressed pipeline figures so the
-page cannot drift from the numbers the pipeline actually produces. Run from the repo
-root after regenerating the figures:
+Deliberately plain. The page is a lab write-up: measurements, real model output, and
+the failures, in one narrow column of text and tables. No hero, no decoration.
+
+Everything on it is computed here from the repository's own artifacts, so the page
+cannot drift from what the code produces:
 
     python -m mdebris.viz.figures
+    python scripts/train_marida.py --max-iter 200 --tag balanced
+    python scripts/make_classification_samples.py
     python scripts/build_demo_page.py
 """
+
+from __future__ import annotations
 
 import base64
 import json
@@ -20,20 +26,19 @@ from mdebris.indices.masks import cloud_mask_from_scl, water_mask
 from mdebris.indices.spectral import compute_indices
 
 ROOT = Path(__file__).resolve().parents[1]
+
+# Embedded as data URIs so the page is one self-contained file with no external
+# requests. Width is per figure: the classification grid needs the detail, charts do not.
 FIGURES = {
-    "cascade": "assets/cascade_stages.png",
-    "detect": "assets/detections.png",
-    "indices": "assets/spectral_indices.png",
+    "samples": ("assets/classification_samples.png", 1250),
+    "pr": ("assets/debris_pr_curve.png", 1000),
+    "cascade": ("assets/cascade_stages.png", 1500),
+    "indices": ("assets/spectral_indices.png", 1300),
 }
 
 
 def measure_fdi() -> dict:
-    """Real FDI distribution over cloud-free water in each bundled chip.
-
-    Clouds are excluded before the histogram is taken, for the same reason the
-    cascade excludes them before taking its percentile: cloud tops carry very large
-    FDI and would dominate the tail the page is about.
-    """
+    """Real FDI distribution over cloud-free water in each bundled chip."""
     out = {}
     for name in ("accra", "limassol"):
         bands, meta = sample_reflectance(name)
@@ -47,598 +52,507 @@ def measure_fdi() -> dict:
         out[name] = {
             "scene": meta["scene_id"],
             "date": meta["datetime"][:10],
-            "water_pct": round(float(wet.mean() * 100), 1),
-            "cloud_pct": round(float(cloud.mean() * 100), 2),
             "n": int(values.size),
             "hist": hist.tolist(),
             "edges": [round(e, 6) for e in edges.tolist()],
-            "pct": {
-                key: round(float(np.percentile(values, q)), 6)
-                for key, q in (
-                    ("p50", 50),
-                    ("p90", 90),
-                    ("p99", 99),
-                    ("p99_9", 99.9),
-                    ("p99_99", 99.99),
-                )
-            },
-            "mean": round(float(values.mean()), 6),
+            "pct": {"p99_9": round(float(np.percentile(values, 99.9)), 6)},
         }
     return out
 
 
-def embed_figures(width: int = 1400, quality: int = 72) -> dict[str, str]:
-    """Downsample each figure to a JPEG data URI so the page is one self-contained file."""
+def embed_figures() -> dict[str, str]:
     uris = {}
-    for key, rel in FIGURES.items():
+    for key, (rel, width) in FIGURES.items():
         path = ROOT / rel
         if not path.exists():
-            raise FileNotFoundError(f"{rel} is missing, run: python -m mdebris.viz.figures")
+            uris[key] = ""
+            continue
         im = Image.open(path).convert("RGB")
-        im = im.resize((width, round(im.height * width / im.width)), Image.LANCZOS)
-        buf = ROOT / "docs" / f"_{key}.jpg"
-        buf.parent.mkdir(parents=True, exist_ok=True)
-        im.save(buf, "JPEG", quality=quality, optimize=True)
-        uris[key] = "data:image/jpeg;base64," + base64.b64encode(buf.read_bytes()).decode()
-        buf.unlink()
+        if im.width > width:
+            im = im.resize((width, round(im.height * width / im.width)), Image.LANCZOS)
+        tmp = ROOT / "docs" / f"_{key}.jpg"
+        tmp.parent.mkdir(parents=True, exist_ok=True)
+        im.save(tmp, "JPEG", quality=78, optimize=True)
+        uris[key] = "data:image/jpeg;base64," + base64.b64encode(tmp.read_bytes()).decode()
+        tmp.unlink()
     return uris
 
 
-fdi = measure_fdi()
-imgs = embed_figures()
+REPORT = ROOT / "docs" / "marida_report_balanced.json"
 
-HTML = r"""<title>Marine Debris Detection: what Sentinel-2 can and cannot tell you</title>
-<style>
+
+def marida_rows() -> str:
+    """Per-class table rows straight from the training run."""
+    if not REPORT.exists():
+        return "<tr><td colspan='5'>run scripts/train_marida.py</td></tr>"
+    data = json.loads(REPORT.read_text())
+    rows = []
+    for name, m in sorted(data["per_class"].items(), key=lambda kv: -kv[1].get("support", 0)):
+        cls = ' class="tgt"' if name == "Marine Debris" else ""
+        rows.append(
+            f"<tr{cls}><td>{name}</td><td>{m.get('precision', 0):.3f}</td>"
+            f"<td>{m.get('recall', 0):.3f}</td><td>{m.get('f1', 0):.3f}</td>"
+            f"<td>{int(m.get('support', 0)):,}</td></tr>"
+        )
+    return "\n".join(rows)
+
+
+def marida_summary() -> dict:
+    if not REPORT.exists():
+        return {}
+    d = json.loads(REPORT.read_text())
+    curve = d.get("debris_pr_curve") or []
+    imp = d.get("feature_importance") or {}
+    return {
+        "n_train": d.get("n_train", 0),
+        "n_test": d.get("n_test", 0),
+        "accuracy": d.get("accuracy", 0),
+        "macro_f1": d.get("macro_f1", 0),
+        "train_seconds": d.get("train_seconds", 0),
+        "debris": d.get("per_class", {}).get("Marine Debris", {}),
+        "best": max(curve, key=lambda p: p["f1"]) if curve else {},
+        "top_features": sorted(imp.items(), key=lambda kv: -kv[1])[:6],
+    }
+
+
+HTML = r"""<style>
 :root{
-  --deep:#E7EDEE; --sheet:#F4F7F7; --panel:#FFFFFF; --line:#C3D2D6; --hair:#DCE6E8;
-  --ink:#0B1D24; --ink-2:#3D5560; --ink-3:#6C858E;
-  --debris:#B87400; --debris-bright:#E69F00; --water:#0060A0; --sarg:#00795A; --verm:#C4541A;
-  --grid:rgba(11,29,36,.05);
+  --bg:#fbfbfa; --fg:#14181a; --dim:#5b6669; --rule:#d9dedf; --box:#f2f4f4;
+  --hit:#136f4a; --miss:#a3401a; --key:#8a5a00;
 }
 @media (prefers-color-scheme:dark){
-  :root{
-    --deep:#071A22; --sheet:#0B222C; --panel:#0F2A35; --line:#1E4351; --hair:#16333F;
-    --ink:#E4EFF2; --ink-2:#A9C2CA; --ink-3:#6F8D97;
-    --debris:#E69F00; --debris-bright:#FFB627; --water:#4AA3DA; --sarg:#2CBE9A; --verm:#F07A3C;
-    --grid:rgba(228,239,242,.055);
-  }
+  :root{--bg:#121516; --fg:#e6eaeb; --dim:#98a3a6; --rule:#2b3133; --box:#191d1f;
+        --hit:#5fbf92; --miss:#e08a5a; --key:#e0a83c;}
 }
-:root[data-theme="dark"]{
-  --deep:#071A22; --sheet:#0B222C; --panel:#0F2A35; --line:#1E4351; --hair:#16333F;
-  --ink:#E4EFF2; --ink-2:#A9C2CA; --ink-3:#6F8D97;
-  --debris:#E69F00; --debris-bright:#FFB627; --water:#4AA3DA; --sarg:#2CBE9A; --verm:#F07A3C;
-  --grid:rgba(228,239,242,.055);
-}
-:root[data-theme="light"]{
-  --deep:#E7EDEE; --sheet:#F4F7F7; --panel:#FFFFFF; --line:#C3D2D6; --hair:#DCE6E8;
-  --ink:#0B1D24; --ink-2:#3D5560; --ink-3:#6C858E;
-  --debris:#B87400; --debris-bright:#E69F00; --water:#0060A0; --sarg:#00795A; --verm:#C4541A;
-  --grid:rgba(11,29,36,.05);
-}
+:root[data-theme="dark"]{--bg:#121516; --fg:#e6eaeb; --dim:#98a3a6; --rule:#2b3133; --box:#191d1f;
+  --hit:#5fbf92; --miss:#e08a5a; --key:#e0a83c;}
+:root[data-theme="light"]{--bg:#fbfbfa; --fg:#14181a; --dim:#5b6669; --rule:#d9dedf; --box:#f2f4f4;
+  --hit:#136f4a; --miss:#a3401a; --key:#8a5a00;}
 
 *{box-sizing:border-box}
 body{
-  margin:0; background:var(--deep); color:var(--ink);
-  font-family:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",Palatino,serif;
-  font-size:17px; line-height:1.65;
+  margin:0; background:var(--bg); color:var(--fg);
+  font:15px/1.62 ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
   -webkit-font-smoothing:antialiased;
 }
-.mono{font-family:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace}
-h1,h2,h3,.disp{
-  font-family:-apple-system,"Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;
-  font-weight:700; letter-spacing:-.022em; text-wrap:balance; margin:0;
-}
-p{margin:0}
-a{color:var(--debris); text-underline-offset:3px}
-:focus-visible{outline:2px solid var(--debris-bright); outline-offset:3px; border-radius:2px}
+main{max-width:860px; margin:0 auto; padding:44px 22px 90px}
+h1{font-size:20px; font-weight:600; margin:0 0 6px; letter-spacing:-.01em}
+h2{font-size:15px; font-weight:600; margin:44px 0 10px; padding-top:14px; border-top:1px solid var(--rule)}
+h3{font-size:14px; font-weight:600; margin:24px 0 6px; color:var(--dim)}
+p{margin:12px 0; max-width:76ch}
+a{color:inherit}
+.sub{color:var(--dim); margin:0 0 26px}
+b{font-weight:600}
+code{background:var(--box); padding:1px 5px; border-radius:2px}
+:focus-visible{outline:2px solid var(--key); outline-offset:2px}
 
-/* survey-sheet shell: measured column, mono station gutter */
-.sheet{max-width:1180px; margin:0 auto; padding:0 28px}
-.row{display:grid; grid-template-columns:104px minmax(0,1fr); gap:34px; align-items:start}
-.station{
-  font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
-  font-size:10.5px; letter-spacing:.14em; text-transform:uppercase;
-  color:var(--ink-3); padding-top:.55em; line-height:1.5;
-  border-top:1px solid var(--hair);
-}
-.body-col{max-width:66ch}
-.body-col .scroll,.body-col table{max-width:none; width:100%}
-.body-col > .scroll{width:min(100%,760px)}
-.wide-col{max-width:none}
-section{padding:58px 0; border-top:1px solid var(--hair)}
-section:first-of-type{border-top:0}
-@media (max-width:800px){
-  .row{grid-template-columns:1fr; gap:12px}
-  .station{border-top:0; padding-top:0}
-  .sheet{padding:0 20px}
-}
-
-/* hero */
-.hero{position:relative; overflow:hidden; border-bottom:1px solid var(--line)}
-#contours{position:absolute; inset:0; width:100%; height:100%; display:block}
-.hero-in{position:relative; padding:84px 0 66px}
-.eyebrow{
-  font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:11px; letter-spacing:.2em;
-  text-transform:uppercase; color:var(--debris); margin-bottom:20px;
-}
-h1{font-size:clamp(34px,5.4vw,60px); line-height:1.03}
-.lede{margin-top:22px; font-size:clamp(17px,2vw,20px); color:var(--ink-2); max-width:60ch}
-.stats{
-  display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-  gap:1px; background:var(--hair); border:1px solid var(--hair); margin-top:44px;
-}
-.stat{background:var(--sheet); padding:18px 18px 16px}
-.stat b{
-  display:block; font-family:ui-monospace,Menlo,monospace; font-size:26px; font-weight:600;
-  letter-spacing:-.02em; font-variant-numeric:tabular-nums; color:var(--ink);
-}
-.stat span{
-  display:block; margin-top:5px; font-family:ui-monospace,Menlo,monospace;
-  font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3); line-height:1.5;
-}
-.stat.hl b{color:var(--debris)}
-
-h2{font-size:clamp(24px,3.1vw,33px); line-height:1.12; margin-bottom:18px}
-h3{font-size:17px; margin:30px 0 8px; letter-spacing:-.01em}
-.prose > * + *{margin-top:18px}
-.prose strong{font-weight:600; color:var(--ink)}
-
-/* the negative-result callout: vermilion, used once */
-.finding{
-  border-left:3px solid var(--verm); background:var(--sheet);
-  padding:22px 24px; margin-top:26px;
-}
-.finding .tag{
-  font-family:ui-monospace,Menlo,monospace; font-size:10.5px; letter-spacing:.16em;
-  text-transform:uppercase; color:var(--verm); display:block; margin-bottom:10px;
-}
-
-table{width:100%; border-collapse:collapse; font-size:14.5px; margin-top:22px}
+table{width:100%; border-collapse:collapse; font-size:13.5px; margin:14px 0; font-variant-numeric:tabular-nums}
 .scroll{overflow-x:auto}
-th,td{padding:10px 14px; text-align:left; border-bottom:1px solid var(--hair)}
-th{
-  font-family:ui-monospace,Menlo,monospace; font-size:10.5px; letter-spacing:.1em;
-  text-transform:uppercase; color:var(--ink-3); font-weight:400; border-bottom:1px solid var(--line);
-  white-space:nowrap;
-}
-td{font-family:ui-monospace,Menlo,monospace; font-variant-numeric:tabular-nums; color:var(--ink-2)}
-td.k{color:var(--ink); white-space:nowrap}
-td.good{color:var(--sarg)} td.bad{color:var(--verm)}
-tr:last-child td{border-bottom:0}
+th,td{padding:5px 10px; text-align:right; border-bottom:1px solid var(--rule); white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600; color:var(--dim); border-bottom:1px solid var(--fg)}
+tr.tgt td{color:var(--key); font-weight:600}
+td.hit{color:var(--hit)} td.miss{color:var(--miss)}
 
-/* interactive threshold explorer */
-.tool{border:1px solid var(--line); background:var(--sheet); margin-top:30px}
-.tool-head{
-  display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap;
-  padding:16px 20px; border-bottom:1px solid var(--hair);
+figure{margin:20px 0}
+figure.wide{
+  /* Break out of the 860px measure. The annotated pixels are a few px across, so
+     at column width the comparison proves nothing. */
+  width:min(1500px,96vw); margin-left:50%; transform:translateX(-50%);
 }
-.tool-title{font-family:ui-monospace,Menlo,monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3)}
-.readout{font-family:ui-monospace,Menlo,monospace; font-variant-numeric:tabular-nums; font-size:14px; color:var(--ink)}
-.readout b{color:var(--debris); font-weight:600}
-#plot{display:block; width:100%; height:280px}
-.controls{padding:14px 20px 20px; display:grid; gap:14px}
-.sliderow{display:grid; grid-template-columns:auto 1fr; gap:14px; align-items:center}
-label.sl{font-family:ui-monospace,Menlo,monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3)}
-input[type=range]{width:100%; accent-color:var(--debris-bright); height:22px}
-.presets{display:flex; gap:8px; flex-wrap:wrap}
-button.preset{
-  font-family:ui-monospace,Menlo,monospace; font-size:11px; letter-spacing:.06em;
-  padding:7px 12px; background:transparent; color:var(--ink-2);
-  border:1px solid var(--line); cursor:pointer; border-radius:2px;
-}
-button.preset:hover{border-color:var(--debris); color:var(--debris)}
-button.preset[aria-pressed="true"]{background:var(--debris); border-color:var(--debris); color:var(--deep)}
-.verdict{font-size:14.5px; color:var(--ink-2); padding:0 20px 18px; max-width:70ch}
-.verdict b{color:var(--ink)}
+figure.wide figcaption{max-width:82ch; margin-left:auto; margin-right:auto}
+figure img{width:100%; height:auto; display:block; border:1px solid var(--rule)}
+figcaption{margin-top:8px; font-size:12.5px; color:var(--dim); max-width:82ch}
 
-figure{margin:30px 0 0}
-figure img{width:100%; height:auto; display:block; border:1px solid var(--line)}
-figcaption{
-  margin-top:10px; font-family:ui-monospace,Menlo,monospace; font-size:11.5px;
-  color:var(--ink-3); line-height:1.6; max-width:78ch;
-}
-pre{
-  background:var(--sheet); border:1px solid var(--hair); padding:16px 18px; overflow-x:auto;
-  font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; line-height:1.7; margin-top:20px;
-  color:var(--ink-2);
-}
-pre .c{color:var(--ink-3)}
-pre .p{color:var(--debris)}
-footer{padding:44px 0 70px; border-top:1px solid var(--line); color:var(--ink-3); font-size:14px}
-footer a{color:var(--ink-2)}
-@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+pre{background:var(--box); border:1px solid var(--rule); padding:12px 14px; overflow-x:auto; font-size:13px; margin:14px 0}
+.note{border-left:2px solid var(--key); padding:2px 0 2px 14px; margin:16px 0}
+.note b{color:var(--key)}
+
+.tool{border:1px solid var(--rule); margin:18px 0; background:var(--box)}
+.tool-h{display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:9px 12px; border-bottom:1px solid var(--rule); font-size:12.5px; color:var(--dim)}
+.tool-h b{color:var(--key)}
+#plot{display:block; width:100%; height:210px}
+.ctl{padding:10px 12px; display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+input[type=range]{flex:1; min-width:180px; accent-color:var(--key)}
+button{font:inherit; font-size:12.5px; padding:4px 9px; background:transparent; color:var(--fg); border:1px solid var(--rule); cursor:pointer}
+button[aria-pressed="true"]{border-color:var(--key); color:var(--key)}
+#verdict{padding:0 12px 12px; font-size:12.5px; color:var(--dim); max-width:78ch}
+footer{margin-top:52px; padding-top:16px; border-top:1px solid var(--rule); font-size:12.5px; color:var(--dim)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
-<div class="hero">
-  <canvas id="contours" aria-hidden="true"></canvas>
-  <div class="sheet hero-in">
-    <div class="row">
-      <div class="station">Sheet 01<br>Gulf of Guinea<br>Akrotiri Bay</div>
-      <div>
-        <div class="eyebrow mono">Sentinel-2 &middot; 10 m &middot; open data</div>
-        <h1>What satellite imagery can, and cannot, tell you about ocean plastic</h1>
-        <p class="lede">A 2019 TensorFlow 1.14 project rebuilt from scratch. Along the way the
-        rewrite produced a negative result worth more than the feature list: at 10 metres per
-        pixel, the frontier vision model is not what finds the debris.</p>
-        <div class="stats">
-          <div class="stat"><b>761</b><span>tests passing</span></div>
-          <div class="stat"><b>175,481</b><span>lines of dead code removed</span></div>
-          <div class="stat hl"><b>0</b><span>API keys required</span></div>
-          <div class="stat hl"><b>0</b><span>training steps to first prediction</span></div>
-        </div>
-      </div>
-    </div>
+<main>
+
+<h1>Marine debris detection on Sentinel-2</h1>
+<p class="sub">Rebuild notes for <a href="https://github.com/danieltyukov/marine-debris-ml-model">danieltyukov/marine-debris-ml-model</a>.
+Measurements, real model output, and what did not work.</p>
+
+<p>The original was a 2019 NASA Space Apps entry: TensorFlow 1.14, the TF Object
+Detection API vendored into the repo, SSD-ResNet101-FPN trained 500k steps for one
+class on commercial Planet imagery. TF 1.14 has no wheel for Python 3.7 or later, so
+on a current interpreter it was not runnable at all.</p>
+
+<h2>1. Open-vocabulary detection does not work at 10 m</h2>
+
+<p>The first attempt was zero-shot: OWLv2 takes text prompts at inference, so no
+training and no labels are needed. Benchmarked against a control on natural
+photographs, using the same wrapper and the same weights:</p>
+
+<div class="scroll"><table>
+<thead><tr><th>Input</th><th>Prompt</th><th>Confidence</th><th>Box extent</th></tr></thead>
+<tbody>
+<tr><td>COCO photo</td><td>a remote control</td><td class="hit">0.794</td><td>1.9% of image</td></tr>
+<tr><td>COCO photo</td><td>a photo of a cat</td><td class="hit">0.669</td><td>44.6%</td></tr>
+<tr><td>Sentinel-2 10 m</td><td>white sea foam</td><td class="miss">0.210</td><td>up to 100% of chip</td></tr>
+<tr><td>Sentinel-2 10 m</td><td>a boat wake</td><td class="miss">0.129</td><td>whole chip</td></tr>
+</tbody></table></div>
+
+<div class="note"><b>Result:</b> the COCO image is the canonical two-cats-two-remotes
+example and the model localises it tightly, so the wrapper is correct and this is
+domain mismatch. OWLv2 learned from web photographs where a target spans hundreds of
+pixels. At 10 m a 30 m debris patch spans <b>three pixels</b>. There is no shape to
+recognise, so it falls back to describing the whole scene.</div>
+
+<p>Discarding the vision model was still wrong, because it does one thing well. The
+2019 model had a single class, <code>marine_debris</code>, so it could not say "that
+is a ship". On the Accra chip OWLv2 labelled all 8 detections ship or ship wake; on
+Limassol, 13 of 14 were foam, wake or sediment. Weak localisation, useful
+discrimination.</p>
+
+<h2>2. What carries the signal instead</h2>
+
+<p>Each pixel has 11 reflectance bands, and the separation between plastic,
+Sargassum, foam and sediment lives in the relationships between them. That is a
+tabular problem, not a vision one, and it is the baseline the MARIDA authors publish.
+Gradient boosting over 18 features (11 bands plus FDI, FAI, NDVI, NDWI, PI, kNDVI,
+MNDWI), trained on MARIDA's own scene-grouped split so no test scene leaks into
+training.</p>
+
+<div class="scroll"><table>
+<thead><tr><th>run</th><th>value</th></tr></thead>
+<tbody>
+<tr><td>training pixels</td><td>__N_TRAIN__</td></tr>
+<tr><td>held-out test pixels</td><td>__N_TEST__</td></tr>
+<tr><td>fit time, CPU, no GPU</td><td>__TRAIN_S__ s</td></tr>
+<tr><td>overall accuracy</td><td>__ACC__</td></tr>
+<tr><td>macro F1, 15 classes</td><td>__MACRO__</td></tr>
+</tbody></table></div>
+
+<div class="scroll"><table>
+<thead><tr><th>class</th><th>precision</th><th>recall</th><th>F1</th><th>support</th></tr></thead>
+<tbody>
+__MARIDA_ROWS__
+</tbody></table></div>
+
+<p>Overall accuracy of __ACC__ is close to meaningless here and is reported only
+because omitting it would look evasive: labelled pixels are overwhelmingly water, so
+a model that never predicts debris still scores well. The per-class rows are the
+result.</p>
+
+<h3>Most informative features</h3>
+<div class="scroll"><table>
+<thead><tr><th>feature</th><th>permutation importance</th></tr></thead>
+<tbody>
+__FEATURES__
+</tbody></table></div>
+<p>B05 (red edge, 705 nm) and B01 (coastal aerosol, 443 nm) outrank every named
+index. Neither appears in the FDI formula, so the hand-built indices from the
+literature are not using all the available signal.</p>
+
+<h2>3. One number hides the model</h2>
+
+<p>Taking <code>argmax</code> over class probabilities gives precision __P_ARGMAX__
+at recall __R_ARGMAX__ for Marine Debris. Sweeping the probability threshold instead
+reaches precision __P_BEST__ at recall __R_BEST__.</p>
+
+<figure>
+  <img src="__PR__" alt="Precision-recall curve for the Marine Debris class, marking the argmax operating point at low precision and high recall against the best-F1 point at high precision and lower recall.">
+  <figcaption>Marine Debris, MARIDA test split. Debris is __DEBRIS_SUPPORT__ of
+  __N_TEST__ labelled test pixels, about 0.2%, so balanced class weighting pushes the
+  default operating point hard toward recall.</figcaption>
+</figure>
+
+<p>Which end is correct depends on the job. Wide-area screening wants recall, because
+a human reviews the hits. Dispatching a cleanup vessel wants precision, because a
+false positive costs a boat trip. Best F1 on this split is __BEST_F1__, below the
+Random Forest baseline the MARIDA paper reports. No spatial context and no per-scene
+normalisation are used here, only per-pixel spectra.</p>
+
+<h2>4. Model output against human annotation</h2>
+
+<figure class="wide">
+  <img src="__SAMPLES__" alt="Four MARIDA test patches in three columns: Sentinel-2 true colour, the human annotation, and the model prediction, cropped to the annotated region.">
+  <figcaption>Test-split patches containing annotated Marine Debris, cropped to the
+  annotation. Left: true colour. Middle: human labels. Right: prediction, drawn only
+  where a human annotated, since colouring unlabelled pixels would invite reading
+  agreement into pixels nobody checked.</figcaption>
+</figure>
+
+<p>Rows 1 and 3 are debris filaments in open water, 95.6% and 95.5% agreement. Row 4
+is the interesting one: the bright object at lower left is a <b>ship</b>, annotated
+pink, and the model paints it amber as debris. A vessel and a debris raft are both
+bright compact objects on dark water, and per-pixel spectra alone do not separate
+them. That is exactly the failure the open-vocabulary detector from section 1
+handles, which is why both are kept.</p>
+
+<h2>5. A fixed spectral threshold does not transfer</h2>
+
+<p>The Floating Debris Index measures how far near-infrared reflectance rises above a
+baseline interpolated between red and shortwave infrared. The original screen used a
+constant cutoff of 0.006. Below is the measured FDI distribution over cloud-free
+water in the two chips bundled with the repo. Drag the threshold.</p>
+
+<div class="tool">
+  <div class="tool-h">
+    <span>FDI over cloud-free water &middot; <span id="scene"></span></span>
+    <span>threshold <b id="tval">0.0060</b> &rarr; <b id="tpct">0.0%</b> of water flagged</span>
   </div>
+  <canvas id="plot"></canvas>
+  <div class="ctl">
+    <input id="thr" type="range" min="0" max="1000" value="120" aria-label="FDI threshold">
+    <button data-p="fixed">fixed 0.006</button>
+    <button data-p="p999" aria-pressed="true">adaptive p99.9</button>
+    <button data-p="scene">switch chip</button>
+  </div>
+  <p id="verdict"></p>
 </div>
 
-<div class="sheet">
+<p>On real open ocean the 0.006 constant flags 6.35% of pure water and accepts every
+tile, so the screen appears to work while saving nothing. FDI magnitude moves with
+atmospheric correction, sun angle, sea state and water type. The cutoff is now taken
+from a high percentile of each scene's own water, with the old constant kept only as
+a floor.</p>
 
-<section>
-  <div class="row">
-    <div class="station">02<br>Finding</div>
-    <div class="body-col prose">
-      <h2>The same model, two domains</h2>
-      <p>OWLv2 is an open-vocabulary detector: you hand it text at inference time and it
-      finds what you asked for, with no training. It works. The control run below uses the
-      canonical COCO validation photograph, and the model localises it tightly.</p>
-      <p>Then the identical wrapper and weights were pointed at a Sentinel-2 chip.</p>
-      <div class="scroll">
-      <table>
-        <thead><tr><th>Input</th><th>Prompt</th><th>Confidence</th><th>Box size</th></tr></thead>
-        <tbody>
-          <tr><td class="k">COCO photo</td><td>a remote control</td><td class="good">0.794</td><td>1.9% of image</td></tr>
-          <tr><td class="k">COCO photo</td><td>a photo of a cat</td><td class="good">0.669</td><td>44.6% (cat is large)</td></tr>
-          <tr><td class="k">Sentinel-2 10 m</td><td>white sea foam</td><td class="bad">0.210</td><td>up to 100% of chip</td></tr>
-          <tr><td class="k">Sentinel-2 10 m</td><td>a boat wake</td><td class="bad">0.129</td><td>whole chip</td></tr>
-        </tbody>
-      </table>
-      </div>
-      <div class="finding">
-        <span class="tag mono">Negative result</span>
-        <p>The wrapper is correct, so this is <strong>domain mismatch, not a bug</strong>.
-        OWLv2 learned from web photographs where a target spans hundreds of pixels. At 10 m
-        ground sample distance a 30 m debris patch spans <strong>three pixels</strong>. The
-        texture, shape and context cues the model relies on do not exist at that scale, so it
-        falls back to describing the whole scene.</p>
-      </div>
-      <p>This is why the marine-litter literature thresholds spectral indices rather than
-      running detectors at this resolution. The physics carries the signal. A photographic
-      prior does not.</p>
-    </div>
-  </div>
-</section>
+<h3>A bug that only a figure caught</h3>
+<figure class="wide">
+  <img src="__CASCADE__" alt="Four panels: Sentinel-2 true colour of the Accra coastline, the NDWI water mask, the SCL cloud mask, and FDI over cloud-free water with the adaptive threshold contour.">
+  <figcaption>Clouds are excluded before the percentile is taken, not only from the
+  final mask. Cloud tops carry very large FDI, so leaving them in the sample pushed
+  the threshold from 0.2673 to 0.3206 and desensitised the screen on exactly the
+  cloudy scenes that need it. Both components were individually correct and no unit
+  test caught it.</figcaption>
+</figure>
 
-<section>
-  <div class="row">
-    <div class="station">03<br>Explorer<br>live data</div>
-    <div class="wide-col prose">
-      <h2>Why a fixed threshold fails</h2>
-      <p>The Floating Debris Index measures how far a pixel's near-infrared reflectance rises
-      above a baseline interpolated between red and shortwave infrared. Below is the
-      <strong>real, measured FDI distribution</strong> over cloud-free water from the two
-      Sentinel-2 chips bundled with the repository. Drag the threshold.</p>
+<h2>6. Cost</h2>
 
-      <div class="tool">
-        <div class="tool-head">
-          <span class="tool-title">FDI over cloud-free water &middot; <span id="scene" class="mono"></span></span>
-          <span class="readout">threshold <b id="tval">0.0060</b> &nbsp;&rarr;&nbsp; <b id="tpct">0.0%</b> of water flagged</span>
-        </div>
-        <canvas id="plot"></canvas>
-        <div class="controls">
-          <div class="sliderow">
-            <label class="sl" for="thr">Threshold</label>
-            <input id="thr" type="range" min="0" max="1000" value="120" aria-label="FDI threshold">
-          </div>
-          <div class="presets">
-            <button class="preset" data-p="fixed">Fixed 0.006 (original)</button>
-            <button class="preset" data-p="p999" aria-pressed="true">Adaptive p99.9 (current)</button>
-            <button class="preset" data-p="scene">Switch chip</button>
-          </div>
-        </div>
-        <p class="verdict" id="verdict"></p>
-      </div>
+<p>OWLv2 costs about 18 s per tile on CPU and a Sentinel-2 scene is 120 megapixels,
+roughly 40 minutes. Screening with indices first cuts that on scenes with land or
+cloud.</p>
 
-      <p style="margin-top:26px">The original design used a constant <span class="mono">0.006</span>.
-      On real open ocean that flags <strong>6.35% of pure water</strong> and accepts every tile,
-      so the screen appears to work while saving nothing. FDI magnitude shifts with atmospheric
-      correction, sun angle, sea state and water type, so no constant transfers between scenes.
-      The threshold is now taken from a high percentile of each scene's own water, which is
-      self-calibrating.</p>
-    </div>
-  </div>
-</section>
+<div class="scroll"><table>
+<thead><tr><th>coastal scene, 36 tiles of 960 px</th><th>tiles detected on</th><th>detector time</th></tr></thead>
+<tbody>
+<tr><td>without cascade</td><td>36 / 36</td><td>11.1 min</td></tr>
+<tr><td>with cascade</td><td>20 / 36</td><td class="hit">6.2 min</td></tr>
+</tbody></table></div>
 
-<section>
-  <div class="row">
-    <div class="station">04<br>Method</div>
-    <div class="wide-col prose">
-      <h2>The screening cascade</h2>
-      <p>A vision transformer costs about 18 seconds per tile on CPU and a Sentinel-2 scene is
-      120 megapixels, roughly 40 minutes of compute. Cheap arithmetic screens the scene first;
-      the expensive model only looks where something is worth looking at.</p>
-      <figure>
-        <img src="__CASCADE__" alt="Four panels: true colour Sentinel-2 of the Accra coastline, the NDWI water mask, the SCL cloud mask, and the FDI index over cloud-free water with the adaptive threshold contour.">
-        <figcaption>Accra, Ghana, 2024-04-07. Clouds are excluded before the percentile is taken,
-        not only from the final mask. Cloud tops carry very large FDI: leaving them in the sample
-        pushed the threshold from 0.2673 to 0.3206 and desensitised the screen on exactly the
-        cloudy scenes that need it. Both components were individually correct, which is why no
-        unit test caught it. It was visible at a glance in this figure.</figcaption>
-      </figure>
-      <div class="scroll">
-      <table>
-        <thead><tr><th>Coastal scene, 36 tiles</th><th>Tiles detected on</th><th>Detector time</th></tr></thead>
-        <tbody>
-          <tr><td class="k">Without cascade</td><td>36 / 36</td><td>11.1 min</td></tr>
-          <tr><td class="k">With cascade</td><td>20 / 36</td><td class="good">6.2 min</td></tr>
-        </tbody>
-      </table>
-      </div>
-      <p style="margin-top:18px; font-size:15px; color:var(--ink-3)">44% of detector calls avoided.
-      An earlier draft claimed the cascade cut 40 minutes "to minutes"; real data did not support
-      that, and the claim was corrected rather than kept.</p>
-    </div>
-  </div>
-</section>
+<p>44% of detector calls avoided. An earlier draft claimed the cascade cut 40 minutes
+"to minutes"; the data did not support it and the claim was corrected. The saving
+tracks how much of a scene is land or cloud, so open ocean is the worst case.</p>
 
-<section>
-  <div class="row">
-    <div class="station">05<br>Output</div>
-    <div class="wide-col prose">
-      <h2>Where the model still earns its place</h2>
-      <p>Low-confidence localisation still yields useful discrimination. The 2019 model had one
-      class, <span class="mono">marine_debris</span>, so it was structurally unable to say
-      "that is a ship". Every detection below would have been reported as debris.</p>
-      <figure>
-        <img src="__DETECT__" alt="Side by side: Sentinel-2 true colour of the Accra coastline, and the same chip with OWLv2 zero-shot detection boxes labelled ship and ship wake.">
-        <figcaption>Eight detections, all labelled ship or ship_wake, none debris. On the
-        Limassol chip, 13 of 14 were foam, wake or sediment. Boxes are geo-registered to
-        lon/lat and written as GeoJSON with an explicit CRS.</figcaption>
-      </figure>
-      <figure>
-        <img src="__INDICES__" alt="Six heatmaps over water: FDI, FAI, NDVI, NDWI, PI and kNDVI computed on the Accra Sentinel-2 chip.">
-        <figcaption>Six spectral indices over the same water. Separating plastic from Sargassum,
-        foam and sediment is the actual scientific difficulty, and it needs several indices
-        rather than one.</figcaption>
-      </figure>
-    </div>
-  </div>
-</section>
+<div class="scroll"><table>
+<thead><tr><th>tile size</th><th>batch</th><th>s/tile</th><th>MP/s of source</th></tr></thead>
+<tbody>
+<tr><td>512</td><td>1</td><td>19.44</td><td>0.013</td></tr>
+<tr><td>960</td><td>1</td><td>18.46</td><td class="hit">0.050</td></tr>
+<tr><td>960</td><td>2</td><td>16.96</td><td>0.054</td></tr>
+<tr><td>960</td><td>4</td><td>18.45</td><td>0.050</td></tr>
+</tbody></table></div>
 
-<section>
-  <div class="row">
-    <div class="station">06<br>Run it</div>
-    <div class="body-col prose">
-      <h2>No credentials, no GPU</h2>
-      <p>Imagery is read straight from cloud-optimised GeoTIFFs over HTTP range requests, so
-      screening a coastline pulls kilobytes instead of downloading gigabyte scenes.</p>
-<pre><span class="c"># CPU-only torch, avoids ~2.5 GB of unusable CUDA libraries</span>
-pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
-pip install -e <span class="p">".[all]"</span>
+<p>OWLv2 resizes every input to 960x960 internally, so a 512 px tile pays full price
+for a quarter of the area: tiling at 960 is a free 3.8x. Batching gains nothing
+because one forward pass already saturates 22 cores. int8 quantisation gave 14.36 s
+against 18.25 s, only 1.27x, so it is not used.</p>
 
-<span class="c"># bundled real Sentinel-2 chips, works offline</span>
-mdebris samples
-mdebris indices --sample accra
+<h2>7. Spectral indices over water</h2>
+<figure>
+  <img src="__INDICES__" alt="Six index heatmaps computed over water on the Accra chip: FDI, FAI, NDVI, NDWI, PI and kNDVI.">
+  <figcaption>Six indices over the same water, Accra. Separating plastic from
+  Sargassum, foam and sediment needs several of these rather than one.</figcaption>
+</figure>
+
+<h2>8. Running it</h2>
+<pre>pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+pip install -e ".[all]"
+
+mdebris samples                      # bundled real Sentinel-2 chips, offline
+mdebris indices --sample accra       # index statistics
 mdebris detect --sample limassol --targets-only -o out.geojson
 
-<span class="c"># or search live imagery for any coastline</span>
-mdebris detect --bbox <span class="p">-0.35,5.45,-0.05,5.65</span> --start 2024-01-01 --end 2024-06-30</pre>
-      <div class="scroll">
-      <table>
-        <thead><tr><th></th><th>2019</th><th>Now</th></tr></thead>
-        <tbody>
-          <tr><td class="k">Framework</td><td>TensorFlow 1.14</td><td>PyTorch 2.x</td></tr>
-          <tr><td class="k">Installs on current Python</td><td class="bad">no</td><td class="good">yes</td></tr>
-          <tr><td class="k">Classes</td><td>1</td><td>9</td></tr>
-          <tr><td class="k">Imagery</td><td>Planet, commercial</td><td>Sentinel-2, open</td></tr>
-          <tr><td class="k">Training before first result</td><td>500k steps</td><td class="good">none</td></tr>
-          <tr><td class="k">Vendored dependencies</td><td>19 MB</td><td class="good">none</td></tr>
-          <tr><td class="k">Tests</td><td class="bad">0</td><td class="good">761</td></tr>
-        </tbody>
-      </table>
-      </div>
-    </div>
-  </div>
-</section>
+python scripts/train_marida.py       # downloads MARIDA, trains, writes a report</pre>
+
+<div class="scroll"><table>
+<thead><tr><th></th><th>2019</th><th>now</th></tr></thead>
+<tbody>
+<tr><td>framework</td><td>TensorFlow 1.14</td><td>PyTorch 2.x</td></tr>
+<tr><td>installs on current Python</td><td class="miss">no</td><td class="hit">yes</td></tr>
+<tr><td>classes</td><td>1</td><td>15 (MARIDA)</td></tr>
+<tr><td>imagery</td><td>Planet, commercial</td><td>Sentinel-2, open</td></tr>
+<tr><td>credentials</td><td>Planet API key</td><td class="hit">none</td></tr>
+<tr><td>vendored code</td><td>19 MB</td><td class="hit">none</td></tr>
+<tr><td>tests</td><td class="miss">0</td><td class="hit">761</td></tr>
+<tr><td>reported debris accuracy</td><td class="miss">none</td><td>F1 __BEST_F1__ on MARIDA</td></tr>
+</tbody></table></div>
 
 <footer>
-  <div class="row">
-    <div class="station">End</div>
-    <div class="body-col">
-      <p style="font-size:14px">MIT licensed. Sentinel-2 data is free and open under Copernicus terms.
-      Figures regenerate with <span class="mono">python -m mdebris.viz.figures</span>.</p>
-      <p style="margin-top:12px; font-size:14px">Floating Debris Index from Biermann, Clewley,
-      Martinez-Vicente &amp; Topouzelis (2020), <em>Finding Plastic Patches in Coastal Waters
-      using Optical Satellite Data</em>, Scientific Reports 10:5364.</p>
-      <p style="margin-top:16px"><a href="https://github.com/danieltyukov/marine-debris-ml-model">github.com/danieltyukov/marine-debris-ml-model</a></p>
-    </div>
-  </div>
+MIT. Sentinel-2 data is free and open under Copernicus terms.
+MARIDA: Kikaki, Kakogeorgiou, Mikeli, Raitsos, Karantzalos (2022), PLoS ONE 17(1) e0262247.
+FDI: Biermann, Clewley, Martinez-Vicente, Topouzelis (2020), Scientific Reports 10:5364.
+Figures regenerate with <code>python -m mdebris.viz.figures</code>.
 </footer>
-</div>
+
+</main>
 
 <script>
 const DATA = __FDI__;
-
-/* ---- hero depth contours: value-noise field, drawn as nested iso-lines ---- */
-(function(){
-  const cv=document.getElementById('contours'); const ctx=cv.getContext('2d');
-  let W,H,dpr;
-  const g=[]; const GS=9;
-  for(let i=0;i<GS*GS;i++) g.push(Math.random());
-  function smooth(t){return t*t*(3-2*t)}
-  function noise(x,y){
-    const xi=Math.floor(x), yi=Math.floor(y), xf=x-xi, yf=y-yi;
-    const at=(a,b)=>g[((b%GS)+GS)%GS*GS+((a%GS)+GS)%GS];
-    const u=smooth(xf), v=smooth(yf);
-    return (at(xi,yi)*(1-u)+at(xi+1,yi)*u)*(1-v) + (at(xi,yi+1)*(1-u)+at(xi+1,yi+1)*u)*v;
-  }
-  function field(x,y){return noise(x*2.1,y*2.1)*0.6 + noise(x*4.6,y*4.6)*0.3 + noise(x*9.2,y*9.2)*0.1}
-  function draw(){
-    const r=cv.getBoundingClientRect(); dpr=Math.min(devicePixelRatio||1,2);
-    W=r.width; H=r.height; cv.width=W*dpr; cv.height=H*dpr;
-    ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
-    const css=getComputedStyle(document.documentElement);
-    ctx.strokeStyle=css.getPropertyValue('--grid').trim()||'rgba(128,128,128,.06)';
-    ctx.lineWidth=1;
-    const step=5;
-    for(let lv=0.08; lv<0.95; lv+=0.055){
-      ctx.beginPath();
-      for(let y=0;y<H;y+=step){
-        let pen=false;
-        for(let x=0;x<W;x+=step){
-          const v=field(x/W,y/H);
-          const on=Math.abs(v-lv)<0.0075;
-          if(on){ if(!pen){ctx.moveTo(x,y); pen=true;} else ctx.lineTo(x,y); }
-          else pen=false;
-        }
-      }
-      ctx.stroke();
-    }
-  }
-  draw();
-  let t; addEventListener('resize',()=>{clearTimeout(t); t=setTimeout(draw,180)});
-  matchMedia('(prefers-color-scheme:dark)').addEventListener('change',draw);
-  new MutationObserver(draw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
-})();
-
-/* ---- FDI threshold explorer over the real measured histogram ---- */
 (function(){
   const keys=Object.keys(DATA); let ki=0;
   const cv=document.getElementById('plot'), ctx=cv.getContext('2d');
   const slider=document.getElementById('thr');
   const tval=document.getElementById('tval'), tpct=document.getElementById('tpct');
   const verdict=document.getElementById('verdict'), sceneEl=document.getElementById('scene');
-  const btns=[...document.querySelectorAll('.preset')];
-
-  function cur(){return DATA[keys[ki]]}
-  function thrFromSlider(){
+  const btns=[...document.querySelectorAll('.ctl button')];
+  const cur=()=>DATA[keys[ki]];
+  function thr(){
     const d=cur(), lo=d.edges[0], hi=d.edges[d.edges.length-1];
-    // square mapping gives fine control down near zero where the decision actually lives
-    const f=Math.pow(slider.value/1000,2);
-    return lo+(hi-lo)*f;
+    return lo+(hi-lo)*Math.pow(slider.value/1000,2);  // fine control near zero
   }
   function pctAbove(t){
-    const d=cur(); let n=0, tot=0;
-    for(let i=0;i<d.hist.length;i++){ tot+=d.hist[i]; if(d.edges[i]>=t) n+=d.hist[i]; }
+    const d=cur(); let n=0,tot=0;
+    for(let i=0;i<d.hist.length;i++){tot+=d.hist[i]; if(d.edges[i]>=t) n+=d.hist[i];}
     return tot? n/tot*100 : 0;
   }
   function draw(){
     const d=cur(), r=cv.getBoundingClientRect(), dpr=Math.min(devicePixelRatio||1,2);
-    const W=r.width, H=r.height;
+    const W=r.width,H=r.height;
     cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
-    const css=getComputedStyle(document.documentElement);
-    const water=css.getPropertyValue('--water').trim();
-    const debris=css.getPropertyValue('--debris-bright').trim();
-    const ink3=css.getPropertyValue('--ink-3').trim();
-    const hair=css.getPropertyValue('--hair').trim();
-    const pad={l:8,r:8,t:14,b:30};
-    const pw=W-pad.l-pad.r, ph=H-pad.t-pad.b;
-    const lo=d.edges[0], hi=d.edges[d.edges.length-1];
-    const mx=Math.max(...d.hist);
-    const t=thrFromSlider();
-    const xOf=v=>pad.l+(v-lo)/(hi-lo)*pw;
-    // log-scaled bars: the tail is the whole story and would be invisible linearly
-    const yOf=c=>pad.t+ph-(c<=0?0:Math.log10(1+c)/Math.log10(1+mx))*ph;
-
-    ctx.strokeStyle=hair; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(pad.l,pad.t+ph); ctx.lineTo(W-pad.r,pad.t+ph); ctx.stroke();
-
+    const cs=getComputedStyle(document.documentElement);
+    const dim=cs.getPropertyValue('--dim').trim(), key=cs.getPropertyValue('--key').trim();
+    const rule=cs.getPropertyValue('--rule').trim();
+    const pad={l:6,r:6,t:8,b:20}, pw=W-pad.l-pad.r, ph=H-pad.t-pad.b;
+    const lo=d.edges[0], hi=d.edges[d.edges.length-1], mx=Math.max(...d.hist), t=thr();
+    const yOf=c=>pad.t+ph-(c<=0?0:Math.log10(1+c)/Math.log10(1+mx))*ph;  // log: the tail is the story
+    ctx.strokeStyle=rule; ctx.beginPath(); ctx.moveTo(pad.l,pad.t+ph); ctx.lineTo(W-pad.r,pad.t+ph); ctx.stroke();
     const bw=pw/d.hist.length;
     for(let i=0;i<d.hist.length;i++){
       const x=pad.l+i*bw, y=yOf(d.hist[i]);
-      ctx.fillStyle = d.edges[i]>=t ? debris : water;
-      ctx.globalAlpha = d.edges[i]>=t ? .95 : .5;
-      ctx.fillRect(x, y, Math.max(bw-0.6,0.7), pad.t+ph-y);
+      ctx.fillStyle=d.edges[i]>=t?key:dim;
+      ctx.globalAlpha=d.edges[i]>=t?1:.45;
+      ctx.fillRect(x,y,Math.max(bw-0.6,0.7),pad.t+ph-y);
     }
     ctx.globalAlpha=1;
-    const tx=xOf(t);
-    ctx.strokeStyle=debris; ctx.lineWidth=2;
-    ctx.beginPath(); ctx.moveTo(tx,pad.t-4); ctx.lineTo(tx,pad.t+ph+4); ctx.stroke();
-
-    ctx.fillStyle=ink3;
-    ctx.font='11px ui-monospace,Menlo,monospace'; ctx.textAlign='left';
-    ctx.fillText(lo.toFixed(3), pad.l, H-10);
-    ctx.textAlign='right'; ctx.fillText(hi.toFixed(3), W-pad.r, H-10);
-    ctx.textAlign='center'; ctx.fillText('FDI', W/2, H-10);
-    ctx.textAlign='left'; ctx.fillText('pixels (log)', pad.l, pad.t+6);
+    const tx=pad.l+(t-lo)/(hi-lo)*pw;
+    ctx.strokeStyle=key; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(tx,pad.t-2); ctx.lineTo(tx,pad.t+ph+2); ctx.stroke();
+    ctx.fillStyle=dim; ctx.font='11px ui-monospace,Menlo,monospace';
+    ctx.textAlign='left'; ctx.fillText(lo.toFixed(3),pad.l,H-6);
+    ctx.textAlign='right'; ctx.fillText(hi.toFixed(3),W-pad.r,H-6);
+    ctx.textAlign='center'; ctx.fillText('FDI',W/2,H-6);
   }
   function sync(){
-    const d=cur(), t=thrFromSlider(), p=pctAbove(t);
+    const d=cur(), t=thr(), p=pctAbove(t);
     tval.textContent=t.toFixed(4);
     tpct.textContent=p.toFixed(p<1?2:1)+'%';
     sceneEl.textContent=keys[ki]+' '+d.date;
-    const flagged=Math.round(d.n*p/100);
-    let msg;
-    if(p>5) msg='<b>'+p.toFixed(1)+'% of open water flagged.</b> At this cutoff every tile is accepted, so the cascade costs a full transformer pass on the whole scene and saves nothing.';
-    else if(p>0.5) msg='<b>'+p.toFixed(2)+'% flagged</b> ('+flagged.toLocaleString()+' of '+d.n.toLocaleString()+' water pixels). Still permissive: most of these are sun glint and sensor noise rather than floating material.';
-    else if(p>0.02) msg='<b>'+p.toFixed(3)+'% flagged</b> ('+flagged.toLocaleString()+' pixels). This is the operating region the adaptive threshold targets: the extreme upper tail of the water distribution.';
-    else msg='<b>'+p.toFixed(3)+'% flagged.</b> Very strict. Real debris patches risk being missed, and a missed tile is never seen by the detector at all.';
-    verdict.innerHTML=msg;
+    const n=Math.round(d.n*p/100);
+    verdict.textContent = p>5
+      ? p.toFixed(1)+'% of open water flagged. Every tile is accepted, so the screen costs a full pass over the scene and saves nothing.'
+      : p>0.5 ? p.toFixed(2)+'% flagged ('+n.toLocaleString()+' of '+d.n.toLocaleString()+' water pixels). Mostly sun glint and sensor noise.'
+      : p>0.02 ? p.toFixed(3)+'% flagged ('+n.toLocaleString()+' pixels). The operating region the adaptive threshold targets.'
+      : p.toFixed(3)+'% flagged. Strict enough that real patches are missed, and a missed tile is never seen by the detector.';
     draw();
   }
-  function setSliderTo(v){
+  function setTo(v){
     const d=cur(), lo=d.edges[0], hi=d.edges[d.edges.length-1];
-    const f=Math.max(0,Math.min(1,(v-lo)/(hi-lo)));
-    slider.value=Math.round(Math.sqrt(f)*1000);
+    slider.value=Math.round(Math.sqrt(Math.max(0,Math.min(1,(v-lo)/(hi-lo))))*1000);
   }
-  slider.addEventListener('input',()=>{btns.forEach(b=>b.setAttribute('aria-pressed','false')); sync()});
+  slider.addEventListener('input',()=>{btns.forEach(b=>b.setAttribute('aria-pressed','false')); sync();});
   btns.forEach(b=>b.addEventListener('click',()=>{
     const p=b.dataset.p;
-    if(p==='scene'){ ki=(ki+1)%keys.length; setSliderTo(cur().pct.p99_9); }
-    else if(p==='fixed'){ setSliderTo(0.006); }
-    else { setSliderTo(cur().pct.p99_9); }
-    btns.forEach(x=>x.setAttribute('aria-pressed', String(x===b && p!=='scene')));
+    if(p==='scene'){ki=(ki+1)%keys.length; setTo(cur().pct.p99_9);}
+    else if(p==='fixed'){setTo(0.006);}
+    else {setTo(cur().pct.p99_9);}
+    btns.forEach(x=>x.setAttribute('aria-pressed',String(x===b && p!=='scene')));
     sync();
   }));
-  let rt; addEventListener('resize',()=>{clearTimeout(rt); rt=setTimeout(draw,150)});
+  let rt; addEventListener('resize',()=>{clearTimeout(rt); rt=setTimeout(draw,150);});
   matchMedia('(prefers-color-scheme:dark)').addEventListener('change',draw);
   new MutationObserver(draw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
-  setSliderTo(cur().pct.p99_9); sync();
+  setTo(cur().pct.p99_9); sync();
 })();
 </script>
 """
 
-TITLE = "Marine Debris Detection: what Sentinel-2 can and cannot tell you"
+TITLE = "Marine debris detection on Sentinel-2: rebuild notes"
 DESCRIPTION = (
-    "Rebuilding a 2019 TensorFlow 1.14 marine debris detector on free Sentinel-2 imagery, "
-    "and the negative result that open-vocabulary vision models do not carry the signal at 10 m."
+    "Measurements from rebuilding a 2019 marine debris detector: why open-vocabulary "
+    "vision models fail at 10 m, and what a spectral classifier trained on MARIDA does instead."
 )
 SITE_URL = "https://danieltyukov.github.io/marine-debris-ml-model/"
 
-fragment = (
-    HTML.replace("__FDI__", json.dumps(fdi))
-    .replace("__CASCADE__", imgs["cascade"])
-    .replace("__DETECT__", imgs["detect"])
-    .replace("__INDICES__", imgs["indices"])
-)
 
-# The fragment opens with <title> then <style>; both belong in <head>, the rest in <body>.
-split = fragment.index("</style>") + len("</style>")
-head_fragment, body_fragment = fragment[:split], fragment[split:]
+def main() -> None:
+    fdi = measure_fdi()
+    imgs = embed_figures()
+    s = marida_summary()
+    debris = s.get("debris", {})
+    best = s.get("best", {})
 
-document = f"""<!DOCTYPE html>
+    body = HTML
+    replacements = {
+        "__FDI__": json.dumps(fdi),
+        "__SAMPLES__": imgs.get("samples", ""),
+        "__PR__": imgs.get("pr", ""),
+        "__CASCADE__": imgs.get("cascade", ""),
+        "__INDICES__": imgs.get("indices", ""),
+        "__MARIDA_ROWS__": marida_rows(),
+        "__FEATURES__": "\n".join(
+            f"<tr><td>{k}</td><td>{v:.4f}</td></tr>" for k, v in s.get("top_features", [])
+        )
+        or "<tr><td colspan='2'>not computed</td></tr>",
+        "__N_TRAIN__": f"{s.get('n_train', 0):,}",
+        "__N_TEST__": f"{s.get('n_test', 0):,}",
+        "__TRAIN_S__": f"{s.get('train_seconds', 0):.0f}",
+        "__ACC__": f"{s.get('accuracy', 0):.3f}",
+        "__MACRO__": f"{s.get('macro_f1', 0):.3f}",
+        "__P_ARGMAX__": f"{debris.get('precision', 0):.3f}",
+        "__R_ARGMAX__": f"{debris.get('recall', 0):.3f}",
+        "__P_BEST__": f"{best.get('precision', 0):.3f}",
+        "__R_BEST__": f"{best.get('recall', 0):.3f}",
+        "__BEST_F1__": f"{best.get('f1', 0):.3f}",
+        "__DEBRIS_SUPPORT__": f"{int(debris.get('support', 0)):,}",
+    }
+    for token, value in replacements.items():
+        body = body.replace(token, value)
+
+    split = body.index("</style>") + len("</style>")
+    head_part, body_part = body[:split], body[split:]
+
+    document = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{TITLE}</title>
 <meta name="description" content="{DESCRIPTION}">
 <meta name="color-scheme" content="light dark">
 <meta property="og:title" content="{TITLE}">
 <meta property="og:description" content="{DESCRIPTION}">
-<meta property="og:type" content="website">
 <meta property="og:url" content="{SITE_URL}">
-<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><text y=%2226%22 font-size=%2226%22>&#128752;</text></svg>">
-<style>*,*::before,*::after{{box-sizing:border-box}}html{{-webkit-text-size-adjust:100%}}img{{max-width:100%}}</style>
-{head_fragment}
+{head_part}
 </head>
 <body>
-{body_fragment}
+{body_part}
 </body>
 </html>
 """
+    out = ROOT / "docs" / "index.html"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(document, encoding="utf-8")
+    (out.parent / ".nojekyll").touch()
+    print(f"wrote {out.relative_to(ROOT)}  {out.stat().st_size / 1024:.0f} KB")
 
-out = ROOT / "docs" / "index.html"
-out.parent.mkdir(parents=True, exist_ok=True)
-out.write_text(document, encoding="utf-8")
-(out.parent / ".nojekyll").touch()
-print(f"wrote {out.relative_to(ROOT)}  {out.stat().st_size / 1024:.0f} KB")
+
+if __name__ == "__main__":
+    main()
