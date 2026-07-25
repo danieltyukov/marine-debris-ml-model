@@ -39,6 +39,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from mdebris.data.scaling import (
+    REFLECTANCE_SCALE,
+    reflectance_params_for_item,
+    scale_bands,
+    to_reflectance,
+)
 from mdebris.data.stac import BAND_GSD_M, Band, StacClient, canonical_band
 from mdebris.types import GeoBBox, SceneRef
 
@@ -56,10 +62,11 @@ __all__ = [
     "fetch_sample_chips",
     "list_samples",
     "load_sample",
+    "reflectance_from_meta",
     "sample_bbox",
     "sample_meta",
+    "sample_reflectance",
     "sample_scene",
-    "to_reflectance",
 ]
 
 SAMPLES_DIR = Path(__file__).parent / "samples"
@@ -231,16 +238,17 @@ def sample_bbox(name: str) -> GeoBBox:
     return GeoBBox(west, south, east, north)
 
 
-def to_reflectance(array: np.ndarray, meta: dict[str, Any]) -> np.ndarray:
-    """Convert stored integers to surface reflectance using the chip's own scaling.
+def reflectance_from_meta(array: np.ndarray, meta: dict[str, Any]) -> np.ndarray:
+    """Convert one band to surface reflectance using a chip's recorded scaling.
 
-    Applies both the scale and the offset from ``meta``. Do not divide by 10000 by hand:
-    Sentinel-2 L2A products from processing baseline 04.00 onward carry a -1000 offset,
-    and ignoring it biases every band by +0.1.
+    A thin convenience over :func:`mdebris.data.scaling.to_reflectance` that reads the
+    scale and offset out of a sidecar, so callers working with bundled chips never have to
+    know which processing baseline the source scene used.
 
     Args:
         array: A band as returned by :func:`load_sample`. Do not pass ``SCL``, which is a
-            class code rather than a measurement.
+            class code rather than a measurement; use :func:`sample_reflectance` to
+            convert a whole stack safely.
         meta: The metadata dict from :func:`load_sample`.
 
     Returns:
@@ -248,15 +256,39 @@ def to_reflectance(array: np.ndarray, meta: dict[str, Any]) -> np.ndarray:
 
     Example:
         >>> bands, meta = load_sample("accra")
-        >>> nir = to_reflectance(bands["B08"], meta)
+        >>> nir = reflectance_from_meta(bands["B08"], meta)
         >>> bool(nir[bands["SCL"] == 6].mean() < 0.1)  # water is dark in the near infrared
         True
     """
-    import numpy as np
+    return to_reflectance(array, **_scaling_from_meta(meta))
 
-    scale = float(meta.get("reflectance_scale", 1e-4))
-    offset = float(meta.get("reflectance_offset", 0.0))
-    return np.asarray(array, dtype="float32") * scale + offset
+
+def sample_reflectance(name: str) -> tuple[dict[str, np.ndarray], dict[str, Any]]:
+    """Load a chip with its reflectance bands already converted to physical units.
+
+    The usual entry point for anything doing spectral work on a sample: it applies the
+    right scale and offset and leaves ``SCL`` alone as a class code.
+
+    Example:
+        >>> bands, meta = sample_reflectance("accra")
+        >>> bool(bands["B08"][bands["SCL"] == 6].mean() < 0.1)
+        True
+    """
+    bands, meta = load_sample(name)
+    return scale_bands(bands, **_scaling_from_meta(meta)), meta
+
+
+def _scaling_from_meta(meta: dict[str, Any]) -> dict[str, float]:
+    """Pull scale and offset out of a sidecar.
+
+    Older sidecars, and any hand-written metadata, may not record them. Defaulting the
+    offset to 0.0 rather than -0.1 is deliberate: applying an offset that was never
+    recorded is a silent 0.1 error, whereas omitting one is at worst the pre-2022 encoding.
+    """
+    return {
+        "scale": float(meta.get("reflectance_scale", REFLECTANCE_SCALE)),
+        "offset": float(meta.get("reflectance_offset", 0.0)),
+    }
 
 
 # -- fetching --------------------------------------------------------------------
@@ -329,27 +361,6 @@ _GDAL_ENV = {
 # SCL class code for water, from the Sentinel-2 L2A scene classification legend.
 SCL_WATER = 6
 
-# Nominal L2A quantisation. ESA added BOA_ADD_OFFSET = -1000 at processing baseline 04.00
-# (25 January 2022), so anything acquired since then needs the offset as well as the
-# scale. Both are read from the item when it publishes raster:bands and fall back to
-# these values otherwise; Planetary Computer does not publish raster:bands, Element84 does.
-DEFAULT_REFLECTANCE_SCALE = 1e-4
-BOA_OFFSET_BASELINE = 4.0
-BOA_OFFSET = -0.1
-
-
-def _reflectance_scaling(item: Any) -> tuple[float, float]:
-    """The ``(scale, offset)`` that turn a scene's stored integers into reflectance."""
-    for asset in item.assets.values():
-        bands = getattr(asset, "extra_fields", {}).get("raster:bands")
-        if bands and "scale" in bands[0]:
-            return float(bands[0]["scale"]), float(bands[0].get("offset", 0.0))
-    baseline = str(item.properties.get("s2:processing_baseline", "") or "")
-    try:
-        offset = BOA_OFFSET if float(baseline) >= BOA_OFFSET_BASELINE else 0.0
-    except ValueError:
-        offset = 0.0
-    return DEFAULT_REFLECTANCE_SCALE, offset
 
 
 def _cut_chip(
@@ -374,7 +385,8 @@ def _cut_chip(
         if reason:
             rejected.append(f"  {scene.scene_id}: {reason}")
             continue
-        scaling = _reflectance_scaling(stac.get_item(scene.scene_id, collection=scene.collection))
+        item = stac.get_item(scene.scene_id, collection=scene.collection)
+        scaling = reflectance_params_for_item(item)
         return _write_chip(
             out_dir, spot, scene, bands, stack, grid_transform, crs, bounds, size, scaling
         )

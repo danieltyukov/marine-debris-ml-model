@@ -489,6 +489,73 @@ def _ranking_scenario() -> tuple[list[Detection], list[Detection]]:
     return preds, gts
 
 
+def _contested_ground_truth_scenario() -> tuple[list[Detection], list[Detection]]:
+    """One prediction admissible against two ground truths, with a follower behind it.
+
+    Separates COCO's assignment rule from the common shortcut of taking the first
+    ground truth found above the threshold. Two 20 px boxes offset by ``d`` have IoU
+    ``(20 - d) / (20 + d)``, so::
+
+                     gt A (x=0)   gt B (x=7.5)
+        P1 (x=5.8)   0.5504       0.8433
+        P2 (x=-3)    0.7391       0.3115
+
+    P1 outranks P2 and clears 0.5 against both ground truths. Taking its *best* one
+    (B) leaves A free for P2, so both are true positives. Taking the *first* one above
+    the threshold (A, by index order) strands P2, whose only remaining option scores
+    0.31 and is a false positive.
+    """
+    gts = [
+        Detection(bbox=BBox(0.0, 0.0, 20.0, 20.0), score=1.0),
+        Detection(bbox=BBox(7.5, 0.0, 27.5, 20.0), score=1.0),
+    ]
+    preds = [
+        Detection(bbox=BBox(5.8, 0.0, 25.8, 20.0), score=0.9),
+        Detection(bbox=BBox(-3.0, 0.0, 17.0, 20.0), score=0.5),
+    ]
+    return preds, gts
+
+
+def test_matching_takes_the_best_iou_not_the_first_above_threshold() -> None:
+    """Guards the assignment rule that a shortcut implementation gets wrong.
+
+    COCO assigns each detection, in descending score order, to the unmatched ground
+    truth with the *highest* IoU among those above the threshold. Iterating ground
+    truths and taking the first admissible one agrees on every easy case and diverges
+    the moment one prediction is admissible against two ground truths. Here the
+    shortcut costs a true positive and halves AP, so the difference is visible in the
+    metric and not only in the matching internals.
+    """
+    preds, gts = _contested_ground_truth_scenario()
+    assert preds[0].bbox.iou(gts[0].bbox) == pytest.approx(0.5503875968992248)
+    assert preds[0].bbox.iou(gts[1].bbox) == pytest.approx(0.8433179723502304)
+    assert preds[1].bbox.iou(gts[0].bbox) == pytest.approx(0.7391304347826086)
+    assert preds[1].bbox.iou(gts[1].bbox) == pytest.approx(0.3114754098360656)
+
+    result = match_detections(preds, gts, iou_threshold=0.5)
+    assert result.gt_index == (1, 0), "the leading prediction must take its best ground truth"
+    assert result.n_tp == 2
+    assert average_precision(preds, gts, method="101-point") == pytest.approx(1.0)
+
+    # What the shortcut would have produced, computed here so the divergence is a
+    # demonstrated number rather than a claim in a comment.
+    claimed: set[int] = set()
+    shortcut_tp: list[bool] = []
+    for rank in result.order:
+        taken = -1
+        for gi, gt in enumerate(gts):
+            if gi not in claimed and preds[rank].bbox.iou(gt.bbox) >= 0.5:
+                taken = gi
+                break
+        if taken >= 0:
+            claimed.add(taken)
+        shortcut_tp.append(taken >= 0)
+    assert shortcut_tp == [True, False]
+    assert ap_from_flags(result.scores, shortcut_tp, len(gts), method="101-point") == (
+        pytest.approx(0.5049504950495049)
+    )
+
+
 def _coco_backend() -> str:
     """The COCO evaluator torchmetrics can delegate to here, or skip the test."""
     for module, backend in (
@@ -522,8 +589,13 @@ def _reference_metric(**kwargs):  # type: ignore[no-untyped-def]
 
 @pytest.mark.parametrize(
     "scenario",
-    [_single_class_scenario, _two_class_scenario, _ranking_scenario],
-    ids=["single-class", "two-class", "adversarial-ranking"],
+    [
+        _single_class_scenario,
+        _two_class_scenario,
+        _ranking_scenario,
+        _contested_ground_truth_scenario,
+    ],
+    ids=["single-class", "two-class", "adversarial-ranking", "contested-ground-truth"],
 )
 def test_map_agrees_with_torchmetrics(scenario) -> None:  # type: ignore[no-untyped-def]
     """Cross-check mAP against an independent COCO evaluator.
@@ -682,6 +754,109 @@ def test_torchmetrics_float32_recall_thresholds_explain_the_only_disagreement() 
     # metric. Written as a bound rather than an equality so that an upstream dtype fix
     # makes this test pass trivially instead of failing.
     assert abs(ours - with_float32) < 3.0 / 101.0
+
+
+def test_adversarial_ranking_ap_hand_computed() -> None:
+    """AP for :func:`_ranking_scenario` by hand, deciding which value is correct.
+
+    This scenario is where a float32 sampling artifact makes torchmetrics report
+    0.4696 against our 0.4755, so the arithmetic is worked out in full rather than
+    trusted to either implementation.
+
+    Five ground truths. Seven predictions, two false positives ranked above every true
+    positive and a third false positive in the middle::
+
+        rank  score  outcome  tp_cum  fp_cum  recall=tp/5  precision=tp/rank
+        1     0.98   FP       0       1       0.0          0/1 = 0.0000
+        2     0.94   FP       0       2       0.0          0/2 = 0.0000
+        3     0.90   TP       1       2       0.2          1/3 = 0.3333
+        4     0.71   TP       2       2       0.4          2/4 = 0.5000
+        5     0.55   TP       3       2       0.6          3/5 = 0.6000
+        6     0.40   FP       3       3       0.6          3/6 = 0.5000
+        7     0.21   TP       4       3       0.8          4/7 = 0.5714
+
+    Precision envelope, the running maximum taken from the bottom up::
+
+        rank  1       2       3       4       5       6       7
+        env   0.6000  0.6000  0.6000  0.6000  0.6000  0.5714  0.5714
+
+    COCO samples that envelope at recall 0.00, 0.01, ..., 1.00, taking the envelope at
+    the first rank whose recall reaches the level::
+
+        recall levels   first rank reaching it   envelope   count
+        0.00            rank 1 (recall 0.0)      0.6000       1
+        0.01 .. 0.20    rank 3 (recall 0.2)      0.6000      20
+        0.21 .. 0.40    rank 4 (recall 0.4)      0.6000      20
+        0.41 .. 0.60    rank 5 (recall 0.6)      0.6000      20
+        0.61 .. 0.80    rank 7 (recall 0.8)      0.5714      20
+        0.81 .. 1.00    none                     0.0000      20
+
+        AP = (61 * 0.6 + 20 * 4/7) / 101
+           = (36.6 + 11.428571) / 101
+           = 48.028571 / 101
+           = 0.47553041
+
+    The hand computation supports **our** value. The reference figure of 0.4696 is
+    (60 * 0.6 + 20 * 4/7) / 101, one 0.6 sample short, because its float32 threshold
+    0.6000000238 fails to select rank 5 whose recall is exactly 0.6. The definition
+    asks for the best precision at recall at or above 0.60, and rank 5 attains recall
+    0.60, so 0.6000 is the correct sample there.
+    """
+    preds, gts = _ranking_scenario()
+    result = match_detections(preds, gts, iou_threshold=0.5)
+    assert result.tp == (False, False, True, True, True, False, True)
+    assert result.n_gt == 5
+
+    recall, precision = pr_curve(result.scores, result.tp, result.n_gt)
+    assert recall == pytest.approx([0.0, 0.0, 0.2, 0.4, 0.6, 0.6, 0.8])
+    assert precision == pytest.approx([0.0, 0.0, 1 / 3, 1 / 2, 3 / 5, 1 / 2, 4 / 7])
+
+    hand_computed = (61 * 0.6 + 20 * (4 / 7)) / 101
+    assert hand_computed == pytest.approx(0.4755304101838755, abs=1e-12)
+    assert ap_from_flags(result.scores, result.tp, result.n_gt, method="101-point") == (
+        pytest.approx(hand_computed, abs=1e-12)
+    )
+
+    # The reference figure, reconstructed: identical curve, one sample fewer.
+    one_sample_short = (60 * 0.6 + 20 * (4 / 7)) / 101
+    assert one_sample_short == pytest.approx(0.4695898161244695, abs=1e-12)
+    assert hand_computed - one_sample_short == pytest.approx(0.6 / 101, abs=1e-12)
+
+
+def test_the_two_implementations_produce_an_identical_pr_curve() -> None:
+    """Decisive evidence that the disagreement is sampling, not matching.
+
+    If the assignment rule differed at all, the underlying precision-recall curves
+    would differ and no choice of sample points could reconcile them. Sampling both
+    curves on a shared 10001-point float64 grid, fine enough to resolve every step,
+    they agree to the last bit. Whatever the 101-point figures do, the two
+    implementations matched the same detections to the same ground truths.
+
+    A cheaper corollary asserted alongside it: both find exactly four true positives
+    out of five ground truths, so maximum recall is 0.8 on both sides.
+    """
+    _coco_backend()
+    preds, gts = _ranking_scenario()
+    result = match_detections(preds, gts, iou_threshold=0.5)
+
+    fine_grid = np.linspace(0.0, 1.0, 10001)
+    metric = _reference_metric(extended_summary=True, rec_thresholds=fine_grid.tolist())
+    pred_batch, target_batch = _to_torchmetrics(preds, gts)
+    metric.update(pred_batch, target_batch)
+    reference = metric.compute()
+
+    # Index order is [IoU, recall, class, area, max-detections]; IoU 0 is 0.5, area 0
+    # is "all", and the last max-detections entry is 100.
+    theirs = reference["precision"].numpy()[0, :, 0, 0, -1].astype(np.float64)
+    assert float(reference["recall"].numpy()[0, 0, 0, -1]) == pytest.approx(0.8)
+    assert result.n_tp / result.n_gt == pytest.approx(0.8)
+
+    recall, precision = pr_curve(result.scores, result.tp, result.n_gt)
+    envelope = np.maximum.accumulate(precision[::-1])[::-1]
+    idx = np.searchsorted(recall, fine_grid, side="left")
+    ours = np.where(idx < len(envelope), envelope[np.clip(idx, 0, len(envelope) - 1)], 0.0)
+
+    assert np.abs(ours - theirs).max() == pytest.approx(0.0, abs=1e-12)
 
 
 def test_all_points_and_coco_ap_stay_close_on_realistic_input() -> None:

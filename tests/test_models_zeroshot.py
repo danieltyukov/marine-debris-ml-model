@@ -590,7 +590,7 @@ class TestGroundingDinoReal:
         """GroundingDINO's phrase output must land on the same enum as OWLv2's index."""
         from mdebris.models.zeroshot import GroundingDinoDetector
 
-        scene, (gx0, gy0, gx1, gy1) = _red_circle_scene()
+        scene, ground_truth = _red_circle_scene()
         prompts = PromptSet.build(
             ["a red circle"], {"a white background": SurfaceClass.WATER}, name="test"
         )
@@ -600,7 +600,5 @@ class TestGroundingDinoReal:
         assert found, "GroundingDINO returned nothing for an unambiguous object"
         circles = [d for d in found if d.label is SurfaceClass.DEBRIS]
         assert circles, f"phrase mapping failed: {[str(d.label) for d in found]}"
-        b = circles[0].bbox
-        assert abs(b.xmin - gx0) < 20, b.as_xyxy()
-        assert abs(b.ymax - gy1) < 20, b.as_xyxy()
+        assert circles[0].bbox.as_xyxy() == pytest.approx(ground_truth, abs=20)
         assert circles[0].source_model.startswith("grounding-dino:")

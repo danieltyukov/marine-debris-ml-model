@@ -32,8 +32,19 @@ from mdebris.data.samples import (
     fetch_sample_chips,
     list_samples,
     load_sample,
+    reflectance_from_meta,
     sample_bbox,
+    sample_reflectance,
     sample_scene,
+)
+from mdebris.data.scaling import (
+    BOA_OFFSET,
+    NON_REFLECTANCE_BANDS,
+    REFLECTANCE_SCALE,
+    reflectance_params_for_baseline,
+    reflectance_params_for_item,
+    scale_bands,
+    to_reflectance,
 )
 from mdebris.data.stac import (
     Band,
@@ -47,10 +58,13 @@ from mdebris.data.stac import (
 )
 
 __all__ = [
+    "BOA_OFFSET",
     "HOTSPOTS",
     "MARIDA_BANDS",
     "MARIDA_CLASSES",
     "MARIDA_TO_SURFACE",
+    "NON_REFLECTANCE_BANDS",
+    "REFLECTANCE_SCALE",
     "SAMPLE_BANDS",
     "Band",
     "MaridaError",
@@ -67,7 +81,13 @@ __all__ = [
     "load_marida_split",
     "load_sample",
     "normalize_assets",
+    "reflectance_from_meta",
+    "reflectance_params_for_baseline",
+    "reflectance_params_for_item",
     "sample_bbox",
+    "sample_reflectance",
     "sample_scene",
+    "scale_bands",
     "search_scenes",
+    "to_reflectance",
 ]

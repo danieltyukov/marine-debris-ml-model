@@ -94,16 +94,20 @@ class OWLv2Detector(BaseDetector):
     # ---- inference -------------------------------------------------------------
 
     def _forward(self, images: Sequence[np.ndarray]):
-        """Run the vision+text towers over a batch and return (outputs, target_sizes)."""
+        """Run both towers over a batch, returning (outputs, target_sizes, batch_texts)."""
         import torch
 
         texts = self.prompts.texts
         batch_texts = [texts for _ in images]
         # The processor resizes and pads every image to 960x960 regardless of input
         # size, so a small tile costs exactly as much as a full-size one.
-        inputs = self.processor(
-            text=batch_texts, images=list(images), return_tensors="pt", padding=True
-        )
+        #
+        # No padding override: the processor default pads prompts to the 16-token
+        # context the checkpoint was trained with. Passing padding=True instead pads
+        # to the longest prompt in the batch (11 tokens for the default set), which
+        # makes the text tower's input length depend on which prompts happen to be
+        # in use. Leaving it alone keeps tokenization identical for every prompt set.
+        inputs = self.processor(text=batch_texts, images=list(images), return_tensors="pt")
         inputs = self._to_device(inputs)
         with torch.inference_mode():
             outputs = self.model(**inputs)
@@ -169,6 +173,8 @@ class OWLv2Detector(BaseDetector):
         if not images:
             return []
         thr = settings.score_threshold if threshold is None else threshold
+        if not 0.0 <= thr <= 1.0:
+            raise ValueError(f"threshold {thr} outside [0, 1]")
         arrays = [as_uint8_rgb(im) for im in images]
         self.load()
         outputs, target_sizes, batch_texts = self._forward(arrays)

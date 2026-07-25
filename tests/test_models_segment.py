@@ -21,7 +21,6 @@ from mdebris.models.supervised import (
 )
 from mdebris.types import BBox, Detection, SurfaceClass
 
-
 # --------------------------------------------------------------------------------------
 # Sam2Segmenter: offline
 # --------------------------------------------------------------------------------------
@@ -267,6 +266,19 @@ class TestRTDetrOffline:
             det.finetune([])
         assert det.is_loaded is False
 
+    @pytest.mark.parametrize(
+        ("kwargs", "match"),
+        [({"epochs": 0}, "epochs must be"), ({"max_steps": 0}, "max_steps must be")],
+    )
+    def test_finetune_rejects_step_counts_that_would_train_nothing(self, kwargs, match):
+        chip = LabelledChip(
+            image=np.zeros((8, 8, 3), dtype=np.uint8), boxes=np.zeros((0, 4)), labels=[]
+        )
+        det = RTDetrDetector()
+        with pytest.raises(ValueError, match=match):
+            det.finetune([chip], **kwargs)
+        assert det.is_loaded is False
+
 
 # --------------------------------------------------------------------------------------
 # Real weights. Excluded from the default run.
@@ -421,6 +433,41 @@ class TestRTDetrReal:
         assert history["seconds"] > 0
         # Training must leave the model in eval mode, ready for inference.
         assert det.model.training is False
+
+    def test_validation_does_not_pollute_batchnorm_statistics(self):
+        """Validation must not leak the held-out set into the model.
+
+        The r18vd backbone carries live ``nn.BatchNorm2d`` layers. Computing the
+        validation loss in train mode would fold the validation batches into their
+        running mean and variance, quietly training on data the model is supposed to
+        be held out from. Eval mode still produces a loss, so there is no reason to.
+        """
+        import torch
+        from torch.utils.data import DataLoader
+
+        rng = np.random.default_rng(3)
+        chips = [
+            LabelledChip(
+                image=rng.integers(0, 255, (96, 96, 3), dtype=np.uint8),
+                boxes=np.array([[10.0, 10.0, 50.0, 50.0]]),
+                labels=np.array([0]),
+            )
+        ]
+        det = RTDetrDetector(num_labels=len(FINETUNE_CLASSES))
+        det.load()
+
+        batchnorms = [m for m in det.model.modules() if isinstance(m, torch.nn.BatchNorm2d)]
+        assert batchnorms, "expected live BatchNorm layers; the risk this guards is gone"
+        before = [bn.running_mean.clone() for bn in batchnorms]
+
+        loader = DataLoader(chips, batch_size=1, collate_fn=det._collate)
+        loss = det._evaluate_loss(loader, torch.device("cpu"))
+
+        assert np.isfinite(loss)
+        for bn, snapshot in zip(batchnorms, before, strict=True):
+            assert torch.equal(bn.running_mean, snapshot), (
+                "validation updated BatchNorm running statistics"
+            )
 
     def test_finetune_rehead_changes_the_class_space(self):
         det = RTDetrDetector(num_labels=len(FINETUNE_CLASSES))

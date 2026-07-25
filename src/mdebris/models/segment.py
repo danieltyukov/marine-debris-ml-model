@@ -122,7 +122,7 @@ class Sam2Segmenter:
             self.processor = Sam2Processor.from_pretrained(self.model_id)
             model = Sam2Model.from_pretrained(self.model_id)
             self.model = model.to(self.device).eval()
-        except Exception as exc:  # noqa: BLE001 - re-raised with an actionable message
+        except Exception as exc:
             raise ModelLoadError(
                 f"could not load SAM2 checkpoint {self.model_id!r}: {exc}. "
                 "Mask refinement is optional, so the pipeline can run without it. "

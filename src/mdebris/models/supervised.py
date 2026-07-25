@@ -357,6 +357,10 @@ class RTDetrDetector(BaseDetector):
         chips = list(train_data)
         if not chips:
             raise ValueError("finetune needs at least one labelled chip")
+        if epochs < 1:
+            raise ValueError(f"epochs must be at least 1, got {epochs}")
+        if max_steps is not None and max_steps < 1:
+            raise ValueError(f"max_steps must be at least 1 when given, got {max_steps}")
 
         self.load()
         model = self.model
@@ -422,6 +426,9 @@ class RTDetrDetector(BaseDetector):
         started = time.time()
         step = 0
         stop = False
+        # Bound before the loop so a zero-epoch call reports cleanly instead of
+        # raising NameError on the final-loss bookkeeping below.
+        loss_value = float("nan")
 
         for epoch in range(epochs):
             model.train()
@@ -457,7 +464,7 @@ class RTDetrDetector(BaseDetector):
 
         # Always record the final step's loss, even if it did not land on log_every,
         # so a short run (a smoke test) still reports something.
-        if not history["train_loss"] or history["train_loss"][-1]["step"] != step:
+        if step and (not history["train_loss"] or history["train_loss"][-1]["step"] != step):
             history["train_loss"].append({"step": step, "loss": loss_value})
 
         model.eval()
@@ -478,11 +485,18 @@ class RTDetrDetector(BaseDetector):
 
         Detection quality is mAP, not loss; loss is here as an early-stopping signal.
         Real evaluation lives in :mod:`mdebris.eval`.
+
+        Runs in eval mode. This matters: the r18vd backbone carries 46 live
+        ``nn.BatchNorm2d`` layers, so evaluating in train mode would fold the
+        validation batches into their running statistics and leak the validation set
+        into the model. Verified that the criterion still produces a loss in eval
+        mode, so there is no reason to switch.
         """
         import torch
 
         model = self.model
-        model.train()  # the criterion only runs in train mode; grads are disabled below
+        was_training = model.training
+        model.eval()
         total, batches = 0.0, 0
         with torch.no_grad():
             for batch in loader:
@@ -492,5 +506,6 @@ class RTDetrDetector(BaseDetector):
                 ]
                 total += float(model(pixel_values=pixel_values, labels=labels).loss)
                 batches += 1
-        model.eval()
+        if was_training:
+            model.train()
         return total / batches if batches else float("nan")

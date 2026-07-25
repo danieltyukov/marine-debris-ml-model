@@ -22,10 +22,11 @@ from mdebris.data.samples import (
     SampleError,
     list_samples,
     load_sample,
+    reflectance_from_meta,
     sample_bbox,
     sample_meta,
+    sample_reflectance,
     sample_scene,
-    to_reflectance,
 )
 from mdebris.data.stac import Band
 from mdebris.types import GeoBBox, SceneRef, TileRef
@@ -89,7 +90,7 @@ def test_reflectance_is_uint16_and_scl_is_a_class_code(name: str) -> None:
             assert array.max() <= 11
         else:
             assert array.dtype == np.uint16
-            reflectance = to_reflectance(array, meta)
+            reflectance = reflectance_from_meta(array, meta)
             assert reflectance.min() > -0.15  # nodata sits at the offset, not below it
             assert reflectance.max() < 2.0
 
@@ -144,7 +145,7 @@ def test_water_is_dark_in_absolute_reflectance(name: str) -> None:
     bands, meta = load_sample(name)
     sea = bands["SCL"] == SCL_WATER
     for band in ("B08", "B11"):
-        reflectance = to_reflectance(bands[band], meta)[sea]
+        reflectance = reflectance_from_meta(bands[band], meta)[sea]
         assert 0.0 <= np.median(reflectance) < 0.06, band
 
 
@@ -157,17 +158,28 @@ def test_sidecar_records_the_baseline_reflectance_offset(name: str) -> None:
     assert meta["processing_baseline_offset_applied"] is True
 
 
-def test_to_reflectance_applies_scale_and_offset() -> None:
+def test_reflectance_from_meta_uses_the_sidecar_values() -> None:
     meta = {"reflectance_scale": 1e-4, "reflectance_offset": -0.1}
     values = np.array([1000, 2000, 11000], dtype="uint16")
     # abs= is needed because the first element is exactly zero, where a relative
     # tolerance has nothing to be relative to and float32 rounding still shows up.
-    assert to_reflectance(values, meta) == pytest.approx([0.0, 0.1, 1.0], abs=1e-6)
+    assert reflectance_from_meta(values, meta) == pytest.approx([0.0, 0.1, 1.0], abs=1e-6)
 
 
-def test_to_reflectance_defaults_to_no_offset_for_older_products() -> None:
-    """Pre-baseline-04.00 scenes have no offset, and a bare scale must still work."""
-    assert to_reflectance(np.array([5000], dtype="uint16"), {}) == pytest.approx([0.5])
+def test_metadata_without_a_recorded_offset_does_not_invent_one() -> None:
+    """Applying an offset nobody recorded would be a silent 0.1 error."""
+    assert reflectance_from_meta(np.array([5000], dtype="uint16"), {}) == pytest.approx([0.5])
+
+
+@pytest.mark.parametrize("name", SAMPLE_NAMES)
+def test_sample_reflectance_converts_bands_but_not_the_class_mask(name: str) -> None:
+    raw, _ = load_sample(name)
+    bands, meta = sample_reflectance(name)
+    assert set(bands) == set(raw)
+    assert bands["B08"].dtype == np.float32
+    assert bands["SCL"].dtype == np.uint8
+    assert np.array_equal(bands["SCL"], raw["SCL"])
+    assert meta["scene_id"] == sample_meta(name)["scene_id"]
 
 
 # -- georeferencing ---------------------------------------------------------------
