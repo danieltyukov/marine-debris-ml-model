@@ -229,6 +229,4 @@ def get_prompt_set(name: str) -> PromptSet:
     try:
         return PROMPT_SETS[name]
     except KeyError:
-        raise KeyError(
-            f"unknown prompt set {name!r}; available: {sorted(PROMPT_SETS)}"
-        ) from None
+        raise KeyError(f"unknown prompt set {name!r}; available: {sorted(PROMPT_SETS)}") from None

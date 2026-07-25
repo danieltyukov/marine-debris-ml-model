@@ -362,7 +362,6 @@ _GDAL_ENV = {
 SCL_WATER = 6
 
 
-
 def _cut_chip(
     out_dir: Path,
     spot: Hotspot,

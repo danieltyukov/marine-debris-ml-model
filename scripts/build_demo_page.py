@@ -1,11 +1,91 @@
-"""Assemble the demo page, injecting real measured data and compressed figures."""
+"""Build docs/index.html, the GitHub Pages report.
 
+Injects the real measured FDI distribution and the compressed pipeline figures so the
+page cannot drift from the numbers the pipeline actually produces. Run from the repo
+root after regenerating the figures:
+
+    python -m mdebris.viz.figures
+    python scripts/build_demo_page.py
+"""
+
+import base64
 import json
 from pathlib import Path
 
-S = Path(__file__).parent
-fdi = json.loads((S / "fdi.json").read_text())
-imgs = json.loads((S / "imgs.json").read_text())
+import numpy as np
+from PIL import Image
+
+from mdebris.data import sample_reflectance
+from mdebris.indices.masks import cloud_mask_from_scl, water_mask
+from mdebris.indices.spectral import compute_indices
+
+ROOT = Path(__file__).resolve().parents[1]
+FIGURES = {
+    "cascade": "assets/cascade_stages.png",
+    "detect": "assets/detections.png",
+    "indices": "assets/spectral_indices.png",
+}
+
+
+def measure_fdi() -> dict:
+    """Real FDI distribution over cloud-free water in each bundled chip.
+
+    Clouds are excluded before the histogram is taken, for the same reason the
+    cascade excludes them before taking its percentile: cloud tops carry very large
+    FDI and would dominate the tail the page is about.
+    """
+    out = {}
+    for name in ("accra", "limassol"):
+        bands, meta = sample_reflectance(name)
+        refl = {k: v for k, v in bands.items() if k != "SCL"}
+        fdi = compute_indices(refl)["FDI"]
+        wet = water_mask(refl)
+        cloud = cloud_mask_from_scl(bands["SCL"])
+        values = fdi[(wet & ~cloud) & np.isfinite(fdi)]
+        lo, hi = float(np.percentile(values, 0.5)), float(np.percentile(values, 99.95))
+        hist, edges = np.histogram(values, bins=90, range=(lo, hi))
+        out[name] = {
+            "scene": meta["scene_id"],
+            "date": meta["datetime"][:10],
+            "water_pct": round(float(wet.mean() * 100), 1),
+            "cloud_pct": round(float(cloud.mean() * 100), 2),
+            "n": int(values.size),
+            "hist": hist.tolist(),
+            "edges": [round(e, 6) for e in edges.tolist()],
+            "pct": {
+                key: round(float(np.percentile(values, q)), 6)
+                for key, q in (
+                    ("p50", 50),
+                    ("p90", 90),
+                    ("p99", 99),
+                    ("p99_9", 99.9),
+                    ("p99_99", 99.99),
+                )
+            },
+            "mean": round(float(values.mean()), 6),
+        }
+    return out
+
+
+def embed_figures(width: int = 1400, quality: int = 72) -> dict[str, str]:
+    """Downsample each figure to a JPEG data URI so the page is one self-contained file."""
+    uris = {}
+    for key, rel in FIGURES.items():
+        path = ROOT / rel
+        if not path.exists():
+            raise FileNotFoundError(f"{rel} is missing, run: python -m mdebris.viz.figures")
+        im = Image.open(path).convert("RGB")
+        im = im.resize((width, round(im.height * width / im.width)), Image.LANCZOS)
+        buf = ROOT / "docs" / f"_{key}.jpg"
+        buf.parent.mkdir(parents=True, exist_ok=True)
+        im.save(buf, "JPEG", quality=quality, optimize=True)
+        uris[key] = "data:image/jpeg;base64," + base64.b64encode(buf.read_bytes()).decode()
+        buf.unlink()
+    return uris
+
+
+fdi = measure_fdi()
+imgs = embed_figures()
 
 HTML = r"""<title>Marine Debris Detection: what Sentinel-2 can and cannot tell you</title>
 <style>
@@ -517,12 +597,48 @@ const DATA = __FDI__;
 </script>
 """
 
-html = (
+TITLE = "Marine Debris Detection: what Sentinel-2 can and cannot tell you"
+DESCRIPTION = (
+    "Rebuilding a 2019 TensorFlow 1.14 marine debris detector on free Sentinel-2 imagery, "
+    "and the negative result that open-vocabulary vision models do not carry the signal at 10 m."
+)
+SITE_URL = "https://danieltyukov.github.io/marine-debris-ml-model/"
+
+fragment = (
     HTML.replace("__FDI__", json.dumps(fdi))
     .replace("__CASCADE__", imgs["cascade"])
     .replace("__DETECT__", imgs["detect"])
     .replace("__INDICES__", imgs["indices"])
 )
-out = S / "index.html"
-out.write_text(html, encoding="utf-8")
-print(f"wrote {out}  {out.stat().st_size / 1024:.0f} KB")
+
+# The fragment opens with <title> then <style>; both belong in <head>, the rest in <body>.
+split = fragment.index("</style>") + len("</style>")
+head_fragment, body_fragment = fragment[:split], fragment[split:]
+
+document = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="{DESCRIPTION}">
+<meta name="color-scheme" content="light dark">
+<meta property="og:title" content="{TITLE}">
+<meta property="og:description" content="{DESCRIPTION}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{SITE_URL}">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><text y=%2226%22 font-size=%2226%22>&#128752;</text></svg>">
+<style>*,*::before,*::after{{box-sizing:border-box}}html{{-webkit-text-size-adjust:100%}}img{{max-width:100%}}</style>
+{head_fragment}
+</head>
+<body>
+{body_fragment}
+</body>
+</html>
+"""
+
+out = ROOT / "docs" / "index.html"
+out.parent.mkdir(parents=True, exist_ok=True)
+out.write_text(document, encoding="utf-8")
+(out.parent / ".nojekyll").touch()
+print(f"wrote {out.relative_to(ROOT)}  {out.stat().st_size / 1024:.0f} KB")

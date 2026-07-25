@@ -118,9 +118,7 @@ class OWLv2Detector(BaseDetector):
         target_sizes = [(int(im.shape[0]), int(im.shape[1])) for im in images]
         return outputs, target_sizes, batch_texts
 
-    def _results_to_detections(
-        self, result: dict, image_shape: tuple[int, int]
-    ) -> list[Detection]:
+    def _results_to_detections(self, result: dict, image_shape: tuple[int, int]) -> list[Detection]:
         height, width = image_shape
         boxes = result["boxes"].detach().cpu().tolist()
         scores = result["scores"].detach().cpu().tolist()
@@ -225,9 +223,7 @@ class GroundingDinoDetector(BaseDetector):
         nms_iou: float | None = None,
         drop_background: bool = True,
     ) -> None:
-        super().__init__(
-            model_id or self.DEFAULT_MODEL, device=device, torch_threads=torch_threads
-        )
+        super().__init__(model_id or self.DEFAULT_MODEL, device=device, torch_threads=torch_threads)
         self.prompts = prompts or DEFAULT_PROMPTS
         self.text_threshold = text_threshold
         self.apply_nms = apply_nms

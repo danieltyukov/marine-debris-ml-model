@@ -509,8 +509,6 @@ class TestRTDetrReal:
             )
 
         det = RTDetrDetector(num_labels=len(FINETUNE_CLASSES))
-        history = det.finetune(
-            [chip()], val_data=[chip()], epochs=1, batch_size=1, max_steps=1
-        )
+        history = det.finetune([chip()], val_data=[chip()], epochs=1, batch_size=1, max_steps=1)
         assert len(history["val_loss"]) == 1
         assert np.isfinite(history["val_loss"][0]["loss"])

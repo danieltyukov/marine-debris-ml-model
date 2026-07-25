@@ -166,8 +166,7 @@ PROVIDERS: dict[str, str] = {
 }
 
 _MISSING_DEPS = (
-    "STAC access needs the optional data extra. Install it with:\n"
-    '    pip install "mdebris[data]"'
+    'STAC access needs the optional data extra. Install it with:\n    pip install "mdebris[data]"'
 )
 
 

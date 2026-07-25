@@ -139,9 +139,7 @@ def nms(
     return [dets[i] for i in kept]
 
 
-def offset_detections(
-    dets: Iterable[Detection], dx: float, dy: float
-) -> list[Detection]:
+def offset_detections(dets: Iterable[Detection], dx: float, dy: float) -> list[Detection]:
     """Shift detections from tile-local pixels into scene pixels.
 
     Returns new :class:`Detection` objects. The originals are left alone because the
@@ -280,9 +278,7 @@ class BaseDetector(ABC):
     def _configure_threads(self) -> None:
         import torch
 
-        threads = (
-            self._torch_threads if self._torch_threads is not None else settings.torch_threads
-        )
+        threads = self._torch_threads if self._torch_threads is not None else settings.torch_threads
         if threads is not None:
             # Only set it when asked. Overriding the torch default unconditionally
             # would fight with an outer parallel harness such as pytest-xdist.
@@ -363,4 +359,6 @@ class BaseDetector(ABC):
 
     def __repr__(self) -> str:
         state = "loaded" if self.is_loaded else "lazy"
-        return f"{type(self).__name__}(model_id={self.model_id!r}, device={self._device!r}, {state})"
+        return (
+            f"{type(self).__name__}(model_id={self.model_id!r}, device={self._device!r}, {state})"
+        )

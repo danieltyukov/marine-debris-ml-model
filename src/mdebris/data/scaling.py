@@ -74,9 +74,7 @@ BOA_OFFSET_BASELINE = 4.0
 # class code, AOT is an optical thickness, WVP is a water vapour column in centimetres,
 # and VISUAL is an already-rendered 8-bit image. Each has its own units, and the reflect-
 # ance offset is meaningless for all of them.
-NON_REFLECTANCE_BANDS: frozenset[Band] = frozenset(
-    {Band.SCL, Band.AOT, Band.WVP, Band.VISUAL}
-)
+NON_REFLECTANCE_BANDS: frozenset[Band] = frozenset({Band.SCL, Band.AOT, Band.WVP, Band.VISUAL})
 
 
 def to_reflectance(

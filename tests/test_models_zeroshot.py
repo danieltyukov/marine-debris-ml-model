@@ -573,8 +573,7 @@ class TestOWLv2Real:
         reclassified = [
             d
             for d in found
-            if not d.label.is_target
-            and any(d.bbox.iou(n.bbox) > 0.5 for n in naive)
+            if not d.label.is_target and any(d.bbox.iou(n.bbox) > 0.5 for n in naive)
         ]
         assert reclassified, (
             "confusers did not reclassify any box: "

@@ -588,9 +588,7 @@ class IndexSpec:
         return self.func(*(bands[b] for b in self.bands), **self.kwargs)
 
 
-_BIERMANN_2020 = (
-    "Biermann et al. (2020), Sci. Rep. 10:5364, doi:10.1038/s41598-020-62298-z"
-)
+_BIERMANN_2020 = "Biermann et al. (2020), Sci. Rep. 10:5364, doi:10.1038/s41598-020-62298-z"
 _THEMISTOCLEOUS_2020 = (
     "Themistocleous et al. (2020), Remote Sens. 12(16):2648, doi:10.3390/rs12162648"
 )

@@ -102,14 +102,10 @@ class LabelledChip:
         self.boxes = np.asarray(self.boxes, dtype=np.float32).reshape(-1, 4)
         self.labels = np.asarray(self.labels, dtype=np.int64).reshape(-1)
         if len(self.boxes) != len(self.labels):
-            raise ValueError(
-                f"{len(self.boxes)} boxes but {len(self.labels)} labels in one chip"
-            )
+            raise ValueError(f"{len(self.boxes)} boxes but {len(self.labels)} labels in one chip")
 
     @classmethod
-    def from_detections(
-        cls, image: np.ndarray, detections: Sequence[Detection]
-    ) -> LabelledChip:
+    def from_detections(cls, image: np.ndarray, detections: Sequence[Detection]) -> LabelledChip:
         """Build a training example from verified detections.
 
         Detections whose label is outside :data:`FINETUNE_CLASSES` are dropped rather
@@ -149,9 +145,7 @@ class ChipDataset:
         return self.chips[i]
 
 
-def _xyxy_to_cxcywh_normalized(
-    boxes: np.ndarray, width: int, height: int
-) -> np.ndarray:
+def _xyxy_to_cxcywh_normalized(boxes: np.ndarray, width: int, height: int) -> np.ndarray:
     """Convert pixel xyxy to the normalized cxcywh that RT-DETR's loss expects.
 
     Normalizing by the ORIGINAL chip size is correct even though the processor
@@ -217,9 +211,7 @@ class RTDetrDetector(BaseDetector):
                 "num_labels": self.num_labels,
                 "ignore_mismatched_sizes": True,
                 "id2label": {i: str(c) for i, c in enumerate(FINETUNE_CLASSES[: self.num_labels])},
-                "label2id": {
-                    str(c): i for i, c in enumerate(FINETUNE_CLASSES[: self.num_labels])
-                },
+                "label2id": {str(c): i for i, c in enumerate(FINETUNE_CLASSES[: self.num_labels])},
             }
         model = RTDetrV2ForObjectDetection.from_pretrained(self.model_id, **kwargs)
         self.model = model.to(self.device).eval()

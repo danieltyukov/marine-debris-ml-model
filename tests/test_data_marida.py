@@ -77,9 +77,7 @@ def fake_dataset(tmp_path: Path) -> Path:
 
 def test_zenodo_coordinates_match_the_published_record() -> None:
     assert MARIDA_RECORD_ID == 5151941
-    assert MARIDA_URL == (
-        "https://zenodo.org/api/records/5151941/files/MARIDA.zip/content"
-    )
+    assert MARIDA_URL == ("https://zenodo.org/api/records/5151941/files/MARIDA.zip/content")
     assert MARIDA_SIZE_BYTES == 1_164_612_748
     assert MARIDA_MD5 == "9bf32266f6e3711c9dfa3699b856c76f"
     assert len(MARIDA_MD5) == 32

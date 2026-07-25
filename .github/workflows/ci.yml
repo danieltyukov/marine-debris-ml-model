@@ -20,9 +20,9 @@ jobs:
           python-version: "3.12"
       - run: pip install ruff
       - name: Lint
-        run: ruff check src tests
+        run: ruff check src tests scripts
       - name: Format check
-        run: ruff format --check src tests
+        run: ruff format --check src tests scripts
 
   test:
     runs-on: ubuntu-latest

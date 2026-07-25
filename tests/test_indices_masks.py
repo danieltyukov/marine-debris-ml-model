@@ -52,13 +52,9 @@ def synthetic_scene(
     NDWI 0.042 and FDI 0.065. Both are water by NDWI, and only the patch clears any
     sensible FDI threshold.
     """
-    bands = {
-        name: np.full(shape, value, dtype=np.float32) for name, value in WATER.items()
-    }
+    bands = {name: np.full(shape, value, dtype=np.float32) for name, value in WATER.items()}
     for name, array in bands.items():
-        array[PATCH_ROWS, PATCH_COLS] = (
-            fraction * PLASTIC[name] + (1.0 - fraction) * WATER[name]
-        )
+        array[PATCH_ROWS, PATCH_COLS] = fraction * PLASTIC[name] + (1.0 - fraction) * WATER[name]
     return bands
 
 
@@ -160,9 +156,7 @@ def test_cloud_mask_keeps_water_and_cast_shadow_usable_by_default():
 
 def test_cloud_mask_accepts_a_custom_class_set():
     scl = np.array([2, 6, 11], dtype=np.uint8)
-    np.testing.assert_array_equal(
-        cloud_mask_from_scl(scl, classes={2, 11}), [True, False, True]
-    )
+    np.testing.assert_array_equal(cloud_mask_from_scl(scl, classes={2, 11}), [True, False, True])
     np.testing.assert_array_equal(cloud_mask_from_scl(scl, classes=frozenset()), [False] * 3)
 
 

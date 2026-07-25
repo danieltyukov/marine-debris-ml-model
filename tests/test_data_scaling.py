@@ -147,9 +147,7 @@ def test_derivation_works_on_an_object_with_attributes_not_just_a_dict() -> None
 
     class FakeItem:
         def __init__(self) -> None:
-            self.assets = {
-                "red": FakeAsset({"raster:bands": [{"scale": 0.0001, "offset": -0.1}]})
-            }
+            self.assets = {"red": FakeAsset({"raster:bands": [{"scale": 0.0001, "offset": -0.1}]})}
             self.properties = {"s2:processing_baseline": "05.10"}
 
     assert reflectance_params_for_item(FakeItem()) == (0.0001, -0.1)

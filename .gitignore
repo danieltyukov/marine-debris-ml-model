@@ -148,3 +148,6 @@ outputs/
 *.tif
 !src/mdebris/data/samples/*.tif
 .env
+
+# the GitHub Pages site
+!docs/**

@@ -103,9 +103,7 @@ class Sam2Segmenter:
             return
         import torch
 
-        threads = (
-            self._torch_threads if self._torch_threads is not None else settings.torch_threads
-        )
+        threads = self._torch_threads if self._torch_threads is not None else settings.torch_threads
         if threads is not None:
             torch.set_num_threads(int(threads))
 
@@ -137,9 +135,7 @@ class Sam2Segmenter:
 
     # ---- refinement ------------------------------------------------------------
 
-    def refine(
-        self, image: np.ndarray, detections: Sequence[Detection]
-    ) -> list[Detection]:
+    def refine(self, image: np.ndarray, detections: Sequence[Detection]) -> list[Detection]:
         """Set ``.mask`` on each detection and record the mask area.
 
         Each detection gets:
@@ -189,9 +185,9 @@ class Sam2Segmenter:
                 # intended extent.
                 outputs = self.model(**inputs, multimask_output=False)
 
-            masks = self.processor.post_process_masks(
-                outputs.pred_masks, inputs["original_sizes"]
-            )[0]  # (num_boxes, 1, H, W) bool
+            masks = self.processor.post_process_masks(outputs.pred_masks, inputs["original_sizes"])[
+                0
+            ]  # (num_boxes, 1, H, W) bool
             iou_scores = outputs.iou_scores.detach().cpu().numpy().reshape(len(chunk), -1)
 
             for i, det in enumerate(chunk):
