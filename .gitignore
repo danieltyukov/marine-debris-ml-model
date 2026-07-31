@@ -142,6 +142,9 @@ venv/
 outputs/
 *.geojson
 !src/mdebris/data/samples/*.geojson
+# beach-segment definitions are inputs, not detector output; scripts/make_beach_segments.py
+# will not run without them
+!assets/*.geojson
 .cache/
 .pytest_cache/
 .ruff_cache/

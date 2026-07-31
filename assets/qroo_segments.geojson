@@ -1,0 +1,102 @@
+{
+  "type": "FeatureCollection",
+  "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+  "properties": {
+    "title": "Cancun hotel zone beach segments",
+    "note": "Hand-drawn approximations of the named public beaches along Blvd Kukulcan, traced from Sentinel-2 imagery. Demonstration geometry, not a survey product. A real deployment would use the municipality's own ZOFEMAT concession boundaries.",
+    "municipality": "Benito Juarez, Quintana Roo, Mexico",
+    "source": "manual trace, 2026-07"
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "punta_nizuc",
+      "properties": { "name": "Punta Nizuc", "exposure": "east" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[-86.7828, 21.0345], [-86.7812, 21.0410], [-86.7797, 21.0470]]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delfines",
+      "properties": { "name": "Playa Delfines", "exposure": "east" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[-86.7797, 21.0470], [-86.7770, 21.0530], [-86.7752, 21.0640]]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ballenas",
+      "properties": { "name": "Playa Ballenas", "exposure": "east" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[-86.7752, 21.0640], [-86.7738, 21.0720], [-86.7720, 21.0800]]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "marlin",
+      "properties": { "name": "Playa Marlin", "exposure": "east" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[-86.7720, 21.0800], [-86.7690, 21.0890], [-86.7660, 21.0960]]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "chac_mool",
+      "properties": { "name": "Playa Chac Mool", "exposure": "east" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[-86.7660, 21.0960], [-86.7600, 21.1060], [-86.7530, 21.1180]]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "gaviota_azul",
+      "properties": { "name": "Playa Gaviota Azul", "exposure": "east" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[-86.7530, 21.1180], [-86.7490, 21.1265], [-86.7455, 21.1345]]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "caracol",
+      "properties": { "name": "Playa Caracol", "exposure": "north" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[-86.7470, 21.1385], [-86.7520, 21.1378], [-86.7570, 21.1362]]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "tortugas",
+      "properties": { "name": "Playa Tortugas", "exposure": "north" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[-86.7570, 21.1362], [-86.7615, 21.1340], [-86.7655, 21.1315]]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "langosta",
+      "properties": { "name": "Playa Langosta", "exposure": "north" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[-86.7655, 21.1315], [-86.7690, 21.1275], [-86.7718, 21.1230]]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "linda",
+      "properties": { "name": "Playa Linda", "exposure": "north" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[-86.7718, 21.1230], [-86.7752, 21.1185], [-86.7790, 21.1145]]
+      }
+    }
+  ]
+}

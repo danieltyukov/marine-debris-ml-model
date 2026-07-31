@@ -335,6 +335,96 @@ def evaluate(
 
 
 @app.command()
+def beaches(
+    detections: Annotated[Path, typer.Argument(help="GeoJSON produced by detect.")],
+    segments: Annotated[
+        Path, typer.Option("--segments", "-s", help="GeoJSON of named beach segments.")
+    ],
+    surf_zone_m: Annotated[
+        float, typer.Option(help="How far offshore to look, in metres.")
+    ] = 500.0,
+    clouds: Annotated[
+        Path | None,
+        typer.Option(help="JSON mapping segment_id to cloud fraction, 0 to 1."),
+    ] = None,
+    output: Annotated[
+        Path | None, typer.Option("--output", "-o", help="Write per-segment GeoJSON here.")
+    ] = None,
+    csv_path: Annotated[
+        Path | None, typer.Option("--csv", help="Write the per-segment table here.")
+    ] = None,
+    history: Annotated[
+        Path | None, typer.Option(help="Append this run to a dated per-segment CSV record.")
+    ] = None,
+    all_labels: Annotated[
+        bool, typer.Option(help="Count every detection class, not just sargassum and debris.")
+    ] = False,
+) -> None:
+    """Roll detections up onto named beach segments.
+
+    Without --clouds every segment is reported as fully observed, which is only
+    true on a clear scene. Pass the cloud fractions whenever they are known; an
+    unseen beach reported as clean is the failure mode this command exists to
+    avoid.
+    """
+    from mdebris.coastal import aggregate_segments, append_history, load_segments
+    from mdebris.geo import read_geojson
+
+    beach_segments = load_segments(segments)
+    detection_set = read_geojson(detections)
+    cloud_fractions = json.loads(clouds.read_text(encoding="utf-8")) if clouds else None
+
+    report = aggregate_segments(
+        detection_set,
+        beach_segments,
+        surf_zone_m=surf_zone_m,
+        cloud_fractions=cloud_fractions,
+        labels=None if all_labels else _default_beach_labels(),
+    )
+
+    table = Table(title=f"Beach segments{f' — {report.observed_on}' if report.observed_on else ''}")
+    table.add_column("segment")
+    table.add_column("cover %", justify="right")
+    table.add_column("front m", justify="right")
+    table.add_column("dets", justify="right")
+    table.add_column("cloud %", justify="right")
+    table.add_column("seen")
+    for obs in report.ranked():
+        blind = obs.observability.value == "blind"
+        table.add_row(
+            obs.name,
+            "[dim]—[/dim]" if blind else f"{100 * obs.coverage:.2f}",
+            "[dim]—[/dim]" if blind else f"{obs.affected_front_m:.0f}",
+            "[dim]—[/dim]" if blind else str(obs.detection_count),
+            f"{100 * obs.cloud_fraction:.0f}",
+            {"observed": "[green]OK", "partial": "[yellow]PARTIAL", "blind": "[red]BLIND"}[
+                obs.observability.value
+            ],
+        )
+    console.print(table)
+
+    if report.blind:
+        console.print(
+            f"[yellow]{len(report.blind)} of {len(report)} segments were not observed; "
+            "their absence of detections means nothing."
+        )
+
+    if output is not None:
+        console.print(f"wrote {report.write_geojson(output)}")
+    if csv_path is not None:
+        console.print(f"wrote {report.write_csv(csv_path)}")
+    if history is not None:
+        console.print(f"appended {len(report)} rows to {append_history(report, history)}")
+
+
+def _default_beach_labels():
+    """Detection classes a beach-clearing customer cares about."""
+    from mdebris.coastal.segments import DEFAULT_TARGET_LABELS
+
+    return DEFAULT_TARGET_LABELS
+
+
+@app.command()
 def config() -> None:
     """Show the resolved configuration and the detected compute device."""
     table = Table(title="mdebris configuration")

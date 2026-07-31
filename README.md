@@ -186,6 +186,92 @@ open-vocabulary detector is kept for.
 python scripts/train_marida.py      # downloads MARIDA, trains, writes docs/marida_report.md
 ```
 
+### The same model is a much better sargassum detector than a debris detector
+
+The 0.515 above is the headline because this project set out to rebuild a *debris*
+detector. It also buried the more useful half of the same training run.
+
+MARIDA labels Dense and Sparse Sargassum as separate classes. Scored on the same
+scene-grouped split, by the same model, on the same 18 features:
+
+| task | precision | recall | F1 |
+|---|---|---|---|
+| Marine Debris, best F1 | 0.944 | 0.354 | 0.515 |
+| Sparse Sargassum | 0.586 | 0.904 | 0.711 |
+| Dense Sargassum | 0.946 | 0.920 | **0.933** |
+| **Any sargassum, best F1** | **0.987** | 0.913 | **0.948** |
+| Any sargassum, at 90% precision | 0.900 | **0.947** | 0.923 |
+
+Nothing was retrained to get this. `scripts/eval_sargassum.py` loads the model
+`train_marida.py` produced and re-scores it, so the numbers cannot drift apart.
+
+The reason is physical, not statistical. Sargassum floats in mats tens of metres
+across and carries a chlorophyll red edge, so it fills pixels and the indices key
+on it directly. Debris is thin, low-contrast filaments that at 10 m span three
+pixels. Same sensor, same model, different target.
+
+The last row is the operating point that matters for anyone dispatching a crew:
+90% precision, 94.7% recall. A false positive costs a shift.
+
+**What this does not say.** MARIDA's sargassum labels are annotated Sentinel-2
+pixels, not field observations, and its scenes are not the Mexican Caribbean. A
+per-pixel benchmark score is not a validated landfall forecast. Full breakdown,
+including what the model confuses sargassum with, in
+[`docs/sargassum_report.md`](docs/sargassum_report.md).
+
+### From detections to a beach a crew can be sent to
+
+A GeoJSON of floating-material polygons is not something anyone schedules against.
+A beach authority manages named stretches of coast, so `mdebris.coastal` rolls
+detections onto them:
+
+```bash
+mdebris beaches detections.geojson --segments assets/qroo_segments.geojson --csv brief.csv
+```
+
+Three numbers come out per segment, and one of them is the point of the module:
+
+- `coverage`, detected area over surf-zone area, comparable between segments
+- `affected_front_m`, metres of shoreline with material within the surf zone
+- `observability`, whether the beach was seen at all
+
+The third is reported separately rather than folded into the first, because
+optical detection over the Caribbean is cloud-limited badly enough that the two
+get confused. LANOT, who run the nearest comparable Sentinel-2 platform, report
+cloud above 90% regularly and describe a fully clear day over the region as close
+to non-existent. A product that prints 0% coverage for a beach it could not see is
+not being conservative, it is wrong, and it is wrong in the direction that sends
+nobody to a beach that needed clearing.
+
+Run end to end on the Cancun hotel zone, 6 July 2026, a real 75.5% cloud scene:
+
+| segment | observed | cloud % | cover % | affected front m |
+|---|---|---|---|---|
+| Playa Caracol | partial | 67 | 0.00 | 0 |
+| Playa Tortugas | partial | 67 | 0.00 | 0 |
+| Playa Langosta | partial | 68 | 0.00 | 0 |
+| Punta Nizuc | **blind** | 83 | — | — |
+| Playa Delfines | **blind** | 96 | — | — |
+| Playa Marlin | **blind** | 100 | — | — |
+
+Seven of ten segments were not observed. A two-state product reports all ten as
+clean.
+
+![beach segments](assets/beach_segments_cloudy.png)
+
+Regenerate both the clear and the cloudy case with
+`python scripts/make_beach_segments.py`. Reports land in
+[`docs/beach_segments.md`](docs/beach_segments.md) and
+[`docs/beach_segments_cloudy.md`](docs/beach_segments_cloudy.md).
+
+One correctness note worth stating, because it changed the answer by an order of
+magnitude. MARIDA has no land class: all 15 labels are sea-surface classes, so a
+land pixel is forced into whichever marine category it resembles, and bright sand
+resembles floating biomass. Running the classifier over a full scene without an
+NDWI water gate produced 2,802 hits on the 29 July scene; gating on water left
+160, all of them offshore. Ninety-four percent of the unguarded detections were
+land.
+
 ### What that means for the design
 
 Spectral indices are the **primary detector** here, not a pre-filter for something
