@@ -214,10 +214,37 @@ The last row is the operating point that matters for anyone dispatching a crew:
 90% precision, 94.7% recall. A false positive costs a shift.
 
 **What this does not say.** MARIDA's sargassum labels are annotated Sentinel-2
-pixels, not field observations, and its scenes are not the Mexican Caribbean. A
-per-pixel benchmark score is not a validated landfall forecast. Full breakdown,
-including what the model confuses sargassum with, in
-[`docs/sargassum_report.md`](docs/sargassum_report.md).
+pixels, not field observations, and a per-pixel benchmark score is not a validated
+landfall forecast. Full breakdown, including what the model confuses sargassum with,
+in [`docs/sargassum_report.md`](docs/sargassum_report.md).
+
+**Where these pixels are.** Every sargassum pixel in the held-out split sits on tile
+16PCC, 16PDC, 16PEC or 16QED: Motagua in Guatemala, Ulua and La Ceiba in Honduras,
+and Roatan. All four are among the 18 Sentinel-2 tiles the LANOT platform at UNAM
+processes operationally, so the benchmark measures this model over an area someone
+already monitors for sargassum every five days. None of them are on the Mexican
+stretch of that footprint.
+
+### Beside the operational system
+
+LANOT publish their detection rule in full, and it is not a learned model: five
+hand-calibrated inequalities on L2A reflectance ([Arellano-Verdejo et al.
+2025](https://doi.org/10.1038/s41598-025-93001-9)). Because the rule is published and
+the tiles overlap, both can be run on the same held-out pixels.
+
+They miss different things. 872 sargassum pixels are found only by this classifier,
+41 only by the published rule, and just 13 of 1,641 by neither, a union recall of
+0.992. Both are defeated by the same optically thin cloud, which is dark at 1610 nm
+and so slips through the SWIR gate that rejects 61% of cloud otherwise.
+
+```bash
+python scripts/eval_lanot_operator.py
+```
+
+The comparison is a complementarity study, not a ranking, and the per-pixel numbers
+for the published rule are its front gate without the segmentation and filtering that
+follow it in the real pipeline. Read the caveats in
+[`docs/lanot_comparison.md`](docs/lanot_comparison.md) before quoting anything from it.
 
 ### From detections to a beach a crew can be sent to
 

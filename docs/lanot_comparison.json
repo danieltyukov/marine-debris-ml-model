@@ -1,0 +1,211 @@
+{
+  "pixels": 190431,
+  "sargassum_pixels": 1641,
+  "tiles": [
+    "16PCC",
+    "16PDC",
+    "16PEC",
+    "16QED"
+  ],
+  "results": {
+    "LANOT expression (1)": {
+      "precision": 0.2939346811819596,
+      "recall": 0.4606946983546618,
+      "f1": 0.35888915262283405,
+      "tp": 756,
+      "fp": 1816,
+      "fn": 885
+    },
+    "this classifier, argmax": {
+      "precision": 0.7586042065009561,
+      "recall": 0.9670932358318098,
+      "f1": 0.8502544870077686,
+      "tp": 1587,
+      "fp": 505,
+      "fn": 54
+    },
+    "this classifier, best F1": {
+      "precision": 0.9868247694334651,
+      "recall": 0.9128580134064594,
+      "f1": 0.9484013928458372,
+      "tp": 1498,
+      "fp": 20,
+      "fn": 143,
+      "threshold": 0.9509285679878495
+    },
+    "this classifier + b11 gate, argmax": {
+      "precision": 0.7586042065009561,
+      "recall": 0.9670932358318098,
+      "f1": 0.8502544870077686,
+      "tp": 1587,
+      "fp": 505,
+      "fn": 54
+    },
+    "this classifier + b11 gate, best F1": {
+      "precision": 0.9868247694334651,
+      "recall": 0.9128580134064594,
+      "f1": 0.9484013928458372,
+      "tp": 1498,
+      "fp": 20,
+      "fn": 143,
+      "threshold": 0.9509285679878495
+    }
+  },
+  "breakdowns": {
+    "LANOT expression (1)": {
+      "false_alarms_from": {
+        "Clouds": 1348,
+        "Shallow Water": 202,
+        "Marine Water": 110,
+        "Cloud Shadows": 76,
+        "Waves": 45,
+        "Ship": 23,
+        "Mixed Water": 5,
+        "Natural Organic Material": 4
+      },
+      "missed_as_truth": {
+        "Dense Sargassum": 733,
+        "Sparse Sargassum": 152
+      }
+    },
+    "this classifier, argmax": {
+      "false_alarms_from": {
+        "Clouds": 390,
+        "Turbid Water": 47,
+        "Marine Water": 45,
+        "Shallow Water": 13,
+        "Cloud Shadows": 6,
+        "Mixed Water": 2,
+        "Wakes": 2
+      },
+      "missed_as_truth": {
+        "Sparse Sargassum": 48,
+        "Dense Sargassum": 6
+      }
+    },
+    "this classifier + b11 gate, argmax": {
+      "false_alarms_from": {
+        "Clouds": 390,
+        "Turbid Water": 47,
+        "Marine Water": 45,
+        "Shallow Water": 13,
+        "Cloud Shadows": 6,
+        "Mixed Water": 2,
+        "Wakes": 2
+      },
+      "missed_as_truth": {
+        "Sparse Sargassum": 48,
+        "Dense Sargassum": 6
+      }
+    }
+  },
+  "gate_diagnostic": {
+    "cloud_pixels": 31798,
+    "cloud_passing_gate": 12424,
+    "cloud_passing_gate_fraction": 0.39071639725768914,
+    "classifier_cloud_false_positives": 390,
+    "of_those_passing_gate": 390,
+    "median_b11_all_cloud": 0.061181098222732544,
+    "median_b11_classifier_cloud_fp": 0.040553219616413116,
+    "median_b11_lanot_cloud_fp": 0.03915132209658623,
+    "sargassum_passing_gate_fraction": 0.9987812309567337
+  },
+  "agreement": {
+    "identical_calls_fraction": 0.9860736959843723,
+    "sargassum_found_by_both": 715,
+    "sargassum_only_classifier": 872,
+    "sargassum_only_lanot": 41,
+    "sargassum_found_by_neither": 13,
+    "false_positives_shared": 291,
+    "shared_false_positives_from": {
+      "Clouds": 260,
+      "Shallow Water": 13,
+      "Marine Water": 12,
+      "Cloud Shadows": 6
+    },
+    "sargassum_found_by_either": 1628,
+    "union_recall": 0.992078001218769
+  },
+  "per_tile": {
+    "16PCC": {
+      "pixels": 112549,
+      "sargassum": 821,
+      "lanot": {
+        "precision": 0.1250936329588015,
+        "recall": 0.20341047503045068,
+        "f1": 0.15491651205936918,
+        "tp": 167,
+        "fp": 1168,
+        "fn": 654
+      },
+      "classifier_argmax": {
+        "precision": 0.625,
+        "recall": 0.97442143727162,
+        "f1": 0.7615421227986674,
+        "tp": 800,
+        "fp": 480,
+        "fn": 21
+      }
+    },
+    "16PDC": {
+      "pixels": 44430,
+      "sargassum": 67,
+      "lanot": {
+        "precision": 0.11428571428571428,
+        "recall": 0.6567164179104478,
+        "f1": 0.19469026548672563,
+        "tp": 44,
+        "fp": 341,
+        "fn": 23
+      },
+      "classifier_argmax": {
+        "precision": 0.7083333333333334,
+        "recall": 0.5074626865671642,
+        "f1": 0.591304347826087,
+        "tp": 34,
+        "fp": 14,
+        "fn": 33
+      }
+    },
+    "16PEC": {
+      "pixels": 25838,
+      "sargassum": 0,
+      "lanot": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 184,
+        "fn": 0
+      },
+      "classifier_argmax": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      }
+    },
+    "16QED": {
+      "pixels": 7614,
+      "sargassum": 753,
+      "lanot": {
+        "precision": 0.8158682634730539,
+        "recall": 0.7237715803452855,
+        "f1": 0.7670654468684025,
+        "tp": 545,
+        "fp": 123,
+        "fn": 208
+      },
+      "classifier_argmax": {
+        "precision": 0.9856020942408377,
+        "recall": 1.0,
+        "f1": 0.9927488464073829,
+        "tp": 753,
+        "fp": 11,
+        "fn": 0
+      }
+    }
+  }
+}
