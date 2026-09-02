@@ -19,8 +19,9 @@ Two facts make a direct comparison possible rather than hypothetical:
 * The paper names the 18 MGRS tiles the platform processes. Four of MARIDA's seventeen
   sites are on that list, and 95.6% of MARIDA's annotated sargassum pixels fall inside
   them. The benchmark is, for sargassum, mostly LANOT's own operating area.
-* MARIDA ships surface reflectance in the same 0-1 units the expression is written in,
-  so the thresholds transfer without rescaling.
+* MARIDA ships reflectance in the same 0-1 units the expression is written in, so the
+  thresholds apply without rescaling. It is ACOLITE Rayleigh-corrected reflectance on
+  L1C, not the Sen2Cor L2A the rule was calibrated on, and the report says so.
 
 So this runs their operator, as published, on the same held-out pixels this repository
 scores its own classifier on, and puts both in one table. It also answers the question
@@ -534,6 +535,15 @@ def _markdown(d: dict) -> str:
         "MARIDA annotates a deliberately confuser-rich subset of each scene rather than whole",
         "scenes. Precision on these pixels is pessimistic for both detectors compared with an",
         "operational scene that is mostly plain water.",
+        "",
+        "The reflectance is not the reflectance the rule was tuned on. MARIDA is ACOLITE",
+        "output on Level-1C, Rayleigh-corrected reflectance from dark spectrum fitting (Kikaki",
+        "et al. 2022). The LANOT pipeline runs Sen2Cor to Level-2A, and expression (1) was",
+        "calibrated on that. Both are unitless 0-1 reflectance, so the thresholds apply",
+        "without rescaling, but the Rayleigh-corrected product still carries the aerosol term,",
+        "largest in the blue and smallest in the SWIR. The `b11 < 0.05` term is the least",
+        "affected of the five and the `b04 < 0.1` term the most. A fairer test of the rule",
+        "would run it on Sen2Cor reflectance for the same pixels, which MARIDA does not ship.",
         "",
         "MARIDA's labels are annotations by remote-sensing researchers, not field",
         "observations. Nothing here is validated against sargassum that anyone touched.",

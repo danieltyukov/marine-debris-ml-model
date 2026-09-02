@@ -246,6 +246,20 @@ for the published rule are its front gate without the segmentation and filtering
 follow it in the real pipeline. Read the caveats in
 [`docs/lanot_comparison.md`](docs/lanot_comparison.md) before quoting anything from it.
 
+LANOT report three sources of false detections in operation: the edges of thin cloud,
+cloud shadows, and shallow water where the bottom shows through. MARIDA labels all
+three as classes, so the pixels to test a mask against already exist inside their
+footprint. [`docs/lanot_subset.csv.gz`](docs/lanot_subset.csv.gz) is every MARIDA
+pixel on the four shared tiles annotated as one of those confusers or as sargassum,
+with the 11 bands, coordinates, and whether the published rule fires.
+[`docs/lanot_subset.md`](docs/lanot_subset.md) describes the columns and gives the
+per-class baseline. The reflectance is ACOLITE Rayleigh-corrected, not Sen2Cor L2A,
+which matters for both the rule and anyone evaluating ACOLITE.
+
+```bash
+python scripts/package_lanot_subset.py
+```
+
 ### From detections to a beach a crew can be sent to
 
 A GeoJSON of floating-material polygons is not something anyone schedules against.

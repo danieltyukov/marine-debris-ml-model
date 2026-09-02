@@ -1,0 +1,184 @@
+{
+  "pixels": 120239,
+  "patches": 280,
+  "dates": 24,
+  "date_range": [
+    "2016-09-04",
+    "2020-11-15"
+  ],
+  "tiles": [
+    "16PCC",
+    "16PDC",
+    "16PEC",
+    "16QED"
+  ],
+  "splits": [
+    "train",
+    "val",
+    "test"
+  ],
+  "classes": [
+    "Dense Sargassum",
+    "Sparse Sargassum",
+    "Clouds",
+    "Cloud Shadows",
+    "Shallow Water"
+  ],
+  "per_class": {
+    "Dense Sargassum": {
+      "pixels": 2793,
+      "patches": 48,
+      "expr1_fires": 152,
+      "expr1_fraction": 0.05442176870748299,
+      "b11_gate_passes": 2791,
+      "b11_gate_fraction": 0.9992839240959541,
+      "median_b11": 0.015010000206530094,
+      "median_b8a": 0.13458000123500824
+    },
+    "Sparse Sargassum": {
+      "pixels": 2136,
+      "patches": 99,
+      "expr1_fires": 1725,
+      "expr1_fraction": 0.8075842696629213,
+      "b11_gate_passes": 2136,
+      "b11_gate_fraction": 1.0,
+      "median_b11": 0.006029999814927578,
+      "median_b8a": 0.04264000058174133
+    },
+    "Clouds": {
+      "pixels": 91365,
+      "patches": 138,
+      "expr1_fires": 2308,
+      "expr1_fraction": 0.025261314507743667,
+      "b11_gate_passes": 29081,
+      "b11_gate_fraction": 0.3182947518196246,
+      "median_b11": 0.0716399997472763,
+      "median_b8a": 0.08059000223875046
+    },
+    "Cloud Shadows": {
+      "pixels": 8042,
+      "patches": 58,
+      "expr1_fires": 111,
+      "expr1_fraction": 0.013802536682417309,
+      "b11_gate_passes": 8042,
+      "b11_gate_fraction": 1.0,
+      "median_b11": 0.00901000015437603,
+      "median_b8a": 0.01510000042617321
+    },
+    "Shallow Water": {
+      "pixels": 15903,
+      "patches": 44,
+      "expr1_fires": 386,
+      "expr1_fraction": 0.024272149908822236,
+      "b11_gate_passes": 15856,
+      "b11_gate_fraction": 0.9970445827831227,
+      "median_b11": 0.01561999972909689,
+      "median_b8a": 0.0232900008559227
+    }
+  },
+  "per_term": {
+    "Dense Sargassum": {
+      "b8A < 0.07": 0.05442176870748299,
+      "b04 < 0.1": 1.0,
+      "b11 < 0.05": 0.9992839240959541,
+      "b04 < b8A": 1.0,
+      "b04 < b08": 1.0
+    },
+    "Sparse Sargassum": {
+      "b8A < 0.07": 0.8567415730337079,
+      "b04 < 0.1": 1.0,
+      "b11 < 0.05": 1.0,
+      "b04 < b8A": 0.9798689138576779,
+      "b04 < b08": 0.9691011235955056
+    },
+    "Clouds": {
+      "b8A < 0.07": 0.3974388441963553,
+      "b04 < 0.1": 0.5931593060800088,
+      "b11 < 0.05": 0.31815246538608877,
+      "b04 < b8A": 0.6990313577409293,
+      "b04 < b08": 0.15580364472172056
+    },
+    "Cloud Shadows": {
+      "b8A < 0.07": 1.0,
+      "b04 < 0.1": 1.0,
+      "b11 < 0.05": 1.0,
+      "b04 < b8A": 0.2656055707535439,
+      "b04 < b08": 0.01715991047003233
+    },
+    "Shallow Water": {
+      "b8A < 0.07": 0.9984908507828711,
+      "b04 < 0.1": 1.0,
+      "b11 < 0.05": 0.9970445827831227,
+      "b04 < b8A": 0.2976796830786644,
+      "b04 < b08": 0.024775199647865183
+    }
+  },
+  "thin_cloud": {
+    "pixels": 29081,
+    "fraction_of_cloud": 0.3182947518196246,
+    "expr1_fires": 2308,
+    "expr1_fraction": 0.0793645335442385,
+    "median_b11": 0.03084000013768673
+  },
+  "per_split": {
+    "train": {
+      "Clouds": 45440,
+      "Shallow Water": 12809,
+      "Cloud Shadows": 3143,
+      "Sparse Sargassum": 870,
+      "Dense Sargassum": 866
+    },
+    "val": {
+      "Clouds": 14127,
+      "Cloud Shadows": 1511,
+      "Dense Sargassum": 1167,
+      "Shallow Water": 606,
+      "Sparse Sargassum": 385
+    },
+    "test": {
+      "Clouds": 31798,
+      "Cloud Shadows": 3388,
+      "Shallow Water": 2488,
+      "Sparse Sargassum": 881,
+      "Dense Sargassum": 760
+    }
+  },
+  "per_tile": {
+    "16PCC": {
+      "site": "Motagua, Guatemala",
+      "patches": 128,
+      "Clouds": 62082,
+      "Shallow Water": 3960,
+      "Cloud Shadows": 3585,
+      "Dense Sargassum": 2048,
+      "Sparse Sargassum": 574
+    },
+    "16PDC": {
+      "site": "Ulua, Honduras",
+      "patches": 50,
+      "Clouds": 13507,
+      "Shallow Water": 2251,
+      "Cloud Shadows": 883,
+      "Sparse Sargassum": 226,
+      "Dense Sargassum": 49
+    },
+    "16PEC": {
+      "site": "La Ceiba, Honduras",
+      "patches": 75,
+      "Clouds": 11678,
+      "Shallow Water": 3782,
+      "Cloud Shadows": 1733,
+      "Sparse Sargassum": 645,
+      "Dense Sargassum": 222
+    },
+    "16QED": {
+      "site": "Roatan, Honduras",
+      "patches": 27,
+      "Shallow Water": 5910,
+      "Clouds": 4098,
+      "Cloud Shadows": 1841,
+      "Sparse Sargassum": 691,
+      "Dense Sargassum": 474
+    }
+  }
+}
