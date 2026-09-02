@@ -260,6 +260,10 @@ which matters for both the rule and anyone evaluating ACOLITE.
 python scripts/package_lanot_subset.py
 ```
 
+Neither script touches the torch stack. From a clean clone, `pip install -e . pandas
+scikit-learn` is enough to run them; `eval_lanot_operator.py` also needs the model
+that `train_marida.py` writes, which downloads MARIDA (1.1 GB) on first run.
+
 ### From detections to a beach a crew can be sent to
 
 A GeoJSON of floating-material polygons is not something anyone schedules against.
