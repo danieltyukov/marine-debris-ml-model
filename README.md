@@ -36,7 +36,7 @@ This version keeps the idea and the geo-referencing math and replaces the rest.
 | Reproducible benchmark | No, private test set | Yes, MARIDA scene-grouped split |
 | Deployment for inference | Docker + AWS SQS pipeline | `pip install`, one CLI command |
 | Segmentation | None | SAM 2, box-prompted |
-| Tests / CI | None | 761 tests, GitHub Actions |
+| Tests / CI | None | 894 tests, GitHub Actions |
 | Vendored dependencies | 19 MB of TF OD API | None |
 
 ### On comparing the numbers
@@ -157,18 +157,28 @@ NDVI, NDWI, PI, kNDVI and MNDWI. **429412 training pixels, 194863 held-out test 
 | | precision | recall | F1 |
 |---|---|---|---|
 | Marine Debris, `argmax` default | 0.160 | 0.929 | 0.273 |
-| Marine Debris, best-F1 threshold | **0.944** | 0.354 | **0.515** |
+| Marine Debris, best-F1 threshold | **0.750** | 0.583 | **0.656** |
+| Marine Debris, at 94% precision | 0.944 | 0.375 | 0.538 |
 
 ![debris precision-recall](assets/debris_pr_curve.png)
 
 A single F1 misrepresents this. Debris is 0.2% of labelled pixels, so balanced class
 weighting pushes the default hard toward recall. Sweeping the probability threshold
-reaches **precision 0.944 at recall 0.354** instead. Which end is right depends on the
+reaches **precision 0.944 at recall 0.375** instead. Which end is right depends on the
 job: wide-area screening wants recall because a human reviews the hits, while
 dispatching a cleanup vessel wants precision because a false positive costs a boat trip.
 
-Best F1 of 0.515 sits below the Random Forest baseline the MARIDA paper reports. This
-uses per-pixel spectra only, with no spatial context and no per-scene normalisation.
+This uses per-pixel spectra only, with no spatial context and no per-scene
+normalisation. The MARIDA paper's own baselines on this class (its Table 4) are F1
+0.53 for the best Random Forest and 0.48 for its U-Net, so 0.656 sits above both, with
+the caveat on width below. An earlier version of this README said the best debris F1
+was 0.515, which was below the Random Forest.
+That number came from a previous training run and was not updated when the shipped
+model was retrained; `scripts/eval_calibration.py` and `scripts/eval_band_ablation.py`
+both re-derive the figure from `models/marida_spectral.joblib`, so it cannot drift
+again. The debris support is 381 test pixels in a handful of patches, and the
+patch-bootstrap interval on that F1 runs from 0.27 to 0.78 (`docs/band_ablation.md`),
+which is the honest width of any debris number from this benchmark.
 
 The most informative features are **B05** (red edge, 705 nm) and **B01** (coastal
 aerosol, 443 nm), both outranking every named index. Neither appears in the FDI
@@ -188,7 +198,7 @@ python scripts/train_marida.py      # downloads MARIDA, trains, writes docs/mari
 
 ### The same model is a much better sargassum detector than a debris detector
 
-The 0.515 above is the headline because this project set out to rebuild a *debris*
+The 0.656 above is the headline because this project set out to rebuild a *debris*
 detector. It also buried the more useful half of the same training run.
 
 MARIDA labels Dense and Sparse Sargassum as separate classes. Scored on the same
@@ -196,7 +206,7 @@ scene-grouped split, by the same model, on the same 18 features:
 
 | task | precision | recall | F1 |
 |---|---|---|---|
-| Marine Debris, best F1 | 0.944 | 0.354 | 0.515 |
+| Marine Debris, best F1 | 0.750 | 0.583 | 0.656 |
 | Sparse Sargassum | 0.586 | 0.904 | 0.711 |
 | Dense Sargassum | 0.946 | 0.920 | **0.933** |
 | **Any sargassum, best F1** | **0.987** | 0.913 | **0.948** |
@@ -264,6 +274,67 @@ Neither script touches the torch stack. From a clean clone, `pip install -e . pa
 scikit-learn` is enough to run them; `eval_lanot_operator.py` also needs the model
 that `train_marida.py` writes, which downloads MARIDA (1.1 GB) on first run.
 
+### Which bands carry the signal
+
+Every optical satellite has a different band set, and the NASA IMPACT labels this
+project started from were drawn on 4-band PlanetScope imagery with no red edge and no
+shortwave infrared. Before comparing this model at 10 m against that imagery at 3 m,
+the question is how much of the 10 m score lives in bands a 3 m sensor does not have.
+So the same classifier was fitted on the band set of each sensor, with any index that
+needs a dropped band dropped with it, thresholds chosen on MARIDA's validation split
+and applied to the test split.
+
+![band ablation](assets/band_ablation.png)
+
+| bands kept | stands for | sargassum F1 | debris F1 |
+|---|---|---|---|
+| all 11 | Sentinel-2 | 0.940 | 0.511 |
+| no B11, B12 | no shortwave infrared | 0.901 | 0.389 |
+| no B05, B06, B07, B8A | Landsat-like | 0.830 | 0.602 |
+| B01 to B05, B08 | PlanetScope SuperDove | 0.914 | 0.394 |
+| B02, B03, B04, B08 | PlanetScope Dove, the NASA IMPACT imagery | **0.928** | **0.080** |
+| B02, B03, B04 | RGB | 0.452 | 0.023 |
+| the 7 indices only | physics, no raw band | **0.944** | 0.182 |
+| FAI above one cut | one index, no learning | 0.681 | 0.017 |
+
+Two things fall out. Sargassum is carried by the visible-plus-NIR spectrum: the seven
+physical indices alone match the full model, and the 4-band Dove set costs one point of
+F1. Debris is not. It needs the red edge and SWIR bands (0.080 on Dove-4) and it needs
+learned combinations of raw bands rather than the indices (0.182 on indices alone). The
+3 m against 10 m comparison will therefore be a resolution comparison for sargassum and
+a resolution-plus-bands comparison for debris, and has to be reported as such. The
+intervals, both index baselines and the protocol are in
+[`docs/band_ablation.md`](docs/band_ablation.md). The debris intervals are wide,
+because 381 test pixels in a handful of patches is what MARIDA has.
+
+```bash
+python scripts/eval_band_ablation.py     # fits eight models, about two minutes on CPU
+```
+
+### Is the probability an uncertainty?
+
+A map handed to an administration is asked to come with uncertainties, and a
+probability is only one if 0.9 means nine in ten. Scored on the held-out split, the
+sargassum probability nearly is: expected calibration error 0.003 raw and 0.0008 after
+an isotonic remap fitted on the validation split. The debris probability is not.
+Pixels scored between 0.9 and 1.0 were debris 24% of the time, and the remap lifts
+that to 82% only by moving most of them down.
+
+![calibration](assets/calibration.png)
+
+The remap is stored as breakpoints in `models/sargassum_calibration.json`, no pickle,
+and the Bonaire runner below applies it. With calibrated probabilities the operating
+point is its own statement: at or above 0.9 the model's estimate is nine in ten, and
+on the test split that cut gives **precision 0.989 at recall 0.907** for sargassum.
+Between the edge that keeps 98% of true sargassum (0.056) and 0.9 the model reports a
+third state, uncertain, instead of a yes or a no; 1,859 of 194,863 test pixels land
+there, 137 of them sargassum. Full tables in
+[`docs/calibration.md`](docs/calibration.md).
+
+```bash
+python scripts/eval_calibration.py
+```
+
 ### From detections to a beach a crew can be sent to
 
 A GeoJSON of floating-material polygons is not something anyone schedules against.
@@ -316,6 +387,90 @@ resembles floating biomass. Running the classifier over a full scene without an
 NDWI water gate produced 2,802 hits on the 29 July scene; gating on water left
 160, all of them offshore. Ninety-four percent of the unguarded detections were
 land.
+
+### Bonaire, every pass of one season
+
+The Cancun brief is one pass over one coast. A monitoring proposal for a small island
+has to answer a prior question: how often can the coast be seen at all, and how long
+does it go unseen. So this runs every Sentinel-2 pass from January to August 2025, 64
+of them, over eight stretches of Bonaire's coast cut from the OpenStreetMap coastline
+at named landmarks, Willemstoren round the windward side to Boka Kokolishi, plus the
+Kralendijk waterfront on the leeward side as a control that sargassum should not
+reach. Bonaire is where the Dutch government buys imagery for free use and where the
+2025 season was, by the island's own account, the worst on record.
+
+![bonaire season](assets/bonaire_season.png)
+
+| segment | seen on | longest gap | passes with a detection | pixels ever flagged | stationary |
+|---|---|---|---|---|---|
+| Willemstoren to Sorobon | 72% of passes | 15 days | 1 | 13 | 0 |
+| Lac Bay | 64% | 20 days | 24 | 1,167 | 25 |
+| Cai to Boka Washikemba | 72% | 15 days | 10 | 285 | 5 |
+| Boka Washikemba to Spelonk | 70% | 15 days | 3 | 41 | 0 |
+| Spelonk to Boka Onima | 73% | 15 days | 2 | 24 | 0 |
+| Boka Onima to Playa Chikitu | 73% | 15 days | 0 | 5 | 0 |
+| Playa Chikitu to Boka Kokolishi | 73% | 15 days | 0 | 13 | 0 |
+| Kralendijk waterfront, leeward control | 56% | 20 days | 0 | 0 | 0 |
+
+Three things came out of it, and the first is the one the proposal needs.
+
+**The cloud gap, measured on this coast.** The windward segments could be seen on
+64% to 73% of passes, and the longest run without a usable look was 15 to 20 days.
+Lac Bay had no fully observed pass between 12 March and 17 June: twelve partial
+looks and fifteen blind passes, four of them in a row from 6 to 16 April, which is
+the week of the Easter influx the island reported. A five-day revisit is the nominal
+number; the number that matters to a beach is the gap, and here it reached twenty
+days between usable looks and three months between clear ones.
+
+**Two defects in this repository, found by running it somewhere new.** The NDWI
+water gate the Cancun brief uses to keep bright sand out of a model that has no land
+class removes the target: on MARIDA's test split no Dense Sargassum pixel and 3.6% of
+Sparse Sargassum pixels have NDWI above zero, because a raft has the near-infrared of
+vegetation. Gated, this season found at most eight isolated pixels on any pass. The
+Bonaire runner removes land with the OpenStreetMap island polygon buffered 15 m
+seaward instead, which is what the Wageningen report on Bonaire did with a digitised
+coastline and a 10 m strip, and classifies every non-cloud pixel on the water side.
+The Cancun script still carries the gate; read its coverage figures as sparse
+sargassum until it gets a coastline too. And observability was diluted by land, since
+a surf zone is buffered on both sides of a shoreline; `segment_cloud_fractions` now
+takes a mask of the pixels that could have been observed.
+
+**What was flagged, and what that is.** Almost everything the classifier called
+sargassum at a calibrated 0.9 sits in the sheltered back-bay of Lac and on the reef
+flat at Cai: hundreds of pixels per clear pass from January to mid-March, tens from
+May to August, and 362 on 16 August. The leeward control was flagged on no pixel in
+64 passes and the open windward coast on almost none. Because a fixed bottom feature
+would be flagged on every clear pass, the runner keeps a per-pixel count of passes
+that flagged it against passes that could see it; only 25 of the 1,167 Lac Bay pixels
+were flagged on half or more of their clear passes, so this is not a stationary
+confuser, and the flagged area moves around the mangrove channels between passes.
+What it is has not been checked on the ground. MARIDA contains no shallow lagoon, and
+the Wageningen authors, whose random forest was trained on this island, say the bays
+and the open sea need separate models. Sargassum held in the bay after entering it,
+which is what the 2017 to 2022 record says happens, is the plausible reading; the
+uncertain band in the pass figure below is the classifier saying it is not sure, in
+the same place.
+
+![bonaire pass](assets/bonaire_pass.png)
+
+![bonaire persistence](assets/bonaire_persistence.png)
+
+The prior art is van der Geest, Meijninger and Mücher (2024), *Mapping the timing,
+distribution, and scale of Sargassum influx events in the coastal zone of Bonaire*,
+Wageningen Marine Research report C023/24: a Sentinel-2 random forest over 2017 to
+2022, cloud-masked by hand because their model called the breaking surf on this coast
+cloud, with the observation that Lac Bay's severe influx of 9 March 2018 came five
+days after the material was first seen at sea. That five days is the lead time this
+whole product is for.
+
+Per-pass rows are in [`docs/bonaire_season.csv`](docs/bonaire_season.csv), the
+report in [`docs/bonaire_season.md`](docs/bonaire_season.md). The segments and the
+island polygon are ODbL, from OpenStreetMap.
+
+```bash
+python scripts/make_bonaire_segments.py --fetch     # OSM coastline to segments and island polygon
+python scripts/run_bonaire_season.py                # every pass, about 17 minutes over HTTP
+```
 
 ### What that means for the design
 

@@ -590,3 +590,59 @@ def test_append_history_of_an_empty_report_is_a_no_op(tmp_path):
     path = tmp_path / "history.csv"
     append_history(SegmentReport(), path)
     assert not path.exists() or path.read_text(encoding="utf-8") == ""
+
+
+# ---- valid_mask: count only the pixels that could have been observed --------------
+
+
+def _mask_raster(height: int = 320, width: int = 120):
+    """A 10 m grid covering a 2 km north-south segment and its 500 m surf zone."""
+    transform = from_origin(ORIGIN_E - 600.0, ORIGIN_N + 2600.0, 10.0, 10.0)
+    return transform, (height, width)
+
+
+def test_valid_mask_removes_pixels_from_the_denominator():
+    """Half the zone is land. Cloud over the water half is total cloud, not half."""
+    transform, shape = _mask_raster()
+    _height, width = shape
+    cloudy = np.zeros(shape, dtype=bool)
+    cloudy[:, width // 2 :] = True  # the eastern half is cloud
+    valid = np.zeros(shape, dtype=bool)
+    valid[:, width // 2 :] = True  # and the eastern half is the only water
+    fractions = segment_cloud_fractions(
+        [_segment("s1", 2000.0)], cloudy, transform, src_crs=UTM16N, valid_mask=valid
+    )
+    assert fractions["s1"] == pytest.approx(1.0)
+
+
+def test_valid_mask_of_nothing_means_unobserved():
+    transform, shape = _mask_raster()
+    fractions = segment_cloud_fractions(
+        [_segment("s1", 2000.0)],
+        np.zeros(shape, dtype=bool),
+        transform,
+        src_crs=UTM16N,
+        valid_mask=np.zeros(shape, dtype=bool),
+    )
+    assert fractions["s1"] == 1.0
+
+
+def test_valid_mask_shape_must_match_the_cloud_mask():
+    transform, shape = _mask_raster()
+    with pytest.raises(ValueError, match="valid_mask"):
+        segment_cloud_fractions(
+            [_segment("s1", 2000.0)],
+            np.zeros(shape, dtype=bool),
+            transform,
+            src_crs=UTM16N,
+            valid_mask=np.zeros((3, 3), dtype=bool),
+        )
+
+
+def test_without_valid_mask_every_zone_pixel_counts():
+    transform, shape = _mask_raster()
+    _height, width = shape
+    cloudy = np.zeros(shape, dtype=bool)
+    cloudy[:, width // 2 :] = True
+    fractions = segment_cloud_fractions([_segment("s1", 2000.0)], cloudy, transform, src_crs=UTM16N)
+    assert 0.3 < fractions["s1"] < 0.7

@@ -9,7 +9,7 @@ in `marida_report.md` come from the same model.
 
 The headline result in this repository is a negative one about *marine debris*:
 at 10 m ground sampling a debris filament is a few low-contrast pixels, and the
-best F1 is 0.515. Sargassum is a different physical target. It floats in mats
+best F1 is 0.656. Sargassum is a different physical target. It floats in mats
 tens of metres across and carries a chlorophyll red edge, so it fills pixels and
 the spectral indices key on it directly. Same model, same 18 features, same split.
 

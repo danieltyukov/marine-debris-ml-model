@@ -3,7 +3,8 @@
     python scripts/eval_sargassum.py
 
 The repository leads with the *Marine Debris* class, where the honest answer is a
-negative result: best F1 0.515, below the MARIDA paper's Random Forest baseline.
+negative result: best F1 0.656 on 381 pixels, with a patch-bootstrap interval
+from 0.27 to 0.78.
 That is the right thing to lead with for a debris detector, and it buried a
 second fact that matters for anyone asking what this is good for.
 
@@ -261,7 +262,7 @@ def _markdown(
         "",
         "The headline result in this repository is a negative one about *marine debris*:",
         "at 10 m ground sampling a debris filament is a few low-contrast pixels, and the",
-        "best F1 is 0.515. Sargassum is a different physical target. It floats in mats",
+        "best F1 is 0.656. Sargassum is a different physical target. It floats in mats",
         "tens of metres across and carries a chlorophyll red edge, so it fills pixels and",
         "the spectral indices key on it directly. Same model, same 18 features, same split.",
         "",

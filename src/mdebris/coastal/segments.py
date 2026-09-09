@@ -567,6 +567,7 @@ def segment_cloud_fractions(
     *,
     src_crs: Any,
     surf_zone_m: float = DEFAULT_SURF_ZONE_M,
+    valid_mask: NDArray[np.bool_] | None = None,
 ) -> dict[str, float]:
     """Fraction of each segment's surf zone that a cloud mask marks unusable.
 
@@ -581,13 +582,20 @@ def segment_cloud_fractions(
         transform: Affine mapping pixel ``(column, row)`` to ``src_crs``.
         src_crs: CRS of the raster. Sentinel-2 scenes are UTM.
         surf_zone_m: Surf-zone width in metres, matching ``aggregate_segments``.
+        valid_mask: Optional boolean array, True on pixels that could have been
+            observed at all. A surf zone is buffered on both sides of a shoreline,
+            so without this the land half dilutes every fraction; pass the water
+            side (or whatever the classifier was actually able to look at) and the
+            fraction becomes "of the pixels that could have been seen, how many were
+            not". A segment with no valid pixel maps to 1.0.
 
     Returns:
         Cloud fraction per ``segment_id``, each in ``[0, 1]``. A segment whose
         surf zone falls entirely outside the raster maps to 1.0.
 
     Raises:
-        ValueError: If ``cloud_mask`` is not two-dimensional.
+        ValueError: If ``cloud_mask`` is not two-dimensional, or ``valid_mask`` does
+            not share its shape.
     """
     import numpy as np
     from rasterio.features import geometry_mask
@@ -597,6 +605,13 @@ def segment_cloud_fractions(
         raise ValueError(f"cloud_mask must be 2-D, got shape {mask.shape}")
     cloudy = mask.astype(bool)
     height, width = cloudy.shape
+    valid = None
+    if valid_mask is not None:
+        valid = np.asarray(valid_mask).astype(bool)
+        if valid.shape != cloudy.shape:
+            raise ValueError(
+                f"valid_mask shape {valid.shape} must match cloud_mask shape {cloudy.shape}"
+            )
 
     from pyproj import CRS
 
@@ -626,6 +641,8 @@ def segment_cloud_fractions(
             invert=True,
             all_touched=True,
         )
+        if valid is not None:
+            inside &= valid
         total = int(inside.sum())
         fractions[segment.segment_id] = 1.0 if total == 0 else float(cloudy[inside].sum() / total)
     return fractions

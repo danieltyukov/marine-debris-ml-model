@@ -35,7 +35,13 @@ log = logging.getLogger("train")
 UNLABELLED = 0
 
 
-def collect(split: str, *, max_patches: int | None = None, min_confidence: int = 0):
+def collect(
+    split: str,
+    *,
+    max_patches: int | None = None,
+    min_confidence: int = 0,
+    return_groups: bool = False,
+):
     """Build a feature matrix and label vector from every labelled pixel in a split.
 
     Args:
@@ -44,9 +50,12 @@ def collect(split: str, *, max_patches: int | None = None, min_confidence: int =
         min_confidence: Drop pixels below this MARIDA confidence level. The dataset
             grades annotations, and low-confidence pixels are exactly the ambiguous
             ones a model should not be graded against.
+        return_groups: Also return the patch index of every pixel, for a cluster
+            bootstrap over patches rather than pixels.
 
     Returns:
-        (features, labels) where labels are MARIDA class name strings.
+        (features, labels) where labels are MARIDA class name strings, plus the
+        patch index array when ``return_groups`` is set.
     """
     patches = load_marida_split(split)
     if max_patches:
@@ -54,6 +63,7 @@ def collect(split: str, *, max_patches: int | None = None, min_confidence: int =
 
     feature_rows: list[np.ndarray] = []
     label_rows: list[np.ndarray] = []
+    group_rows: list[np.ndarray] = []
     for i, patch in enumerate(patches):
         image, classes, confidence = patch.read()
         labelled = classes != UNLABELLED
@@ -65,6 +75,7 @@ def collect(split: str, *, max_patches: int | None = None, min_confidence: int =
         features = build_features(bands).reshape(*classes.shape, -1)
         feature_rows.append(features[labelled])
         label_rows.append(classes[labelled])
+        group_rows.append(np.full(int(labelled.sum()), i, dtype=np.int32))
         if (i + 1) % 150 == 0:
             log.info("  %s: %d/%d patches", split, i + 1, len(patches))
 
@@ -74,6 +85,8 @@ def collect(split: str, *, max_patches: int | None = None, min_confidence: int =
     x = np.concatenate(feature_rows).astype(np.float32)
     codes = np.concatenate(label_rows)
     names = np.array([MARIDA_CLASSES[c - 1] for c in codes])
+    if return_groups:
+        return x, names, np.concatenate(group_rows)
     return x, names
 
 

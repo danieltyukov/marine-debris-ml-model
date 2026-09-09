@@ -1,0 +1,2187 @@
+{
+  "window": [
+    "2025-01-01",
+    "2025-08-31"
+  ],
+  "operating_points": {
+    "low": 0.05619834710743802,
+    "high": 0.9,
+    "calibrated": true,
+    "source": "docs/calibration.json: calibrated >= 0.9 is sargassum, low edge from band_calibrated"
+  },
+  "segments": [
+    {
+      "segment_id": "willemstoren_sorobon",
+      "name": "Willemstoren to Sorobon",
+      "n_passes": 64,
+      "n_observed": 31,
+      "n_partial": 15,
+      "n_blind": 18,
+      "usable_fraction": 0.71875,
+      "first_pass": "2025-01-01",
+      "last_pass": "2025-08-29",
+      "longest_gap_days": 15,
+      "median_gap_days": 5.0,
+      "n_detection_passes": 1,
+      "detection_dates": [
+        "2025-08-16"
+      ],
+      "max_affected_front_m": 1605.1
+    },
+    {
+      "segment_id": "lac_bay",
+      "name": "Lac Bay",
+      "n_passes": 64,
+      "n_observed": 14,
+      "n_partial": 27,
+      "n_blind": 23,
+      "usable_fraction": 0.640625,
+      "first_pass": "2025-01-01",
+      "last_pass": "2025-08-29",
+      "longest_gap_days": 20,
+      "median_gap_days": 5.0,
+      "n_detection_passes": 24,
+      "detection_dates": [
+        "2025-01-01",
+        "2025-01-06",
+        "2025-01-11",
+        "2025-01-16",
+        "2025-01-26",
+        "2025-01-31",
+        "2025-02-05",
+        "2025-02-15",
+        "2025-02-20",
+        "2025-02-25",
+        "2025-03-02",
+        "2025-03-07",
+        "2025-03-12",
+        "2025-03-17",
+        "2025-04-21",
+        "2025-05-08",
+        "2025-05-11",
+        "2025-06-07",
+        "2025-06-17",
+        "2025-07-05",
+        "2025-07-10",
+        "2025-07-17",
+        "2025-07-30",
+        "2025-08-16"
+      ],
+      "max_affected_front_m": 7552.0
+    },
+    {
+      "segment_id": "cai_washikemba",
+      "name": "Cai to Boka Washikemba",
+      "n_passes": 64,
+      "n_observed": 32,
+      "n_partial": 14,
+      "n_blind": 18,
+      "usable_fraction": 0.71875,
+      "first_pass": "2025-01-01",
+      "last_pass": "2025-08-29",
+      "longest_gap_days": 15,
+      "median_gap_days": 5.0,
+      "n_detection_passes": 10,
+      "detection_dates": [
+        "2025-01-01",
+        "2025-01-11",
+        "2025-01-16",
+        "2025-01-26",
+        "2025-01-31",
+        "2025-02-20",
+        "2025-02-25",
+        "2025-03-12",
+        "2025-05-11",
+        "2025-06-17"
+      ],
+      "max_affected_front_m": 1902.0
+    },
+    {
+      "segment_id": "washikemba_spelonk",
+      "name": "Boka Washikemba to Spelonk",
+      "n_passes": 64,
+      "n_observed": 34,
+      "n_partial": 11,
+      "n_blind": 19,
+      "usable_fraction": 0.703125,
+      "first_pass": "2025-01-01",
+      "last_pass": "2025-08-29",
+      "longest_gap_days": 15,
+      "median_gap_days": 5.0,
+      "n_detection_passes": 3,
+      "detection_dates": [
+        "2025-01-01",
+        "2025-01-16",
+        "2025-08-16"
+      ],
+      "max_affected_front_m": 1178.1
+    },
+    {
+      "segment_id": "spelonk_onima",
+      "name": "Spelonk to Boka Onima",
+      "n_passes": 64,
+      "n_observed": 32,
+      "n_partial": 15,
+      "n_blind": 17,
+      "usable_fraction": 0.734375,
+      "first_pass": "2025-01-01",
+      "last_pass": "2025-08-29",
+      "longest_gap_days": 15,
+      "median_gap_days": 5.0,
+      "n_detection_passes": 2,
+      "detection_dates": [
+        "2025-03-19",
+        "2025-07-07"
+      ],
+      "max_affected_front_m": 1120.7
+    },
+    {
+      "segment_id": "onima_chikitu",
+      "name": "Boka Onima to Playa Chikitu",
+      "n_passes": 64,
+      "n_observed": 34,
+      "n_partial": 13,
+      "n_blind": 17,
+      "usable_fraction": 0.734375,
+      "first_pass": "2025-01-01",
+      "last_pass": "2025-08-29",
+      "longest_gap_days": 15,
+      "median_gap_days": 5.0,
+      "n_detection_passes": 0,
+      "detection_dates": [],
+      "max_affected_front_m": 0.0
+    },
+    {
+      "segment_id": "chikitu_kokolishi",
+      "name": "Playa Chikitu to Boka Kokolishi",
+      "n_passes": 64,
+      "n_observed": 38,
+      "n_partial": 9,
+      "n_blind": 17,
+      "usable_fraction": 0.734375,
+      "first_pass": "2025-01-01",
+      "last_pass": "2025-08-29",
+      "longest_gap_days": 15,
+      "median_gap_days": 5.0,
+      "n_detection_passes": 0,
+      "detection_dates": [],
+      "max_affected_front_m": 0.0
+    },
+    {
+      "segment_id": "kralendijk",
+      "name": "Kralendijk waterfront",
+      "n_passes": 64,
+      "n_observed": 14,
+      "n_partial": 22,
+      "n_blind": 28,
+      "usable_fraction": 0.5625,
+      "first_pass": "2025-01-01",
+      "last_pass": "2025-08-29",
+      "longest_gap_days": 20,
+      "median_gap_days": 5.0,
+      "n_detection_passes": 0,
+      "detection_dates": [],
+      "max_affected_front_m": 0.0
+    }
+  ],
+  "stationary": {
+    "willemstoren_sorobon": {
+      "flagged_pixels": 13,
+      "stationary_pixels": 0
+    },
+    "lac_bay": {
+      "flagged_pixels": 1167,
+      "stationary_pixels": 25
+    },
+    "cai_washikemba": {
+      "flagged_pixels": 285,
+      "stationary_pixels": 5
+    },
+    "washikemba_spelonk": {
+      "flagged_pixels": 41,
+      "stationary_pixels": 0
+    },
+    "spelonk_onima": {
+      "flagged_pixels": 24,
+      "stationary_pixels": 0
+    },
+    "onima_chikitu": {
+      "flagged_pixels": 5,
+      "stationary_pixels": 0
+    },
+    "chikitu_kokolishi": {
+      "flagged_pixels": 13,
+      "stationary_pixels": 0
+    },
+    "kralendijk": {
+      "flagged_pixels": 0,
+      "stationary_pixels": 0
+    }
+  },
+  "passes": {
+    "S2B_MSIL2A_20250101T150719_R082_T19PEP_20250101T184446": {
+      "date": "2025-01-01",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 14.37,
+      "zone_cloud_fraction": 0.2047,
+      "scl_cloud_fractions": [
+        0.1292,
+        0.232,
+        0.1422,
+        0.1949,
+        0.3443,
+        0.1686,
+        0.131,
+        0.1481
+      ],
+      "not_water_fractions": [
+        0.0455,
+        0.2011,
+        0.0605,
+        0.0877,
+        0.1187,
+        0.0267,
+        0.0288,
+        0.0951
+      ],
+      "observed": 6,
+      "partial": 2,
+      "blind": 0,
+      "sargassum_pixels": 224,
+      "affected": [
+        "Lac Bay",
+        "Cai to Boka Washikemba",
+        "Boka Washikemba to Spelonk"
+      ]
+    },
+    "S2A_MSIL2A_20250106T150721_R082_T19PEP_20250106T181449": {
+      "date": "2025-01-06",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 27.62,
+      "zone_cloud_fraction": 0.2236,
+      "scl_cloud_fractions": [
+        0.2124,
+        0.4764,
+        0.2067,
+        0.0953,
+        0.0801,
+        0.2465,
+        0.4119,
+        0.2867
+      ],
+      "not_water_fractions": [
+        0.1078,
+        0.0586,
+        0.1119,
+        0.1215,
+        0.0707,
+        0.0697,
+        0.0494,
+        0.1658
+      ],
+      "observed": 2,
+      "partial": 6,
+      "blind": 0,
+      "sargassum_pixels": 54,
+      "affected": [
+        "Lac Bay"
+      ]
+    },
+    "S2B_MSIL2A_20250111T150719_R082_T19PEP_20250111T183922": {
+      "date": "2025-01-11",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 9.22,
+      "zone_cloud_fraction": 0.0813,
+      "scl_cloud_fractions": [
+        0.0975,
+        0.025,
+        0.0046,
+        0.0336,
+        0.0994,
+        0.0269,
+        0.0017,
+        0.5041
+      ],
+      "not_water_fractions": [
+        0.0058,
+        0.2651,
+        0.0315,
+        0.0407,
+        0.0142,
+        0.0033,
+        0.0028,
+        0.0351
+      ],
+      "observed": 7,
+      "partial": 1,
+      "blind": 0,
+      "sargassum_pixels": 468,
+      "affected": [
+        "Lac Bay",
+        "Cai to Boka Washikemba"
+      ]
+    },
+    "S2A_MSIL2A_20250116T150721_R082_T19PEP_20250116T180950": {
+      "date": "2025-01-16",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 13.44,
+      "zone_cloud_fraction": 0.0367,
+      "scl_cloud_fractions": [
+        0.1104,
+        0.0644,
+        0.0118,
+        0.0155,
+        0.0148,
+        0.0031,
+        0.003,
+        0.1357
+      ],
+      "not_water_fractions": [
+        0.0066,
+        0.2734,
+        0.0319,
+        0.0164,
+        0.0091,
+        0.0033,
+        0.0031,
+        0.0203
+      ],
+      "observed": 8,
+      "partial": 0,
+      "blind": 0,
+      "sargassum_pixels": 690,
+      "affected": [
+        "Lac Bay",
+        "Cai to Boka Washikemba",
+        "Boka Washikemba to Spelonk"
+      ]
+    },
+    "S2B_MSIL2A_20250121T150719_R082_T19PEP_20250121T203217": {
+      "date": "2025-01-21",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 31.98,
+      "zone_cloud_fraction": 0.2868,
+      "scl_cloud_fractions": [
+        0.6632,
+        0.7796,
+        0.441,
+        0.094,
+        0.0074,
+        0.0098,
+        0.0099,
+        0.3367
+      ],
+      "not_water_fractions": [
+        0.0017,
+        0.186,
+        0.0401,
+        0.0376,
+        0.0044,
+        0.0028,
+        0.0036,
+        0.0432
+      ],
+      "observed": 4,
+      "partial": 3,
+      "blind": 1,
+      "sargassum_pixels": 93,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250126T150751_R082_T19PEP_20250126T181511": {
+      "date": "2025-01-26",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 8.15,
+      "zone_cloud_fraction": 0.0391,
+      "scl_cloud_fractions": [
+        0.041,
+        0.0143,
+        0.034,
+        0.0481,
+        0.0333,
+        0.0036,
+        0.1481,
+        0.0036
+      ],
+      "not_water_fractions": [
+        0.0136,
+        0.2667,
+        0.038,
+        0.0663,
+        0.0141,
+        0.0103,
+        0.0185,
+        0.0349
+      ],
+      "observed": 8,
+      "partial": 0,
+      "blind": 0,
+      "sargassum_pixels": 359,
+      "affected": [
+        "Lac Bay",
+        "Cai to Boka Washikemba"
+      ]
+    },
+    "S2B_MSIL2A_20250131T150729_R082_T19PEP_20250131T203125": {
+      "date": "2025-01-31",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 20.89,
+      "zone_cloud_fraction": 0.1904,
+      "scl_cloud_fractions": [
+        0.2677,
+        0.2047,
+        0.195,
+        0.0083,
+        0.0908,
+        0.003,
+        0.135,
+        0.9989
+      ],
+      "not_water_fractions": [
+        0.0021,
+        0.2756,
+        0.0596,
+        0.0778,
+        0.0232,
+        0.0064,
+        0.0206,
+        0.75
+      ],
+      "observed": 5,
+      "partial": 2,
+      "blind": 1,
+      "sargassum_pixels": 152,
+      "affected": [
+        "Lac Bay",
+        "Cai to Boka Washikemba"
+      ]
+    },
+    "S2C_MSIL2A_20250205T150751_R082_T19PEP_20250205T181611": {
+      "date": "2025-02-05",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 29.82,
+      "zone_cloud_fraction": 0.1013,
+      "scl_cloud_fractions": [
+        0.0201,
+        0.1212,
+        0.0476,
+        0.0902,
+        0.0938,
+        0.0923,
+        0.0856,
+        0.4726
+      ],
+      "not_water_fractions": [
+        0.0526,
+        0.2314,
+        0.056,
+        0.1399,
+        0.0861,
+        0.0072,
+        0.0662,
+        0.3765
+      ],
+      "observed": 7,
+      "partial": 1,
+      "blind": 0,
+      "sargassum_pixels": 163,
+      "affected": [
+        "Lac Bay"
+      ]
+    },
+    "S2C_MSIL2A_20250215T150741_R082_T19PEP_20250215T183054": {
+      "date": "2025-02-15",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 43.18,
+      "zone_cloud_fraction": 0.1235,
+      "scl_cloud_fractions": [
+        0.1521,
+        0.2445,
+        0.0518,
+        0.0098,
+        0.0295,
+        0.0053,
+        0.0048,
+        0.8459
+      ],
+      "not_water_fractions": [
+        0.0012,
+        0.1317,
+        0.013,
+        0.0323,
+        0.0369,
+        0.003,
+        0.004,
+        0.0339
+      ],
+      "observed": 6,
+      "partial": 1,
+      "blind": 1,
+      "sargassum_pixels": 174,
+      "affected": [
+        "Lac Bay"
+      ]
+    },
+    "S2B_MSIL2A_20250220T150729_R082_T19PEP_20250220T184649": {
+      "date": "2025-02-20",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 1.26,
+      "zone_cloud_fraction": 0.0348,
+      "scl_cloud_fractions": [
+        0.0232,
+        0.0715,
+        0.0275,
+        0.0089,
+        0.0349,
+        0.0396,
+        0.0127,
+        0.0613
+      ],
+      "not_water_fractions": [
+        0.0024,
+        0.2493,
+        0.0229,
+        0.0189,
+        0.0064,
+        0.0046,
+        0.0122,
+        0.0179
+      ],
+      "observed": 8,
+      "partial": 0,
+      "blind": 0,
+      "sargassum_pixels": 224,
+      "affected": [
+        "Lac Bay",
+        "Cai to Boka Washikemba"
+      ]
+    },
+    "S2C_MSIL2A_20250225T150741_R082_T19PEP_20250225T181412": {
+      "date": "2025-02-25",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 14.2,
+      "zone_cloud_fraction": 0.0821,
+      "scl_cloud_fractions": [
+        0.0667,
+        0.1068,
+        0.0102,
+        0.0145,
+        0.1186,
+        0.0736,
+        0.0768,
+        0.2711
+      ],
+      "not_water_fractions": [
+        0.0118,
+        0.2629,
+        0.0729,
+        0.1614,
+        0.1041,
+        0.0284,
+        0.1107,
+        0.2168
+      ],
+      "observed": 7,
+      "partial": 1,
+      "blind": 0,
+      "sargassum_pixels": 94,
+      "affected": [
+        "Lac Bay",
+        "Cai to Boka Washikemba"
+      ]
+    },
+    "S2B_MSIL2A_20250302T150729_R082_T19PEP_20250302T183833": {
+      "date": "2025-03-02",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 5.37,
+      "zone_cloud_fraction": 0.0511,
+      "scl_cloud_fractions": [
+        0.0324,
+        0.0456,
+        0.0144,
+        0.0135,
+        0.0823,
+        0.0016,
+        0.0012,
+        0.2201
+      ],
+      "not_water_fractions": [
+        0.0421,
+        0.2523,
+        0.0602,
+        0.1604,
+        0.078,
+        0.0115,
+        0.0071,
+        0.0929
+      ],
+      "observed": 7,
+      "partial": 1,
+      "blind": 0,
+      "sargassum_pixels": 142,
+      "affected": [
+        "Lac Bay"
+      ]
+    },
+    "S2C_MSIL2A_20250307T150751_R082_T19PEP_20250307T202213": {
+      "date": "2025-03-07",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 22.28,
+      "zone_cloud_fraction": 0.2852,
+      "scl_cloud_fractions": [
+        0.2127,
+        0.2847,
+        0.3118,
+        0.5673,
+        0.2558,
+        0.0709,
+        0.0057,
+        0.9067
+      ],
+      "not_water_fractions": [
+        0.0094,
+        0.2727,
+        0.3432,
+        0.5691,
+        0.2327,
+        0.0062,
+        0.012,
+        0.0529
+      ],
+      "observed": 2,
+      "partial": 5,
+      "blind": 1,
+      "sargassum_pixels": 38,
+      "affected": [
+        "Lac Bay"
+      ]
+    },
+    "S2B_MSIL2A_20250312T150719_R082_T19PEP_20250312T202222": {
+      "date": "2025-03-12",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 1.68,
+      "zone_cloud_fraction": 0.0369,
+      "scl_cloud_fractions": [
+        0.0433,
+        0.167,
+        0.0313,
+        0.0064,
+        0.0238,
+        0.0045,
+        0.0027,
+        0.065
+      ],
+      "not_water_fractions": [
+        0.0884,
+        0.2689,
+        0.0901,
+        0.119,
+        0.0542,
+        0.0115,
+        0.0255,
+        0.0361
+      ],
+      "observed": 8,
+      "partial": 0,
+      "blind": 0,
+      "sargassum_pixels": 170,
+      "affected": [
+        "Lac Bay",
+        "Cai to Boka Washikemba"
+      ]
+    },
+    "S2C_MSIL2A_20250317T150741_R082_T19PEP_20250317T193358": {
+      "date": "2025-03-17",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 20.26,
+      "zone_cloud_fraction": 0.2031,
+      "scl_cloud_fractions": [
+        0.9477,
+        0.2625,
+        0.0322,
+        0.0029,
+        0.002,
+        0.004,
+        0.0042,
+        0.3368
+      ],
+      "not_water_fractions": [
+        0.0205,
+        0.3417,
+        0.0421,
+        0.0598,
+        0.0204,
+        0.0085,
+        0.0079,
+        0.0175
+      ],
+      "observed": 5,
+      "partial": 2,
+      "blind": 1,
+      "sargassum_pixels": 129,
+      "affected": [
+        "Lac Bay"
+      ]
+    },
+    "S2A_MSIL2A_20250319T150931_R082_T19PEP_20250319T202213": {
+      "date": "2025-03-19",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 69.24,
+      "zone_cloud_fraction": 0.4573,
+      "scl_cloud_fractions": [
+        0.1977,
+        0.5623,
+        0.4647,
+        0.5698,
+        0.323,
+        0.5688,
+        0.9503,
+        0.5213
+      ],
+      "not_water_fractions": [
+        0.0027,
+        0.0372,
+        0.1394,
+        0.4291,
+        0.179,
+        0.1455,
+        0.068,
+        0.0798
+      ],
+      "observed": 1,
+      "partial": 6,
+      "blind": 1,
+      "sargassum_pixels": 20,
+      "affected": [
+        "Spelonk to Boka Onima"
+      ]
+    },
+    "S2B_MSIL2A_20250322T150729_R082_T19PEP_20250322T203640": {
+      "date": "2025-03-22",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 40.91,
+      "zone_cloud_fraction": 0.8877,
+      "scl_cloud_fractions": [
+        0.9998,
+        1.0,
+        1.0,
+        0.9972,
+        0.9908,
+        0.2845,
+        0.4694,
+        0.8059
+      ],
+      "not_water_fractions": [
+        0.0,
+        0.0253,
+        0.1168,
+        0.0497,
+        0.0401,
+        0.0032
+      ],
+      "observed": 0,
+      "partial": 2,
+      "blind": 6,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250327T150741_R082_T19PEP_20250327T215859": {
+      "date": "2025-03-27",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 34.14,
+      "zone_cloud_fraction": 0.5259,
+      "scl_cloud_fractions": [
+        0.1746,
+        0.42,
+        0.157,
+        0.4737,
+        0.9975,
+        0.8739,
+        0.0866,
+        0.9709
+      ],
+      "not_water_fractions": [
+        0.037,
+        0.2239,
+        0.0926,
+        0.1622,
+        0.0262,
+        0.1594,
+        0.1501,
+        0.0395
+      ],
+      "observed": 3,
+      "partial": 2,
+      "blind": 3,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250329T150731_R082_T19PEP_20250330T005118": {
+      "date": "2025-03-29",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 71.63,
+      "zone_cloud_fraction": 0.9084,
+      "scl_cloud_fractions": [
+        1.0,
+        1.0,
+        0.9992,
+        0.9975,
+        0.9931,
+        0.7766,
+        0.0352,
+        1.0
+      ],
+      "not_water_fractions": [
+        0.0652,
+        0.0714,
+        0.1328,
+        0.1056,
+        0.0578
+      ],
+      "observed": 1,
+      "partial": 0,
+      "blind": 7,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250401T150719_R082_T19PEP_20250401T184131": {
+      "date": "2025-04-01",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 34.04,
+      "zone_cloud_fraction": 0.3137,
+      "scl_cloud_fractions": [
+        0.2596,
+        0.5744,
+        0.2177,
+        0.3345,
+        0.3376,
+        0.0189,
+        0.2326,
+        0.6796
+      ],
+      "not_water_fractions": [
+        0.0629,
+        0.1915,
+        0.0958,
+        0.1458,
+        0.0848,
+        0.0239,
+        0.0581,
+        0.0915
+      ],
+      "observed": 1,
+      "partial": 7,
+      "blind": 0,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250406T150741_R082_T19PEP_20250406T215123": {
+      "date": "2025-04-06",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 54.95,
+      "zone_cloud_fraction": 0.8523,
+      "scl_cloud_fractions": [
+        0.9842,
+        0.9997,
+        0.998,
+        1.0,
+        0.9038,
+        0.0463,
+        0.4342,
+        0.9615
+      ],
+      "not_water_fractions": [
+        0.0812,
+        0.0,
+        0.6518,
+        0.433,
+        0.0294,
+        0.3044,
+        0.5991
+      ],
+      "observed": 1,
+      "partial": 1,
+      "blind": 6,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250408T150931_R082_T19PEP_20250409T011158": {
+      "date": "2025-04-08",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 96.53,
+      "zone_cloud_fraction": 1.0,
+      "scl_cloud_fractions": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "not_water_fractions": [],
+      "observed": 0,
+      "partial": 0,
+      "blind": 8,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250411T150729_R082_T19PEP_20250411T183629": {
+      "date": "2025-04-11",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 75.17,
+      "zone_cloud_fraction": 0.8489,
+      "scl_cloud_fractions": [
+        0.935,
+        0.8385,
+        0.9793,
+        0.8328,
+        0.6933,
+        1.0,
+        1.0,
+        0.7367
+      ],
+      "not_water_fractions": [
+        0.0,
+        0.0245,
+        0.0055,
+        0.0511,
+        0.0484,
+        0.0324
+      ],
+      "observed": 0,
+      "partial": 1,
+      "blind": 7,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250416T150741_R082_T19PEP_20250416T211512": {
+      "date": "2025-04-16",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 47.34,
+      "zone_cloud_fraction": 0.3887,
+      "scl_cloud_fractions": [
+        0.2536,
+        0.7754,
+        0.1526,
+        0.5449,
+        0.4839,
+        0.1092,
+        0.0474,
+        0.8597
+      ],
+      "not_water_fractions": [
+        0.0045,
+        0.1474,
+        0.0824,
+        0.1476,
+        0.0986,
+        0.0597,
+        0.0552,
+        0.0709
+      ],
+      "observed": 3,
+      "partial": 3,
+      "blind": 2,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250421T150719_R082_T19PEP_20250421T184038": {
+      "date": "2025-04-21",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 18.79,
+      "zone_cloud_fraction": 0.0708,
+      "scl_cloud_fractions": [
+        0.0757,
+        0.3197,
+        0.0491,
+        0.004,
+        0.0059,
+        0.003,
+        0.0031,
+        0.3154
+      ],
+      "not_water_fractions": [
+        0.0444,
+        0.2981,
+        0.0768,
+        0.0837,
+        0.0521,
+        0.0479,
+        0.0566,
+        0.0232
+      ],
+      "observed": 6,
+      "partial": 2,
+      "blind": 0,
+      "sargassum_pixels": 39,
+      "affected": [
+        "Lac Bay"
+      ]
+    },
+    "S2C_MSIL2A_20250426T150741_R082_T19PEP_20250426T211715": {
+      "date": "2025-04-26",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 99.96,
+      "zone_cloud_fraction": 1.0,
+      "scl_cloud_fractions": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "not_water_fractions": [],
+      "observed": 0,
+      "partial": 0,
+      "blind": 8,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250428T150941_R082_T19PEP_20250429T001013": {
+      "date": "2025-04-28",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 98.68,
+      "zone_cloud_fraction": 1.0,
+      "scl_cloud_fractions": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "not_water_fractions": [],
+      "observed": 0,
+      "partial": 0,
+      "blind": 8,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250501T150719_R082_T19PEP_20250501T183953": {
+      "date": "2025-05-01",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 60.48,
+      "zone_cloud_fraction": 0.9981,
+      "scl_cloud_fractions": [
+        1.0,
+        1.0,
+        1.0,
+        0.9993,
+        0.9993,
+        0.991,
+        0.979,
+        1.0
+      ],
+      "not_water_fractions": [
+        0.2,
+        0.3393,
+        0.6831,
+        0.5833
+      ],
+      "observed": 0,
+      "partial": 0,
+      "blind": 8,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250506T150741_R082_T19PEP_20250506T201416": {
+      "date": "2025-05-06",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 27.06,
+      "zone_cloud_fraction": 0.2829,
+      "scl_cloud_fractions": [
+        0.4157,
+        0.9177,
+        0.3265,
+        0.3291,
+        0.0403,
+        0.1442,
+        0.0671,
+        0.2557
+      ],
+      "not_water_fractions": [
+        0.0188,
+        0.7245,
+        0.8044,
+        0.8391,
+        0.2378,
+        0.543,
+        0.7049,
+        0.0611
+      ],
+      "observed": 3,
+      "partial": 4,
+      "blind": 1,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250508T150731_R082_T19PEP_20250508T214213": {
+      "date": "2025-05-08",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 57.4,
+      "zone_cloud_fraction": 0.6679,
+      "scl_cloud_fractions": [
+        0.1148,
+        0.31,
+        0.4712,
+        0.7459,
+        1.0,
+        1.0,
+        1.0,
+        0.9955
+      ],
+      "not_water_fractions": [
+        0.0231,
+        0.2632,
+        0.1042,
+        0.3587,
+        0.4875
+      ],
+      "observed": 1,
+      "partial": 2,
+      "blind": 5,
+      "sargassum_pixels": 57,
+      "affected": [
+        "Lac Bay"
+      ]
+    },
+    "S2B_MSIL2A_20250511T150719_R082_T19PEP_20250511T184208": {
+      "date": "2025-05-11",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 20.09,
+      "zone_cloud_fraction": 0.0733,
+      "scl_cloud_fractions": [
+        0.1279,
+        0.2598,
+        0.0618,
+        0.0128,
+        0.005,
+        0.0053,
+        0.0043,
+        0.2989
+      ],
+      "not_water_fractions": [
+        0.0388,
+        0.3126,
+        0.0432,
+        0.1293,
+        0.054,
+        0.0419,
+        0.0522,
+        0.0807
+      ],
+      "observed": 6,
+      "partial": 2,
+      "blind": 0,
+      "sargassum_pixels": 55,
+      "affected": [
+        "Lac Bay",
+        "Cai to Boka Washikemba"
+      ]
+    },
+    "S2C_MSIL2A_20250516T150741_R082_T19PEP_20250516T201412": {
+      "date": "2025-05-16",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 71.57,
+      "zone_cloud_fraction": 0.2776,
+      "scl_cloud_fractions": [
+        0.3079,
+        0.4451,
+        0.0707,
+        0.0349,
+        0.1997,
+        0.0764,
+        0.7407,
+        0.8721
+      ],
+      "not_water_fractions": [
+        0.0217,
+        0.2757,
+        0.0375,
+        0.149,
+        0.1085,
+        0.0233,
+        0.0627,
+        0.0552
+      ],
+      "observed": 4,
+      "partial": 2,
+      "blind": 2,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250518T150941_R082_T19PEP_20250518T192803": {
+      "date": "2025-05-18",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 97.05,
+      "zone_cloud_fraction": 1.0,
+      "scl_cloud_fractions": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "not_water_fractions": [],
+      "observed": 0,
+      "partial": 0,
+      "blind": 8,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250521T150719_R082_T19PEP_20250521T184503": {
+      "date": "2025-05-21",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 24.61,
+      "zone_cloud_fraction": 0.2496,
+      "scl_cloud_fractions": [
+        0.2921,
+        0.5353,
+        0.2911,
+        0.03,
+        0.1336,
+        0.081,
+        0.0054,
+        0.728
+      ],
+      "not_water_fractions": [
+        0.0075,
+        0.1312,
+        0.0567,
+        0.1598,
+        0.0722,
+        0.0202,
+        0.0185,
+        0.0598
+      ],
+      "observed": 4,
+      "partial": 3,
+      "blind": 1,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250526T150741_R082_T19PEP_20250526T214319": {
+      "date": "2025-05-26",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 15.75,
+      "zone_cloud_fraction": 0.067,
+      "scl_cloud_fractions": [
+        0.1072,
+        0.3166,
+        0.0588,
+        0.0166,
+        0.0053,
+        0.0103,
+        0.0086,
+        0.1361
+      ],
+      "not_water_fractions": [
+        0.0346,
+        0.3209,
+        0.1527,
+        0.4008,
+        0.2784,
+        0.121,
+        0.1322,
+        0.2024
+      ],
+      "observed": 7,
+      "partial": 1,
+      "blind": 0,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250528T150741_R082_T19PEP_20250528T214014": {
+      "date": "2025-05-28",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 92.22,
+      "zone_cloud_fraction": 0.8282,
+      "scl_cloud_fractions": [
+        1.0,
+        1.0,
+        0.9995,
+        0.9986,
+        0.6869,
+        0.3259,
+        0.5617,
+        1.0
+      ],
+      "not_water_fractions": [
+        0.76,
+        0.825,
+        0.3126,
+        0.3338,
+        0.3243
+      ],
+      "observed": 0,
+      "partial": 3,
+      "blind": 5,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250531T150719_R082_T19PEP_20250531T183226": {
+      "date": "2025-05-31",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 94.88,
+      "zone_cloud_fraction": 0.9745,
+      "scl_cloud_fractions": [
+        0.8412,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "not_water_fractions": [
+        0.0003
+      ],
+      "observed": 0,
+      "partial": 0,
+      "blind": 8,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250605T150741_R082_T19PEP_20250605T193611": {
+      "date": "2025-06-05",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 14.28,
+      "zone_cloud_fraction": 0.1974,
+      "scl_cloud_fractions": [
+        0.1561,
+        0.2689,
+        0.0717,
+        0.0332,
+        0.007,
+        0.674,
+        0.804,
+        0.1695
+      ],
+      "not_water_fractions": [
+        0.0175,
+        0.2613,
+        0.1145,
+        0.1461,
+        0.0698,
+        0.041,
+        0.0768,
+        0.2463
+      ],
+      "observed": 5,
+      "partial": 2,
+      "blind": 1,
+      "sargassum_pixels": 9,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250607T150941_R082_T19PEP_20250607T213812": {
+      "date": "2025-06-07",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 22.0,
+      "zone_cloud_fraction": 0.1632,
+      "scl_cloud_fractions": [
+        0.0985,
+        0.5385,
+        0.3606,
+        0.0575,
+        0.0545,
+        0.0036,
+        0.0034,
+        0.4831
+      ],
+      "not_water_fractions": [
+        0.0045,
+        0.4359,
+        0.0265,
+        0.1028,
+        0.0373,
+        0.0154,
+        0.1058,
+        0.0544
+      ],
+      "observed": 5,
+      "partial": 3,
+      "blind": 0,
+      "sargassum_pixels": 33,
+      "affected": [
+        "Lac Bay"
+      ]
+    },
+    "S2B_MSIL2A_20250610T150719_R082_T19PEP_20250610T184805": {
+      "date": "2025-06-10",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 76.15,
+      "zone_cloud_fraction": 0.8647,
+      "scl_cloud_fractions": [
+        1.0,
+        1.0,
+        0.8539,
+        0.4616,
+        0.789,
+        0.859,
+        0.8807,
+        1.0
+      ],
+      "not_water_fractions": [
+        0.0439,
+        0.0665,
+        0.0464,
+        0.0141,
+        0.005
+      ],
+      "observed": 0,
+      "partial": 1,
+      "blind": 7,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250615T150741_R082_T19PEP_20250615T201416": {
+      "date": "2025-06-15",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 40.18,
+      "zone_cloud_fraction": 0.6742,
+      "scl_cloud_fractions": [
+        0.5365,
+        0.9584,
+        0.9966,
+        0.9718,
+        0.5079,
+        0.2054,
+        0.4738,
+        0.9474
+      ],
+      "not_water_fractions": [
+        0.0001,
+        0.0653,
+        0.288,
+        0.7674,
+        0.2638,
+        0.0337,
+        0.1999,
+        0.0891
+      ],
+      "observed": 0,
+      "partial": 4,
+      "blind": 4,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250617T150731_R082_T19PEP_20250617T215516": {
+      "date": "2025-06-17",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 9.53,
+      "zone_cloud_fraction": 0.1172,
+      "scl_cloud_fractions": [
+        0.1229,
+        0.1379,
+        0.0409,
+        0.1306,
+        0.1233,
+        0.3609,
+        0.0638,
+        0.1286
+      ],
+      "not_water_fractions": [
+        0.0135,
+        0.3116,
+        0.0572,
+        0.1495,
+        0.0635,
+        0.1009,
+        0.0295,
+        0.1361
+      ],
+      "observed": 7,
+      "partial": 1,
+      "blind": 0,
+      "sargassum_pixels": 88,
+      "affected": [
+        "Lac Bay",
+        "Cai to Boka Washikemba"
+      ]
+    },
+    "S2B_MSIL2A_20250620T150719_R082_T19PEP_20250620T202614": {
+      "date": "2025-06-20",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 32.18,
+      "zone_cloud_fraction": 0.3757,
+      "scl_cloud_fractions": [
+        0.4417,
+        0.3252,
+        0.246,
+        0.0174,
+        0.5388,
+        0.6632,
+        0.0788,
+        0.6432
+      ],
+      "not_water_fractions": [
+        0.0012,
+        0.3206,
+        0.0314,
+        0.0569,
+        0.0533,
+        0.012,
+        0.0147,
+        0.0821
+      ],
+      "observed": 2,
+      "partial": 6,
+      "blind": 0,
+      "sargassum_pixels": 1,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250625T150741_R082_T19PEP_20250625T194815": {
+      "date": "2025-06-25",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 99.36,
+      "zone_cloud_fraction": 0.9999,
+      "scl_cloud_fractions": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        0.999,
+        1.0
+      ],
+      "not_water_fractions": [
+        0.0
+      ],
+      "observed": 0,
+      "partial": 0,
+      "blind": 8,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250627T150941_R082_T19PEP_20250627T194017": {
+      "date": "2025-06-27",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 13.38,
+      "zone_cloud_fraction": 0.4749,
+      "scl_cloud_fractions": [
+        0.5348,
+        0.5763,
+        0.2553,
+        0.5698,
+        0.5804,
+        0.2846,
+        0.3297,
+        0.5232
+      ],
+      "not_water_fractions": [
+        0.0046,
+        0.2333,
+        0.1044,
+        0.4129,
+        0.0442,
+        0.1225,
+        0.1597,
+        0.0173
+      ],
+      "observed": 0,
+      "partial": 8,
+      "blind": 0,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250630T150729_R082_T19PEP_20250630T184300": {
+      "date": "2025-06-30",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 55.3,
+      "zone_cloud_fraction": 0.5254,
+      "scl_cloud_fractions": [
+        0.3526,
+        0.579,
+        0.5301,
+        0.3795,
+        0.5044,
+        0.8317,
+        0.6019,
+        0.5175
+      ],
+      "not_water_fractions": [
+        0.0014,
+        0.074,
+        0.0288,
+        0.0506,
+        0.0551,
+        0.1617,
+        0.1695,
+        0.0573
+      ],
+      "observed": 0,
+      "partial": 7,
+      "blind": 1,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250705T150741_R082_T19PEP_20250705T194315": {
+      "date": "2025-07-05",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 31.43,
+      "zone_cloud_fraction": 0.1924,
+      "scl_cloud_fractions": [
+        0.0421,
+        0.1075,
+        0.0574,
+        0.1583,
+        0.3568,
+        0.4274,
+        0.0699,
+        0.3351
+      ],
+      "not_water_fractions": [
+        0.0395,
+        0.2682,
+        0.0692,
+        0.2104,
+        0.1169,
+        0.1688,
+        0.0341,
+        0.096
+      ],
+      "observed": 5,
+      "partial": 3,
+      "blind": 0,
+      "sargassum_pixels": 50,
+      "affected": [
+        "Lac Bay"
+      ]
+    },
+    "S2A_MSIL2A_20250707T150741_R082_T19PEP_20250707T211724": {
+      "date": "2025-07-07",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 15.91,
+      "zone_cloud_fraction": 0.356,
+      "scl_cloud_fractions": [
+        0.6217,
+        0.9774,
+        0.5423,
+        0.0153,
+        0.0068,
+        0.1703,
+        0.0445,
+        0.7205
+      ],
+      "not_water_fractions": [
+        0.0099,
+        0.0124,
+        0.0404,
+        0.0759,
+        0.0265,
+        0.0217,
+        0.0193,
+        0.0295
+      ],
+      "observed": 4,
+      "partial": 2,
+      "blind": 2,
+      "sargassum_pixels": 14,
+      "affected": [
+        "Spelonk to Boka Onima"
+      ]
+    },
+    "S2B_MSIL2A_20250710T150729_R082_T19PEP_20250710T184513": {
+      "date": "2025-07-10",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 13.79,
+      "zone_cloud_fraction": 0.0914,
+      "scl_cloud_fractions": [
+        0.1708,
+        0.1952,
+        0.032,
+        0.0587,
+        0.0046,
+        0.0882,
+        0.0105,
+        0.4544
+      ],
+      "not_water_fractions": [
+        0.0066,
+        0.3307,
+        0.0356,
+        0.0644,
+        0.0219,
+        0.0309,
+        0.0589,
+        0.0285
+      ],
+      "observed": 7,
+      "partial": 1,
+      "blind": 0,
+      "sargassum_pixels": 67,
+      "affected": [
+        "Lac Bay"
+      ]
+    },
+    "S2C_MSIL2A_20250715T150741_R082_T19PEP_20250715T193512": {
+      "date": "2025-07-15",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 10.96,
+      "zone_cloud_fraction": 0.1781,
+      "scl_cloud_fractions": [
+        0.1384,
+        0.3499,
+        0.1145,
+        0.1794,
+        0.1387,
+        0.0538,
+        0.0281,
+        0.7015
+      ],
+      "not_water_fractions": [
+        0.0131,
+        0.3126,
+        0.0894,
+        0.132,
+        0.1093,
+        0.0356,
+        0.0626,
+        0.1069
+      ],
+      "observed": 6,
+      "partial": 1,
+      "blind": 1,
+      "sargassum_pixels": 4,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250717T150941_R082_T19PEP_20250717T193255": {
+      "date": "2025-07-17",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 6.72,
+      "zone_cloud_fraction": 0.0663,
+      "scl_cloud_fractions": [
+        0.0979,
+        0.1784,
+        0.0306,
+        0.0583,
+        0.025,
+        0.0043,
+        0.0339,
+        0.3087
+      ],
+      "not_water_fractions": [
+        0.1867,
+        0.3274,
+        0.2154,
+        0.4048,
+        0.2737,
+        0.1144,
+        0.1895,
+        0.3327
+      ],
+      "observed": 7,
+      "partial": 1,
+      "blind": 0,
+      "sargassum_pixels": 35,
+      "affected": [
+        "Lac Bay"
+      ]
+    },
+    "S2B_MSIL2A_20250720T150729_R082_T19PEP_20250720T183906": {
+      "date": "2025-07-20",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 97.18,
+      "zone_cloud_fraction": 0.9998,
+      "scl_cloud_fractions": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        0.9983,
+        1.0,
+        1.0
+      ],
+      "not_water_fractions": [
+        0.0208
+      ],
+      "observed": 0,
+      "partial": 0,
+      "blind": 8,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250725T150741_R082_T19PEP_20250725T193912": {
+      "date": "2025-07-25",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 18.78,
+      "zone_cloud_fraction": 0.6024,
+      "scl_cloud_fractions": [
+        0.3966,
+        0.9415,
+        0.8991,
+        0.8184,
+        0.6057,
+        0.0453,
+        0.0068,
+        0.7352
+      ],
+      "not_water_fractions": [
+        0.0038,
+        0.0297,
+        0.2012,
+        0.124,
+        0.0181,
+        0.0123,
+        0.0789,
+        0.0398
+      ],
+      "observed": 2,
+      "partial": 2,
+      "blind": 4,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250727T150741_R082_T19PEP_20250727T213720": {
+      "date": "2025-07-27",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 45.57,
+      "zone_cloud_fraction": 0.8982,
+      "scl_cloud_fractions": [
+        0.8449,
+        1.0,
+        0.6863,
+        1.0,
+        0.9474,
+        0.9993,
+        0.996,
+        1.0
+      ],
+      "not_water_fractions": [
+        0.0003,
+        0.0275,
+        0.1268,
+        0.0,
+        0.0222
+      ],
+      "observed": 0,
+      "partial": 1,
+      "blind": 7,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250730T150719_R082_T19PEP_20250730T185847": {
+      "date": "2025-07-30",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 5.81,
+      "zone_cloud_fraction": 0.0953,
+      "scl_cloud_fractions": [
+        0.073,
+        0.164,
+        0.0342,
+        0.3232,
+        0.0716,
+        0.0076,
+        0.0055,
+        0.4802
+      ],
+      "not_water_fractions": [
+        0.0212,
+        0.2981,
+        0.0488,
+        0.0862,
+        0.0331,
+        0.0197,
+        0.0189,
+        0.1356
+      ],
+      "observed": 6,
+      "partial": 2,
+      "blind": 0,
+      "sargassum_pixels": 44,
+      "affected": [
+        "Lac Bay"
+      ]
+    },
+    "S2C_MSIL2A_20250804T150741_R082_T19PEP_20250804T195015": {
+      "date": "2025-08-04",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 9.81,
+      "zone_cloud_fraction": 0.0591,
+      "scl_cloud_fractions": [
+        0.1417,
+        0.257,
+        0.0407,
+        0.0095,
+        0.0027,
+        0.0045,
+        0.0028,
+        0.0981
+      ],
+      "not_water_fractions": [
+        0.0774,
+        0.3226,
+        0.1005,
+        0.2624,
+        0.1923,
+        0.1041,
+        0.1248,
+        0.1334
+      ],
+      "observed": 7,
+      "partial": 1,
+      "blind": 0,
+      "sargassum_pixels": 2,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250806T150941_R082_T19PEP_20250806T194007": {
+      "date": "2025-08-06",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 14.28,
+      "zone_cloud_fraction": 0.0613,
+      "scl_cloud_fractions": [
+        0.0544,
+        0.2244,
+        0.0718,
+        0.0796,
+        0.0061,
+        0.0105,
+        0.0083,
+        0.1606
+      ],
+      "not_water_fractions": [
+        0.1003,
+        0.2887,
+        0.1433,
+        0.3344,
+        0.1749,
+        0.0836,
+        0.1236,
+        0.1486
+      ],
+      "observed": 7,
+      "partial": 1,
+      "blind": 0,
+      "sargassum_pixels": 20,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250809T150719_R082_T19PEP_20250809T184923": {
+      "date": "2025-08-09",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 10.9,
+      "zone_cloud_fraction": 0.0852,
+      "scl_cloud_fractions": [
+        0.0854,
+        0.2507,
+        0.0479,
+        0.0096,
+        0.0374,
+        0.2182,
+        0.1923,
+        0.0018
+      ],
+      "not_water_fractions": [
+        0.0416,
+        0.2774,
+        0.0725,
+        0.132,
+        0.08,
+        0.0953,
+        0.1132,
+        0.0108
+      ],
+      "observed": 6,
+      "partial": 2,
+      "blind": 0,
+      "sargassum_pixels": 4,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250814T150741_R082_T19PEP_20250814T194512": {
+      "date": "2025-08-14",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 15.21,
+      "zone_cloud_fraction": 0.3657,
+      "scl_cloud_fractions": [
+        0.089,
+        0.2984,
+        0.0619,
+        0.3779,
+        0.6393,
+        0.6,
+        0.9329,
+        0.1059
+      ],
+      "not_water_fractions": [
+        0.0568,
+        0.2717,
+        0.0969,
+        0.198,
+        0.108,
+        0.033,
+        0.0564,
+        0.0671
+      ],
+      "observed": 3,
+      "partial": 4,
+      "blind": 1,
+      "sargassum_pixels": 9,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250816T150731_R082_T19PEP_20250816T213319": {
+      "date": "2025-08-16",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 17.43,
+      "zone_cloud_fraction": 0.2557,
+      "scl_cloud_fractions": [
+        0.0051,
+        0.0033,
+        0.001,
+        0.0011,
+        0.4208,
+        0.7279,
+        0.5994,
+        0.5205
+      ],
+      "not_water_fractions": [
+        0.1451,
+        0.2823,
+        0.0939,
+        0.0864,
+        0.055,
+        0.1529,
+        0.2089,
+        0.032
+      ],
+      "observed": 4,
+      "partial": 3,
+      "blind": 1,
+      "sargassum_pixels": 428,
+      "affected": [
+        "Willemstoren to Sorobon",
+        "Lac Bay",
+        "Boka Washikemba to Spelonk"
+      ]
+    },
+    "S2B_MSIL2A_20250819T150729_R082_T19PEP_20250819T183822": {
+      "date": "2025-08-19",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 89.25,
+      "zone_cloud_fraction": 0.9999,
+      "scl_cloud_fractions": [
+        1.0,
+        1.0,
+        1.0,
+        0.9991,
+        0.9998,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "not_water_fractions": [
+        0.12,
+        0.1053
+      ],
+      "observed": 0,
+      "partial": 0,
+      "blind": 8,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250824T150741_R082_T19PEP_20250824T195416": {
+      "date": "2025-08-24",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 21.26,
+      "zone_cloud_fraction": 0.0541,
+      "scl_cloud_fractions": [
+        0.0903,
+        0.3123,
+        0.0487,
+        0.0088,
+        0.0022,
+        0.005,
+        0.0042,
+        0.0395
+      ],
+      "not_water_fractions": [
+        0.1166,
+        0.2926,
+        0.1358,
+        0.2355,
+        0.1443,
+        0.1088,
+        0.1461,
+        0.129
+      ],
+      "observed": 7,
+      "partial": 1,
+      "blind": 0,
+      "sargassum_pixels": 2,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250826T150941_R082_T19PEP_20250826T192612": {
+      "date": "2025-08-26",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 54.34,
+      "zone_cloud_fraction": 0.7404,
+      "scl_cloud_fractions": [
+        0.9413,
+        0.9561,
+        0.9988,
+        0.999,
+        0.787,
+        0.2172,
+        0.0059,
+        0.1849
+      ],
+      "not_water_fractions": [
+        0.0,
+        0.2959,
+        0.0149,
+        0.0357,
+        0.1134,
+        0.0163,
+        0.0029,
+        0.0513
+      ],
+      "observed": 2,
+      "partial": 1,
+      "blind": 5,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250829T150719_R082_T19PEP_20250829T184452": {
+      "date": "2025-08-29",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 22.05,
+      "zone_cloud_fraction": 0.1016,
+      "scl_cloud_fractions": [
+        0.0962,
+        0.2963,
+        0.0469,
+        0.017,
+        0.1179,
+        0.0072,
+        0.0053,
+        0.3274
+      ],
+      "not_water_fractions": [
+        0.0374,
+        0.2803,
+        0.0882,
+        0.1806,
+        0.1111,
+        0.0546,
+        0.0853,
+        0.2087
+      ],
+      "observed": 6,
+      "partial": 2,
+      "blind": 0,
+      "sargassum_pixels": 2,
+      "affected": []
+    }
+  },
+  "failures": []
+}

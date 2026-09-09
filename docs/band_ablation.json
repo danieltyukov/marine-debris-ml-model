@@ -1,0 +1,449 @@
+{
+  "protocol": {
+    "train_pixels": 429412,
+    "val_pixels": 213102,
+    "test_pixels": 194863,
+    "threshold_selection": "best F1 on the MARIDA validation split, applied to test",
+    "interval": "95% percentile interval from a 500-resample cluster bootstrap over test patches",
+    "test_patches": 359,
+    "positives_test": {
+      "sargassum": 1641,
+      "debris": 381
+    },
+    "positives_val": {
+      "sargassum": 1552,
+      "debris": 1075
+    }
+  },
+  "scenarios": {
+    "sentinel2": {
+      "bands": [
+        "B01",
+        "B02",
+        "B03",
+        "B04",
+        "B05",
+        "B06",
+        "B07",
+        "B08",
+        "B8A",
+        "B11",
+        "B12"
+      ],
+      "features": [
+        "B01",
+        "B02",
+        "B03",
+        "B04",
+        "B05",
+        "B06",
+        "B07",
+        "B08",
+        "B8A",
+        "B11",
+        "B12",
+        "FDI",
+        "FAI",
+        "NDVI",
+        "NDWI",
+        "PI",
+        "KNDVI",
+        "MNDWI"
+      ],
+      "n_features": 18,
+      "fit_seconds": 7.9,
+      "sargassum": {
+        "threshold": 0.8955043377799249,
+        "tp": 1523,
+        "fp": 77,
+        "fn": 118,
+        "tn": 193145,
+        "n_positive": 1641,
+        "precision": 0.951875,
+        "recall": 0.9280926264472883,
+        "f1": 0.9398333847577908,
+        "f1_test_optimal_threshold": 0.9484013928458372,
+        "f1_ci_low": 0.8749886058464279,
+        "f1_ci_high": 0.9770136572594028
+      },
+      "debris": {
+        "threshold": 0.9116976340402917,
+        "tp": 254,
+        "fp": 359,
+        "fn": 127,
+        "tn": 194123,
+        "n_positive": 381,
+        "precision": 0.41435562805872755,
+        "recall": 0.6666666666666666,
+        "f1": 0.5110663983903421,
+        "f1_test_optimal_threshold": 0.6558345642540621,
+        "f1_ci_low": 0.27262951017141224,
+        "f1_ci_high": 0.7801757231350808
+      }
+    },
+    "no_swir": {
+      "bands": [
+        "B01",
+        "B02",
+        "B03",
+        "B04",
+        "B05",
+        "B06",
+        "B07",
+        "B08",
+        "B8A"
+      ],
+      "features": [
+        "B01",
+        "B02",
+        "B03",
+        "B04",
+        "B05",
+        "B06",
+        "B07",
+        "B08",
+        "B8A",
+        "NDVI",
+        "NDWI",
+        "PI",
+        "KNDVI"
+      ],
+      "n_features": 13,
+      "fit_seconds": 7.6,
+      "sargassum": {
+        "threshold": 0.5380825868194611,
+        "tp": 1568,
+        "fp": 271,
+        "fn": 73,
+        "tn": 192951,
+        "n_positive": 1641,
+        "precision": 0.8526373028820011,
+        "recall": 0.95551492992078,
+        "f1": 0.9011494252873563,
+        "f1_test_optimal_threshold": 0.9408866995073892,
+        "f1_ci_low": 0.8084104819107539,
+        "f1_ci_high": 0.9535473530864906
+      },
+      "debris": {
+        "threshold": 0.7493557259812833,
+        "tp": 244,
+        "fp": 628,
+        "fn": 137,
+        "tn": 193854,
+        "n_positive": 381,
+        "precision": 0.2798165137614679,
+        "recall": 0.6404199475065617,
+        "f1": 0.38946528332003194,
+        "f1_test_optimal_threshold": 0.43422459893048126,
+        "f1_ci_low": 0.2949404872897284,
+        "f1_ci_high": 0.49680487701859843
+      }
+    },
+    "no_red_edge": {
+      "bands": [
+        "B01",
+        "B02",
+        "B03",
+        "B04",
+        "B08",
+        "B11",
+        "B12"
+      ],
+      "features": [
+        "B01",
+        "B02",
+        "B03",
+        "B04",
+        "B08",
+        "B11",
+        "B12",
+        "FAI",
+        "NDVI",
+        "NDWI",
+        "PI",
+        "KNDVI",
+        "MNDWI"
+      ],
+      "n_features": 13,
+      "fit_seconds": 8.3,
+      "sargassum": {
+        "threshold": 0.4787830077982692,
+        "tp": 1555,
+        "fp": 553,
+        "fn": 86,
+        "tn": 192669,
+        "n_positive": 1641,
+        "precision": 0.7376660341555977,
+        "recall": 0.947592931139549,
+        "f1": 0.8295545478794346,
+        "f1_test_optimal_threshold": 0.9319948186528497,
+        "f1_ci_low": 0.6145851561612027,
+        "f1_ci_high": 0.9581414837709992
+      },
+      "debris": {
+        "threshold": 0.9023883710144446,
+        "tp": 205,
+        "fp": 95,
+        "fn": 176,
+        "tn": 194387,
+        "n_positive": 381,
+        "precision": 0.6833333333333333,
+        "recall": 0.5380577427821522,
+        "f1": 0.6020558002936858,
+        "f1_test_optimal_threshold": 0.6864197530864198,
+        "f1_ci_low": 0.51696876099858,
+        "f1_ci_high": 0.6729386493547735
+      }
+    },
+    "superdove": {
+      "bands": [
+        "B01",
+        "B02",
+        "B03",
+        "B04",
+        "B05",
+        "B08"
+      ],
+      "features": [
+        "B01",
+        "B02",
+        "B03",
+        "B04",
+        "B05",
+        "B08",
+        "NDVI",
+        "NDWI",
+        "PI",
+        "KNDVI"
+      ],
+      "n_features": 10,
+      "fit_seconds": 10.5,
+      "sargassum": {
+        "threshold": 0.4916879603180317,
+        "tp": 1561,
+        "fp": 212,
+        "fn": 80,
+        "tn": 193010,
+        "n_positive": 1641,
+        "precision": 0.8804286520022561,
+        "recall": 0.9512492382693479,
+        "f1": 0.9144698301113063,
+        "f1_test_optimal_threshold": 0.9317489335770871,
+        "f1_ci_low": 0.8293386110818877,
+        "f1_ci_high": 0.9576039937784944
+      },
+      "debris": {
+        "threshold": 0.7837570879802969,
+        "tp": 224,
+        "fp": 532,
+        "fn": 157,
+        "tn": 193950,
+        "n_positive": 381,
+        "precision": 0.2962962962962963,
+        "recall": 0.5879265091863517,
+        "f1": 0.3940193491644679,
+        "f1_test_optimal_threshold": 0.4159178433889602,
+        "f1_ci_low": 0.30456835247075575,
+        "f1_ci_high": 0.4947600411981863
+      }
+    },
+    "dove4": {
+      "bands": [
+        "B02",
+        "B03",
+        "B04",
+        "B08"
+      ],
+      "features": [
+        "B02",
+        "B03",
+        "B04",
+        "B08",
+        "NDVI",
+        "NDWI",
+        "PI",
+        "KNDVI"
+      ],
+      "n_features": 8,
+      "fit_seconds": 17.6,
+      "sargassum": {
+        "threshold": 0.8846138607314754,
+        "tp": 1533,
+        "fp": 129,
+        "fn": 108,
+        "tn": 193093,
+        "n_positive": 1641,
+        "precision": 0.9223826714801444,
+        "recall": 0.9341864716636198,
+        "f1": 0.9282470481380563,
+        "f1_test_optimal_threshold": 0.9300911854103343,
+        "f1_ci_low": 0.8586274242791706,
+        "f1_ci_high": 0.9578172715052445
+      },
+      "debris": {
+        "threshold": 0.5580191155987927,
+        "tp": 58,
+        "fp": 1009,
+        "fn": 323,
+        "tn": 193473,
+        "n_positive": 381,
+        "precision": 0.05435801312089972,
+        "recall": 0.15223097112860892,
+        "f1": 0.08011049723756906,
+        "f1_test_optimal_threshold": 0.10356731875719218,
+        "f1_ci_low": 0.040130502232733935,
+        "f1_ci_high": 0.15204099653748895
+      }
+    },
+    "rgb": {
+      "bands": [
+        "B02",
+        "B03",
+        "B04"
+      ],
+      "features": [
+        "B02",
+        "B03",
+        "B04"
+      ],
+      "n_features": 3,
+      "fit_seconds": 8.1,
+      "sargassum": {
+        "threshold": 0.8217884168126006,
+        "tp": 867,
+        "fp": 1329,
+        "fn": 774,
+        "tn": 191893,
+        "n_positive": 1641,
+        "precision": 0.3948087431693989,
+        "recall": 0.5283363802559415,
+        "f1": 0.4519155590304925,
+        "f1_test_optimal_threshold": 0.47177814029363785,
+        "f1_ci_low": 0.2530010286081646,
+        "f1_ci_high": 0.6609324044626176
+      },
+      "debris": {
+        "threshold": 0.29544001808804066,
+        "tp": 79,
+        "fp": 6546,
+        "fn": 302,
+        "tn": 187936,
+        "n_positive": 381,
+        "precision": 0.011924528301886792,
+        "recall": 0.2073490813648294,
+        "f1": 0.022552098201541537,
+        "f1_test_optimal_threshold": 0.04715969989281887,
+        "f1_ci_low": 0.009793778539802966,
+        "f1_ci_high": 0.05292701656408602
+      }
+    },
+    "indices_only": {
+      "bands": [],
+      "features": [
+        "FDI",
+        "FAI",
+        "NDVI",
+        "NDWI",
+        "PI",
+        "KNDVI",
+        "MNDWI"
+      ],
+      "n_features": 7,
+      "fit_seconds": 7.9,
+      "sargassum": {
+        "threshold": 0.6256434883592684,
+        "tp": 1567,
+        "fp": 112,
+        "fn": 74,
+        "tn": 193110,
+        "n_positive": 1641,
+        "precision": 0.9332936271590232,
+        "recall": 0.9549055453991468,
+        "f1": 0.9439759036144578,
+        "f1_test_optimal_threshold": 0.951647674776717,
+        "f1_ci_low": 0.8922726034858388,
+        "f1_ci_high": 0.9697523693477135
+      },
+      "debris": {
+        "threshold": 0.7636397926390193,
+        "tp": 263,
+        "fp": 2243,
+        "fn": 118,
+        "tn": 192239,
+        "n_positive": 381,
+        "precision": 0.10494812450119713,
+        "recall": 0.6902887139107612,
+        "f1": 0.18219605126428817,
+        "f1_test_optimal_threshold": 0.23333333333333334,
+        "f1_ci_low": 0.05712667361905403,
+        "f1_ci_high": 0.765720047905274
+      }
+    }
+  },
+  "baselines": {
+    "fdi_threshold": {
+      "features": [
+        "FDI"
+      ],
+      "n_features": 1,
+      "sargassum": {
+        "threshold": 0.024045756086707115,
+        "tp": 1610,
+        "fp": 106263,
+        "fn": 31,
+        "tn": 86959,
+        "n_positive": 1641,
+        "precision": 0.014924958052524728,
+        "recall": 0.9811090798293723,
+        "f1": 0.029402633453257117,
+        "f1_ci_low": 0.0128274644696058,
+        "f1_ci_high": 0.07741200149939888
+      },
+      "debris": {
+        "threshold": 0.02224990911781788,
+        "tp": 306,
+        "fp": 110508,
+        "fn": 75,
+        "tn": 83974,
+        "n_positive": 381,
+        "precision": 0.0027613839406573177,
+        "recall": 0.8031496062992126,
+        "f1": 0.005503844597329017,
+        "f1_ci_low": 0.0028471419466240704,
+        "f1_ci_high": 0.013793065826109379
+      }
+    },
+    "fai_threshold": {
+      "features": [
+        "FAI"
+      ],
+      "n_features": 1,
+      "sargassum": {
+        "threshold": 0.04434407502412796,
+        "tp": 923,
+        "fp": 145,
+        "fn": 718,
+        "tn": 193077,
+        "n_positive": 1641,
+        "precision": 0.8642322097378277,
+        "recall": 0.5624619134673979,
+        "f1": 0.6814322628276117,
+        "f1_ci_low": 0.49041730527207705,
+        "f1_ci_high": 0.7919858214720866
+      },
+      "debris": {
+        "threshold": 0.0004887059330940247,
+        "tp": 240,
+        "fp": 27031,
+        "fn": 141,
+        "tn": 167451,
+        "n_positive": 381,
+        "precision": 0.008800557368633347,
+        "recall": 0.6299212598425197,
+        "f1": 0.017358599739621002,
+        "f1_ci_low": 0.007129286309256257,
+        "f1_ci_high": 0.05391736233149838
+      }
+    }
+  }
+}
