@@ -156,4 +156,7 @@ outputs/
 !docs/**
 
 # trained model artifacts: joblib is pickle-based, never distribute one
-models/
+models/*
+
+# The isotonic calibrator is JSON breakpoints, not a pickle, and the Bonaire runner needs it.
+!models/sargassum_calibration.json
