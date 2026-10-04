@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="mdebris">
+  <style>
+    .w1 { fill: #3A8FC2; } .w2 { fill: #2378AB; } .w3 { fill: #145F8E; } .w4 { fill: #0B4B73; } .a { fill: #CF8A14; } .u { fill: #EFCD86; }
+    @media (prefers-color-scheme: dark) { .w1 { fill: #55A6D6; } .w2 { fill: #3B8DC0; } .w3 { fill: #2A76A6; } .w4 { fill: #1D618D; } .a { fill: #EEA937; } .u { fill: #A9894E; } }
+  </style>
+  <rect class="w1" x="1.5" y="1.5" width="13" height="13" rx="2.5"/>
+  <rect class="w1" x="17.5" y="1.5" width="13" height="13" rx="2.5"/>
+  <rect class="w2" x="33.5" y="1.5" width="13" height="13" rx="2.5"/>
+  <rect class="w2" x="49.5" y="1.5" width="13" height="13" rx="2.5"/>
+  <rect class="u" x="1.5" y="17.5" width="13" height="13" rx="2.5"/>
+  <rect class="a" x="17.5" y="17.5" width="13" height="13" rx="2.5"/>
+  <rect class="w2" x="33.5" y="17.5" width="13" height="13" rx="2.5"/>
+  <rect class="w3" x="49.5" y="17.5" width="13" height="13" rx="2.5"/>
+  <rect class="w2" x="1.5" y="33.5" width="13" height="13" rx="2.5"/>
+  <rect class="a" x="17.5" y="33.5" width="13" height="13" rx="2.5"/>
+  <rect class="a" x="33.5" y="33.5" width="13" height="13" rx="2.5"/>
+  <rect class="w3" x="49.5" y="33.5" width="13" height="13" rx="2.5"/>
+  <rect class="w2" x="1.5" y="49.5" width="13" height="13" rx="2.5"/>
+  <rect class="w3" x="17.5" y="49.5" width="13" height="13" rx="2.5"/>
+  <rect class="w3" x="33.5" y="49.5" width="13" height="13" rx="2.5"/>
+  <rect class="w4" x="49.5" y="49.5" width="13" height="13" rx="2.5"/>
+</svg>

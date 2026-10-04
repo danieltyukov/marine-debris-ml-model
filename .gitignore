@@ -120,8 +120,7 @@ venv.bak/
 # Rope project settings
 .ropeproject
 
-# mkdocs documentation
-/site
+# mkdocs documentation (not used; site/ is the project website and is tracked)
 
 # mypy
 .mypy_cache/

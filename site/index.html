@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>mdebris: sargassum and marine debris detection on Sentinel-2</title>
+  <meta name="description" content="An open Python pipeline and a spectral classifier trained on the public MARIDA benchmark. It reads free Sentinel-2 imagery without an account, reports sargassum with a calibrated probability, and says which stretches of coast the clouds hid.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#F4F7F8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0E1619" media="(prefers-color-scheme: dark)">
+  <link rel="canonical" href="https://danieltyukov.github.io/marine-debris-ml-model/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="mdebris">
+  <meta property="og:title" content="mdebris">
+  <meta property="og:description" content="Sargassum and marine debris detection on free Sentinel-2 imagery, with calibrated probabilities and the cloud gaps reported per beach.">
+  <meta property="og:url" content="https://danieltyukov.github.io/marine-debris-ml-model/">
+  <meta property="og:image" content="https://danieltyukov.github.io/marine-debris-ml-model/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The mdebris mark, a grid of blue sea pixels with a few amber ones, next to the line: Sargassum and marine debris, found in free Sentinel-2 imagery.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="mdebris">
+  <meta name="twitter:description" content="Sargassum and marine debris detection on free Sentinel-2 imagery, with calibrated probabilities and the cloud gaps reported per beach.">
+  <meta name="twitter:image" content="https://danieltyukov.github.io/marine-debris-ml-model/og.png">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&amp;display=swap">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="wrap">
+    <header class="top">
+      <a class="brand" href="./" aria-label="mdebris home">
+        <svg class="mark" viewBox="0 0 64 64" width="30" height="30" aria-hidden="true" focusable="false">
+          <rect class="m-w1" x="1.5" y="1.5" width="13" height="13" rx="2.5"/>
+          <rect class="m-w1" x="17.5" y="1.5" width="13" height="13" rx="2.5"/>
+          <rect class="m-w2" x="33.5" y="1.5" width="13" height="13" rx="2.5"/>
+          <rect class="m-w2" x="49.5" y="1.5" width="13" height="13" rx="2.5"/>
+          <rect class="m-un" x="1.5" y="17.5" width="13" height="13" rx="2.5"/>
+          <rect class="m-sg" x="17.5" y="17.5" width="13" height="13" rx="2.5"/>
+          <rect class="m-w2" x="33.5" y="17.5" width="13" height="13" rx="2.5"/>
+          <rect class="m-w3" x="49.5" y="17.5" width="13" height="13" rx="2.5"/>
+          <rect class="m-w2" x="1.5" y="33.5" width="13" height="13" rx="2.5"/>
+          <rect class="m-sg" x="17.5" y="33.5" width="13" height="13" rx="2.5"/>
+          <rect class="m-sg" x="33.5" y="33.5" width="13" height="13" rx="2.5"/>
+          <rect class="m-w3" x="49.5" y="33.5" width="13" height="13" rx="2.5"/>
+          <rect class="m-w2" x="1.5" y="49.5" width="13" height="13" rx="2.5"/>
+          <rect class="m-w3" x="17.5" y="49.5" width="13" height="13" rx="2.5"/>
+          <rect class="m-w3" x="33.5" y="49.5" width="13" height="13" rx="2.5"/>
+          <rect class="m-w4" x="49.5" y="49.5" width="13" height="13" rx="2.5"/>
+        </svg>
+        <span>mdebris</span>
+      </a>
+      <nav class="links" aria-label="Project">
+        <a href="https://github.com/danieltyukov/marine-debris-ml-model">GitHub</a>
+        <a href="report.html">Report</a>
+        <a href="https://github.com/danieltyukov/marine-debris-ml-model/tree/main/docs">Docs</a>
+        <a href="https://github.com/danieltyukov/marine-debris-ml-model/blob/main/CHANGELOG.md">Changelog</a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <div class="hero">
+        <h1>Sargassum and marine debris detection on free Sentinel-2 imagery.</h1>
+        <p class="lead">mdebris reads Sentinel-2 scenes over HTTP, with no account, API key or GPU, and classifies every sea pixel with a model trained on the public MARIDA benchmark. It reports sargassum with a calibrated probability, keeps an explicit uncertain band, and says which stretches of coast the clouds hid on each pass.</p>
+        <p class="actions">
+          <a class="button primary" href="https://github.com/danieltyukov/marine-debris-ml-model">View the code on GitHub</a>
+          <a class="button" href="#quick-start">Quick start</a>
+        </p>
+        <p class="note">Version 2.0.0, MIT license, Python 3.11 and 3.12.</p>
+
+        <figure class="pixel-figure">
+          <svg class="pixels" viewBox="0 0 627 186" role="img" aria-labelledby="px-title px-desc">
+            <title id="px-title">A strip of sea seen as 10 m pixels</title>
+            <desc id="px-desc">A grid of water pixels in three shades of blue. A thin windrow of sargassum runs across the left side as a line of amber pixels with pale amber, uncertain pixels along its edges. A small raft of three amber pixels sits lower right. A cloud covers the upper right, where the sea cannot be seen.</desc>
+            <rect class="w2" x="0" y="0" width="18" height="18" rx="3"/>
+            <rect class="w2" x="21" y="0" width="18" height="18" rx="3"/>
+            <rect class="w2" x="42" y="0" width="18" height="18" rx="3"/>
+            <rect class="w2" x="63" y="0" width="18" height="18" rx="3"/>
+            <rect class="w1" x="84" y="0" width="18" height="18" rx="3"/>
+            <rect class="w1" x="105" y="0" width="18" height="18" rx="3"/>
+            <rect class="w1" x="126" y="0" width="18" height="18" rx="3"/>
+            <rect class="w1" x="147" y="0" width="18" height="18" rx="3"/>
+            <rect class="w1" x="168" y="0" width="18" height="18" rx="3"/>
+            <rect class="w1" x="189" y="0" width="18" height="18" rx="3"/>
+            <rect class="w1" x="210" y="0" width="18" height="18" rx="3"/>
+            <rect class="w1" x="231" y="0" width="18" height="18" rx="3"/>
+            <rect class="w1" x="252" y="0" width="18" height="18" rx="3"/>
+            <rect class="w2" x="273" y="0" width="18" height="18" rx="3"/>
+            <rect class="w2" x="294" y="0" width="18" height="18" rx="3"/>
+            <rect class="w2" x="315" y="0" width="18" height="18" rx="3"/>
+            <rect class="w2" x="336" y="0" width="18" height="18" rx="3"/>
+            <rect class="w2" x="357" y="0" width="18" height="18" rx="3"/>
+            <rect class="w2" x="378" y="0" width="18" height="18" rx="3"/>
+            <rect class="w2" x="399" y="0" width="18" height="18" rx="3"/>
+            <rect class="w2" x="420" y="0" width="18" height="18" rx="3"/>
+            <rect class="w2" x="441" y="0" width="18" height="18" rx="3"/>
+            <rect class="cl" x="462" y="0" width="18" height="18" rx="3"/>
+            <rect class="cl" x="483" y="0" width="18" height="18" rx="3"/>
+            <rect class="cl" x="504" y="0" width="18" height="18" rx="3"/>
+            <rect class="cl" x="525" y="0" width="18" height="18" rx="3"/>
+            <rect class="cl" x="546" y="0" width="18" height="18" rx="3"/>
+            <rect class="cl" x="567" y="0" width="18" height="18" rx="3"/>
+            <rect class="w2" x="588" y="0" width="18" height="18" rx="3"/>
+            <rect class="w2" x="609" y="0" width="18" height="18" rx="3"/>
+            <rect class="w2" x="0" y="21" width="18" height="18" rx="3"/>
+            <rect class="w2" x="21" y="21" width="18" height="18" rx="3"/>
+            <rect class="w2" x="42" y="21" width="18" height="18" rx="3"/>
+            <rect class="w1" x="63" y="21" width="18" height="18" rx="3"/>
+            <rect class="w1" x="84" y="21" width="18" height="18" rx="3"/>
+            <rect class="w1" x="105" y="21" width="18" height="18" rx="3"/>
+            <rect class="w1" x="126" y="21" width="18" height="18" rx="3"/>
+            <rect class="w1" x="147" y="21" width="18" height="18" rx="3"/>
+            <rect class="w1" x="168" y="21" width="18" height="18" rx="3"/>
+            <rect class="w1" x="189" y="21" width="18" height="18" rx="3"/>
+            <rect class="w1" x="210" y="21" width="18" height="18" rx="3"/>
+            <rect class="w2" x="231" y="21" width="18" height="18" rx="3"/>
+            <rect class="w2" x="252" y="21" width="18" height="18" rx="3"/>
+            <rect class="w2" x="273" y="21" width="18" height="18" rx="3"/>
+            <rect class="w2" x="294" y="21" width="18" height="18" rx="3"/>
+            <rect class="w2" x="315" y="21" width="18" height="18" rx="3"/>
+            <rect class="w2" x="336" y="21" width="18" height="18" rx="3"/>
+            <rect class="w2" x="357" y="21" width="18" height="18" rx="3"/>
+            <rect class="w2" x="378" y="21" width="18" height="18" rx="3"/>
+            <rect class="w2" x="399" y="21" width="18" height="18" rx="3"/>
+            <rect class="w2" x="420" y="21" width="18" height="18" rx="3"/>
+            <rect class="cl" x="441" y="21" width="18" height="18" rx="3"/>
+            <rect class="cl" x="462" y="21" width="18" height="18" rx="3"/>
+            <rect class="cl" x="483" y="21" width="18" height="18" rx="3"/>
+            <rect class="cl" x="504" y="21" width="18" height="18" rx="3"/>
+            <rect class="cl" x="525" y="21" width="18" height="18" rx="3"/>
+            <rect class="cl" x="546" y="21" width="18" height="18" rx="3"/>
+            <rect class="cl" x="567" y="21" width="18" height="18" rx="3"/>
+            <rect class="cl" x="588" y="21" width="18" height="18" rx="3"/>
+            <rect class="w1" x="609" y="21" width="18" height="18" rx="3"/>
+            <rect class="w2" x="0" y="42" width="18" height="18" rx="3"/>
+            <rect class="w2" x="21" y="42" width="18" height="18" rx="3"/>
+            <rect class="w2" x="42" y="42" width="18" height="18" rx="3"/>
+            <rect class="w2" x="63" y="42" width="18" height="18" rx="3"/>
+            <rect class="w1" x="84" y="42" width="18" height="18" rx="3"/>
+            <rect class="w1" x="105" y="42" width="18" height="18" rx="3"/>
+            <rect class="w2" x="126" y="42" width="18" height="18" rx="3"/>
+            <rect class="w2" x="147" y="42" width="18" height="18" rx="3"/>
+            <rect class="w2" x="168" y="42" width="18" height="18" rx="3"/>
+            <rect class="w2" x="189" y="42" width="18" height="18" rx="3"/>
+            <rect class="w2" x="210" y="42" width="18" height="18" rx="3"/>
+            <rect class="w2" x="231" y="42" width="18" height="18" rx="3"/>
+            <rect class="w2" x="252" y="42" width="18" height="18" rx="3"/>
+            <rect class="w2" x="273" y="42" width="18" height="18" rx="3"/>
+            <rect class="un" x="294" y="42" width="18" height="18" rx="3"/>
+            <rect class="w2" x="315" y="42" width="18" height="18" rx="3"/>
+            <rect class="w2" x="336" y="42" width="18" height="18" rx="3"/>
+            <rect class="w2" x="357" y="42" width="18" height="18" rx="3"/>
+            <rect class="w2" x="378" y="42" width="18" height="18" rx="3"/>
+            <rect class="w2" x="399" y="42" width="18" height="18" rx="3"/>
+            <rect class="cl" x="420" y="42" width="18" height="18" rx="3"/>
+            <rect class="cl" x="441" y="42" width="18" height="18" rx="3"/>
+            <rect class="cl" x="462" y="42" width="18" height="18" rx="3"/>
+            <rect class="cl" x="483" y="42" width="18" height="18" rx="3"/>
+            <rect class="cl" x="504" y="42" width="18" height="18" rx="3"/>
+            <rect class="cl" x="525" y="42" width="18" height="18" rx="3"/>
+            <rect class="cl" x="546" y="42" width="18" height="18" rx="3"/>
+            <rect class="cl" x="567" y="42" width="18" height="18" rx="3"/>
+            <rect class="cl" x="588" y="42" width="18" height="18" rx="3"/>
+            <rect class="w1" x="609" y="42" width="18" height="18" rx="3"/>
+            <rect class="w2" x="0" y="63" width="18" height="18" rx="3"/>
+            <rect class="w2" x="21" y="63" width="18" height="18" rx="3"/>
+            <rect class="w2" x="42" y="63" width="18" height="18" rx="3"/>
+            <rect class="w2" x="63" y="63" width="18" height="18" rx="3"/>
+            <rect class="w2" x="84" y="63" width="18" height="18" rx="3"/>
+            <rect class="w2" x="105" y="63" width="18" height="18" rx="3"/>
+            <rect class="w2" x="126" y="63" width="18" height="18" rx="3"/>
+            <rect class="w2" x="147" y="63" width="18" height="18" rx="3"/>
+            <rect class="w2" x="168" y="63" width="18" height="18" rx="3"/>
+            <rect class="un" x="189" y="63" width="18" height="18" rx="3"/>
+            <rect class="sg" x="210" y="63" width="18" height="18" rx="3"/>
+            <rect class="sg" x="231" y="63" width="18" height="18" rx="3"/>
+            <rect class="sg" x="252" y="63" width="18" height="18" rx="3"/>
+            <rect class="sg" x="273" y="63" width="18" height="18" rx="3"/>
+            <rect class="sg" x="294" y="63" width="18" height="18" rx="3"/>
+            <rect class="sg" x="315" y="63" width="18" height="18" rx="3"/>
+            <rect class="sg" x="336" y="63" width="18" height="18" rx="3"/>
+            <rect class="w2" x="357" y="63" width="18" height="18" rx="3"/>
+            <rect class="w2" x="378" y="63" width="18" height="18" rx="3"/>
+            <rect class="w2" x="399" y="63" width="18" height="18" rx="3"/>
+            <rect class="w2" x="420" y="63" width="18" height="18" rx="3"/>
+            <rect class="w2" x="441" y="63" width="18" height="18" rx="3"/>
+            <rect class="cl" x="462" y="63" width="18" height="18" rx="3"/>
+            <rect class="cl" x="483" y="63" width="18" height="18" rx="3"/>
+            <rect class="cl" x="504" y="63" width="18" height="18" rx="3"/>
+            <rect class="cl" x="525" y="63" width="18" height="18" rx="3"/>
+            <rect class="cl" x="546" y="63" width="18" height="18" rx="3"/>
+            <rect class="cl" x="567" y="63" width="18" height="18" rx="3"/>
+            <rect class="w1" x="588" y="63" width="18" height="18" rx="3"/>
+            <rect class="w1" x="609" y="63" width="18" height="18" rx="3"/>
+            <rect class="w2" x="0" y="84" width="18" height="18" rx="3"/>
+            <rect class="w2" x="21" y="84" width="18" height="18" rx="3"/>
+            <rect class="w2" x="42" y="84" width="18" height="18" rx="3"/>
+            <rect class="w2" x="63" y="84" width="18" height="18" rx="3"/>
+            <rect class="w2" x="84" y="84" width="18" height="18" rx="3"/>
+            <rect class="w2" x="105" y="84" width="18" height="18" rx="3"/>
+            <rect class="w2" x="126" y="84" width="18" height="18" rx="3"/>
+            <rect class="w2" x="147" y="84" width="18" height="18" rx="3"/>
+            <rect class="sg" x="168" y="84" width="18" height="18" rx="3"/>
+            <rect class="sg" x="189" y="84" width="18" height="18" rx="3"/>
+            <rect class="w3" x="210" y="84" width="18" height="18" rx="3"/>
+            <rect class="sg" x="231" y="84" width="18" height="18" rx="3"/>
+            <rect class="un" x="252" y="84" width="18" height="18" rx="3"/>
+            <rect class="w3" x="273" y="84" width="18" height="18" rx="3"/>
+            <rect class="w3" x="294" y="84" width="18" height="18" rx="3"/>
+            <rect class="w2" x="315" y="84" width="18" height="18" rx="3"/>
+            <rect class="un" x="336" y="84" width="18" height="18" rx="3"/>
+            <rect class="w2" x="357" y="84" width="18" height="18" rx="3"/>
+            <rect class="w2" x="378" y="84" width="18" height="18" rx="3"/>
+            <rect class="w2" x="399" y="84" width="18" height="18" rx="3"/>
+            <rect class="w2" x="420" y="84" width="18" height="18" rx="3"/>
+            <rect class="w1" x="441" y="84" width="18" height="18" rx="3"/>
+            <rect class="cl" x="462" y="84" width="18" height="18" rx="3"/>
+            <rect class="w1" x="483" y="84" width="18" height="18" rx="3"/>
+            <rect class="cl" x="504" y="84" width="18" height="18" rx="3"/>
+            <rect class="cl" x="525" y="84" width="18" height="18" rx="3"/>
+            <rect class="w1" x="546" y="84" width="18" height="18" rx="3"/>
+            <rect class="w1" x="567" y="84" width="18" height="18" rx="3"/>
+            <rect class="w1" x="588" y="84" width="18" height="18" rx="3"/>
+            <rect class="w1" x="609" y="84" width="18" height="18" rx="3"/>
+            <rect class="w2" x="0" y="105" width="18" height="18" rx="3"/>
+            <rect class="w2" x="21" y="105" width="18" height="18" rx="3"/>
+            <rect class="w2" x="42" y="105" width="18" height="18" rx="3"/>
+            <rect class="w2" x="63" y="105" width="18" height="18" rx="3"/>
+            <rect class="w2" x="84" y="105" width="18" height="18" rx="3"/>
+            <rect class="w3" x="105" y="105" width="18" height="18" rx="3"/>
+            <rect class="sg" x="126" y="105" width="18" height="18" rx="3"/>
+            <rect class="sg" x="147" y="105" width="18" height="18" rx="3"/>
+            <rect class="w3" x="168" y="105" width="18" height="18" rx="3"/>
+            <rect class="w3" x="189" y="105" width="18" height="18" rx="3"/>
+            <rect class="w3" x="210" y="105" width="18" height="18" rx="3"/>
+            <rect class="w3" x="231" y="105" width="18" height="18" rx="3"/>
+            <rect class="w3" x="252" y="105" width="18" height="18" rx="3"/>
+            <rect class="w3" x="273" y="105" width="18" height="18" rx="3"/>
+            <rect class="w3" x="294" y="105" width="18" height="18" rx="3"/>
+            <rect class="w2" x="315" y="105" width="18" height="18" rx="3"/>
+            <rect class="w2" x="336" y="105" width="18" height="18" rx="3"/>
+            <rect class="w2" x="357" y="105" width="18" height="18" rx="3"/>
+            <rect class="w2" x="378" y="105" width="18" height="18" rx="3"/>
+            <rect class="w2" x="399" y="105" width="18" height="18" rx="3"/>
+            <rect class="w1" x="420" y="105" width="18" height="18" rx="3"/>
+            <rect class="w1" x="441" y="105" width="18" height="18" rx="3"/>
+            <rect class="w1" x="462" y="105" width="18" height="18" rx="3"/>
+            <rect class="w1" x="483" y="105" width="18" height="18" rx="3"/>
+            <rect class="w1" x="504" y="105" width="18" height="18" rx="3"/>
+            <rect class="w1" x="525" y="105" width="18" height="18" rx="3"/>
+            <rect class="w1" x="546" y="105" width="18" height="18" rx="3"/>
+            <rect class="w1" x="567" y="105" width="18" height="18" rx="3"/>
+            <rect class="w1" x="588" y="105" width="18" height="18" rx="3"/>
+            <rect class="w1" x="609" y="105" width="18" height="18" rx="3"/>
+            <rect class="w2" x="0" y="126" width="18" height="18" rx="3"/>
+            <rect class="w2" x="21" y="126" width="18" height="18" rx="3"/>
+            <rect class="w2" x="42" y="126" width="18" height="18" rx="3"/>
+            <rect class="un" x="63" y="126" width="18" height="18" rx="3"/>
+            <rect class="sg" x="84" y="126" width="18" height="18" rx="3"/>
+            <rect class="sg" x="105" y="126" width="18" height="18" rx="3"/>
+            <rect class="sg" x="126" y="126" width="18" height="18" rx="3"/>
+            <rect class="sg" x="147" y="126" width="18" height="18" rx="3"/>
+            <rect class="w3" x="168" y="126" width="18" height="18" rx="3"/>
+            <rect class="w3" x="189" y="126" width="18" height="18" rx="3"/>
+            <rect class="w3" x="210" y="126" width="18" height="18" rx="3"/>
+            <rect class="w3" x="231" y="126" width="18" height="18" rx="3"/>
+            <rect class="w3" x="252" y="126" width="18" height="18" rx="3"/>
+            <rect class="w3" x="273" y="126" width="18" height="18" rx="3"/>
+            <rect class="w2" x="294" y="126" width="18" height="18" rx="3"/>
+            <rect class="w2" x="315" y="126" width="18" height="18" rx="3"/>
+            <rect class="w2" x="336" y="126" width="18" height="18" rx="3"/>
+            <rect class="w2" x="357" y="126" width="18" height="18" rx="3"/>
+            <rect class="w2" x="378" y="126" width="18" height="18" rx="3"/>
+            <rect class="w1" x="399" y="126" width="18" height="18" rx="3"/>
+            <rect class="w1" x="420" y="126" width="18" height="18" rx="3"/>
+            <rect class="sg" x="441" y="126" width="18" height="18" rx="3"/>
+            <rect class="sg" x="462" y="126" width="18" height="18" rx="3"/>
+            <rect class="w1" x="483" y="126" width="18" height="18" rx="3"/>
+            <rect class="w1" x="504" y="126" width="18" height="18" rx="3"/>
+            <rect class="w1" x="525" y="126" width="18" height="18" rx="3"/>
+            <rect class="w1" x="546" y="126" width="18" height="18" rx="3"/>
+            <rect class="w1" x="567" y="126" width="18" height="18" rx="3"/>
+            <rect class="w1" x="588" y="126" width="18" height="18" rx="3"/>
+            <rect class="w2" x="609" y="126" width="18" height="18" rx="3"/>
+            <rect class="w2" x="0" y="147" width="18" height="18" rx="3"/>
+            <rect class="sg" x="21" y="147" width="18" height="18" rx="3"/>
+            <rect class="sg" x="42" y="147" width="18" height="18" rx="3"/>
+            <rect class="sg" x="63" y="147" width="18" height="18" rx="3"/>
+            <rect class="un" x="84" y="147" width="18" height="18" rx="3"/>
+            <rect class="w3" x="105" y="147" width="18" height="18" rx="3"/>
+            <rect class="w3" x="126" y="147" width="18" height="18" rx="3"/>
+            <rect class="w3" x="147" y="147" width="18" height="18" rx="3"/>
+            <rect class="w3" x="168" y="147" width="18" height="18" rx="3"/>
+            <rect class="w3" x="189" y="147" width="18" height="18" rx="3"/>
+            <rect class="w3" x="210" y="147" width="18" height="18" rx="3"/>
+            <rect class="w3" x="231" y="147" width="18" height="18" rx="3"/>
+            <rect class="w3" x="252" y="147" width="18" height="18" rx="3"/>
+            <rect class="w3" x="273" y="147" width="18" height="18" rx="3"/>
+            <rect class="w2" x="294" y="147" width="18" height="18" rx="3"/>
+            <rect class="w2" x="315" y="147" width="18" height="18" rx="3"/>
+            <rect class="w2" x="336" y="147" width="18" height="18" rx="3"/>
+            <rect class="w2" x="357" y="147" width="18" height="18" rx="3"/>
+            <rect class="w2" x="378" y="147" width="18" height="18" rx="3"/>
+            <rect class="w1" x="399" y="147" width="18" height="18" rx="3"/>
+            <rect class="w1" x="420" y="147" width="18" height="18" rx="3"/>
+            <rect class="w1" x="441" y="147" width="18" height="18" rx="3"/>
+            <rect class="sg" x="462" y="147" width="18" height="18" rx="3"/>
+            <rect class="un" x="483" y="147" width="18" height="18" rx="3"/>
+            <rect class="w1" x="504" y="147" width="18" height="18" rx="3"/>
+            <rect class="w1" x="525" y="147" width="18" height="18" rx="3"/>
+            <rect class="w1" x="546" y="147" width="18" height="18" rx="3"/>
+            <rect class="w2" x="567" y="147" width="18" height="18" rx="3"/>
+            <rect class="w2" x="588" y="147" width="18" height="18" rx="3"/>
+            <rect class="w2" x="609" y="147" width="18" height="18" rx="3"/>
+            <rect class="w3" x="0" y="168" width="18" height="18" rx="3"/>
+            <rect class="w3" x="21" y="168" width="18" height="18" rx="3"/>
+            <rect class="w3" x="42" y="168" width="18" height="18" rx="3"/>
+            <rect class="w3" x="63" y="168" width="18" height="18" rx="3"/>
+            <rect class="w3" x="84" y="168" width="18" height="18" rx="3"/>
+            <rect class="w3" x="105" y="168" width="18" height="18" rx="3"/>
+            <rect class="w3" x="126" y="168" width="18" height="18" rx="3"/>
+            <rect class="w3" x="147" y="168" width="18" height="18" rx="3"/>
+            <rect class="w3" x="168" y="168" width="18" height="18" rx="3"/>
+            <rect class="w3" x="189" y="168" width="18" height="18" rx="3"/>
+            <rect class="w3" x="210" y="168" width="18" height="18" rx="3"/>
+            <rect class="w3" x="231" y="168" width="18" height="18" rx="3"/>
+            <rect class="w3" x="252" y="168" width="18" height="18" rx="3"/>
+            <rect class="w2" x="273" y="168" width="18" height="18" rx="3"/>
+            <rect class="w2" x="294" y="168" width="18" height="18" rx="3"/>
+            <rect class="w2" x="315" y="168" width="18" height="18" rx="3"/>
+            <rect class="w2" x="336" y="168" width="18" height="18" rx="3"/>
+            <rect class="w2" x="357" y="168" width="18" height="18" rx="3"/>
+            <rect class="w2" x="378" y="168" width="18" height="18" rx="3"/>
+            <rect class="w1" x="399" y="168" width="18" height="18" rx="3"/>
+            <rect class="w1" x="420" y="168" width="18" height="18" rx="3"/>
+            <rect class="w1" x="441" y="168" width="18" height="18" rx="3"/>
+            <rect class="w1" x="462" y="168" width="18" height="18" rx="3"/>
+            <rect class="w1" x="483" y="168" width="18" height="18" rx="3"/>
+            <rect class="w2" x="504" y="168" width="18" height="18" rx="3"/>
+            <rect class="w2" x="525" y="168" width="18" height="18" rx="3"/>
+            <rect class="w2" x="546" y="168" width="18" height="18" rx="3"/>
+            <rect class="w2" x="567" y="168" width="18" height="18" rx="3"/>
+            <rect class="w2" x="588" y="168" width="18" height="18" rx="3"/>
+            <rect class="w2" x="609" y="168" width="18" height="18" rx="3"/>
+          </svg>
+          <ul class="legend" aria-label="What each pixel can be">
+            <li><span class="swatch sg" aria-hidden="true"></span>Sargassum, calibrated probability 0.9 or more</li>
+            <li><span class="swatch un" aria-hidden="true"></span>Uncertain, between 0.056 and 0.9</li>
+            <li><span class="swatch w2" aria-hidden="true"></span>Clear water</li>
+            <li><span class="swatch cl" aria-hidden="true"></span>Cloud, so the sea was not seen</li>
+          </ul>
+          <figcaption>A diagram, not data. At 10 m a 30 m patch covers three pixels, so the answer is given per pixel, and a pixel under cloud is reported as not seen rather than as clean.</figcaption>
+        </figure>
+      </div>
+
+      <section id="what" aria-labelledby="what-title">
+        <h2 id="what-title">What it does</h2>
+        <p>The project started as a rebuild of NASA IMPACT's 2019 marine debris detector, which needed commercial 3 m Planet imagery and TensorFlow 1.14. This version runs on free 10 m Sentinel-2 data and current Python. Measuring it showed that the same model finds sargassum far better than it finds debris, so both are reported, each with its own error bars.</p>
+        <dl class="features">
+          <div><dt>Free imagery, read in place</dt><dd>STAC search on Microsoft Planetary Computer, with AWS earth-search as a fallback. Cloud-optimised GeoTIFFs are read with HTTP range requests, so screening a coastline pulls kilobytes, not whole scenes.</dd></div>
+          <div><dt>A per-pixel classifier</dt><dd>Gradient boosting over the 11 Sentinel-2 bands and seven spectral indices (FDI, FAI, NDVI, NDWI, PI, kNDVI, MNDWI), trained on MARIDA's scene-grouped split in 76 seconds on a CPU.</dd></div>
+          <div><dt>Probabilities you can read</dt><dd>An isotonic remap fitted on the validation split, stored as JSON breakpoints rather than a pickle. Each pixel is called sargassum, uncertain or clear.</dd></div>
+          <div><dt>Answers per beach</dt><dd>Detections are rolled onto named stretches of coast as coverage, metres of affected shoreline, and whether the stretch was observed, partly observed or blind on that pass.</dd></div>
+          <div><dt>Whole seasons</dt><dd>Every pass over an island for a season, with the longest gap between usable looks and a per-pixel check for things that never move, which are not sargassum.</dd></div>
+          <div><dt>An open-vocabulary path</dt><dd>OWLv2 detection and SAM 2 masks behind a spectral cascade, kept for rejecting ships and wakes and for imagery fine enough for them to work.</dd></div>
+        </dl>
+        <p>Everything runs from the <code>mdebris</code> command line or a FastAPI service, and every figure and table on this page is regenerated by a script in the repository.</p>
+      </section>
+
+      <section id="results" aria-labelledby="results-title">
+        <h2 id="results-title">Results</h2>
+        <p>Scores are on MARIDA's held-out test split: 194,863 labelled pixels in 359 patches from scenes the model never trained on. Thresholds were chosen on the validation split, and the intervals are 95% bootstrap intervals over test patches, because pixels in one patch share a scene and an annotator.</p>
+
+        <div class="scroll">
+          <table class="data">
+            <caption class="visually-hidden">Held-out scores for the full Sentinel-2 band set</caption>
+            <thead><tr><th scope="col">Target</th><th scope="col">Precision</th><th scope="col">Recall</th><th scope="col">F1</th><th scope="col">95% interval</th><th scope="col">Test pixels</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Sargassum, dense or sparse</th><td>0.952</td><td>0.928</td><td><b>0.940</b></td><td>0.87 to 0.98</td><td>1,641</td></tr>
+              <tr><th scope="row">Marine debris</th><td>0.414</td><td>0.667</td><td><b>0.511</b></td><td>0.27 to 0.78</td><td>381</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Same model, same 18 features, same split. Sargassum floats in mats tens of metres across and carries a chlorophyll red edge, so it fills pixels. Debris is thin, low-contrast filaments, and at 10 m most litter is far smaller than a pixel. The debris interval is wide because MARIDA has 381 debris test pixels in a handful of patches.</p>
+
+        <figure class="fig">
+          <a href="https://github.com/danieltyukov/marine-debris-ml-model/blob/main/assets/band_ablation.png"><img src="img/band-ablation.webp" width="1400" height="862" loading="lazy" alt="Bar chart of held-out F1 for sargassum and debris when the classifier is fitted on each sensor's band set. Sargassum stays between 0.83 and 0.94 for every set with near-infrared, while debris falls from 0.51 with all bands to 0.08 with the four PlanetScope Dove bands."></a>
+          <figcaption>The same classifier fitted on each sensor's band set. Sargassum keeps its score on four bands; debris needs the red edge and shortwave infrared.</figcaption>
+        </figure>
+
+        <h3>Is 0.9 nine in ten?</h3>
+        <p>For sargassum, nearly. After the isotonic remap, a cut at a calibrated 0.9 gives precision 0.989 at recall 0.907 on the test split. The debris probability is not trustworthy as a number: raw scores between 0.9 and 1.0 were debris 24% of the time.</p>
+        <div class="scroll">
+          <table class="data">
+            <caption class="visually-hidden">Calibration on the held-out split</caption>
+            <thead><tr><th scope="col">Task</th><th scope="col">ECE raw</th><th scope="col">ECE calibrated</th><th scope="col">Precision at 0.9</th><th scope="col">Recall at 0.9</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Any sargassum</th><td>0.0030</td><td><b>0.0008</b></td><td><b>0.989</b></td><td>0.907</td></tr>
+              <tr><th scope="row">Marine debris</th><td>0.0089</td><td><b>0.0019</b></td><td>0.822</td><td>0.496</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <figure class="fig">
+          <a href="https://github.com/danieltyukov/marine-debris-ml-model/blob/main/assets/calibration.png"><img src="img/calibration.webp" width="1500" height="655" loading="lazy" alt="Reliability diagrams. For sargassum the calibrated curve sits close to the diagonal. For debris the curve jumps around, far from the diagonal, because there are few debris pixels."></a>
+          <figcaption>Reliability on the held-out split, before and after the remap. ECE is the expected calibration error over ten bins.</figcaption>
+        </figure>
+
+        <h3>Bonaire, January to August 2025</h3>
+        <p>Every Sentinel-2 pass over Bonaire for eight months, 64 of them, over seven windward stretches of coast and the leeward Kralendijk waterfront as a control. The question a monitoring plan has to answer first is how often the coast can be seen at all.</p>
+        <div class="scroll">
+          <table class="data">
+            <caption class="visually-hidden">Bonaire observability and detections, 64 passes, January to August 2025</caption>
+            <thead><tr><th scope="col">Stretch of coast</th><th scope="col">Usable passes</th><th scope="col">Longest gap, days</th><th scope="col">Passes with a detection</th><th scope="col">Pixels ever flagged</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Willemstoren to Sorobon</th><td>72%</td><td>15</td><td>1</td><td>13</td></tr>
+              <tr><th scope="row">Lac Bay</th><td>64%</td><td>20</td><td>24</td><td>1,167</td></tr>
+              <tr><th scope="row">Cai to Boka Washikemba</th><td>72%</td><td>15</td><td>10</td><td>285</td></tr>
+              <tr><th scope="row">Boka Washikemba to Spelonk</th><td>70%</td><td>15</td><td>3</td><td>41</td></tr>
+              <tr><th scope="row">Spelonk to Boka Onima</th><td>73%</td><td>15</td><td>2</td><td>24</td></tr>
+              <tr><th scope="row">Boka Onima to Playa Chikitu</th><td>73%</td><td>15</td><td>0</td><td>5</td></tr>
+              <tr><th scope="row">Playa Chikitu to Boka Kokolishi</th><td>73%</td><td>15</td><td>0</td><td>13</td></tr>
+              <tr><th scope="row">Kralendijk waterfront, leeward control</th><td>56%</td><td>20</td><td>0</td><td>0</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>The windward stretches were usable on 64% to 73% of passes, and the longest run without a usable look was 15 to 20 days. Lac Bay had no fully observed pass between 12 March and 17 June. The leeward control was flagged on no pixel in 64 passes. Most flagged pixels sit in the sheltered back-bay of Lac and on the reef flat at Cai, and none of them has been checked on the ground.</p>
+        <figure class="fig">
+          <a href="https://github.com/danieltyukov/marine-debris-ml-model/blob/main/assets/bonaire_season.png"><img src="img/bonaire-season.webp" width="1600" height="630" loading="lazy" alt="Timeline of 64 passes for each of eight Bonaire coast segments, each pass marked observed, partial or blind, with circles where sargassum was detected. Blind passes cluster from late March to May."></a>
+          <figcaption>Each pass for each stretch of coast: observed, partial or blind, and where sargassum was flagged.</figcaption>
+        </figure>
+
+        <!-- ISLANDS-RESULTS -->
+
+        <p class="more">Full tables, the comparison with LANOT's published operator and the beach briefs for Cancun are in <a href="https://github.com/danieltyukov/marine-debris-ml-model/blob/main/docs/RESULTS.md">docs/RESULTS.md</a>. The <a href="report.html">interactive report</a> has the earlier measurements, including an explorer for the FDI threshold over the measured water distribution.</p>
+      </section>
+
+      <section id="figures" aria-labelledby="figures-title">
+        <h2 id="figures-title">Figures</h2>
+        <p>Every image is output of this pipeline, regenerated by the scripts in the repository. Select one to open it at full resolution.</p>
+        <figure class="fig">
+          <a href="https://github.com/danieltyukov/marine-debris-ml-model/blob/main/assets/bonaire_pass.png"><img src="img/bonaire-pass.webp" width="1800" height="587" loading="lazy" alt="Bonaire on 16 January 2025 in four panels: true colour, the classifier's sargassum, uncertain and cloud pixels, the per-segment verdict, and a close-up of Lac Bay and Cai."></a>
+          <figcaption>One clear pass over Bonaire, 16 January 2025: true colour, per-pixel classes, the segment verdict, and Lac Bay up close.</figcaption>
+        </figure>
+        <figure class="fig">
+          <a href="https://github.com/danieltyukov/marine-debris-ml-model/blob/main/assets/beach_segments_cloudy.png"><img src="img/beach-segments-cloudy.webp" width="1600" height="846" loading="lazy" alt="The Cancun hotel zone on 6 July 2026 under 75.5% cloud, in three panels: true colour, sargassum and cloud pixels, and the segment verdict with most segments marked blind."></a>
+          <figcaption>Cancun hotel zone, 6 July 2026, 75.5% cloud. Seven of ten segments were not observed, and the brief says so instead of reporting them clean.</figcaption>
+        </figure>
+        <div class="fig-pair">
+          <figure class="fig">
+            <a href="https://github.com/danieltyukov/marine-debris-ml-model/blob/main/assets/ocean_detections.png"><img src="img/ocean-detections.webp" width="900" height="1435" loading="lazy" alt="Three open-ocean MARIDA test scenes. Thin white debris filaments on blue water, with the model's detections in orange along the filaments and the human annotation outlined in cyan."></a>
+            <figcaption>Open-ocean debris on three MARIDA test scenes at the high-precision operating point: no false positives, about 71% of annotated pixels found.</figcaption>
+          </figure>
+          <figure class="fig">
+            <a href="https://github.com/danieltyukov/marine-debris-ml-model/blob/main/assets/classification_samples.png"><img src="img/classification-samples.webp" width="1000" height="1199" loading="lazy" alt="Three test-split patches with the human annotation next to the classifier's output. Debris filaments agree on 95.6% and 95.5% of labelled pixels in the top and bottom rows. In the middle row a ship is painted as debris."></a>
+            <figcaption>Per-pixel output against the annotation. The failure is in the middle row: a ship, annotated pink, painted as debris. Spectra alone cannot separate the two.</figcaption>
+          </figure>
+        </div>
+        <figure class="fig">
+          <a href="https://github.com/danieltyukov/marine-debris-ml-model/blob/main/assets/resolution_gap.png"><img src="img/resolution-gap.webp" width="1300" height="779" loading="lazy" alt="Detection confidence of the OWLv2 vision model on a natural photograph, 0.67 to 0.79, against a Sentinel-2 chip, 0.13 to 0.21, with whole-chip boxes."></a>
+          <figcaption>The negative result behind the design. The open-vocabulary model finds a remote control in a photograph at 0.79 confidence, and on a 10 m chip returns boxes covering the whole chip at 0.13 to 0.21.</figcaption>
+        </figure>
+      </section>
+
+      <section id="quick-start" aria-labelledby="quick-start-title">
+        <h2 id="quick-start-title">Quick start</h2>
+        <p>Python 3.11 or 3.12. Installing the CPU build of PyTorch first avoids about 2.5 GB of CUDA libraries a laptop cannot use.</p>
+        <ol class="steps">
+          <li>
+            <b>Install.</b>
+            <div class="code-block">
+<pre><code>git clone https://github.com/danieltyukov/marine-debris-ml-model.git
+cd marine-debris-ml-model
+python -m venv .venv &amp;&amp; source .venv/bin/activate
+pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+pip install -e ".[all]"</code></pre>
+              <button class="copy" type="button">Copy</button>
+            </div>
+          </li>
+          <li>
+            <b>Look at a bundled scene.</b> Two Sentinel-2 chips ship with the package, so this works offline.
+            <div class="code-block">
+<pre><code>mdebris samples
+mdebris indices --sample accra</code></pre>
+              <button class="copy" type="button">Copy</button>
+            </div>
+          </li>
+          <li>
+            <b>Train the classifier.</b> Downloads MARIDA (1.1 GB) on the first run, fits in about 76 seconds on a CPU, and writes <code>models/marida_spectral.joblib</code>. The trained model is never committed: joblib files are pickles.
+            <div class="code-block">
+<pre><code>python scripts/train_marida.py
+python scripts/eval_band_ablation.py
+python scripts/eval_calibration.py</code></pre>
+              <button class="copy" type="button">Copy</button>
+            </div>
+          </li>
+          <li>
+            <b>Run a season.</b> Every pass over Bonaire from January to August 2025, read over HTTP. It takes about 17 minutes and resumes where it stopped.
+            <div class="code-block">
+<pre><code>python scripts/make_bonaire_segments.py --fetch
+python scripts/run_bonaire_season.py</code></pre>
+              <button class="copy" type="button">Copy</button>
+            </div>
+          </li>
+        </ol>
+        <p>The open-vocabulary path downloads its model weights on first use. This searches for a scene off Accra, screens it with the spectral cascade and runs the detector on what is left:</p>
+        <div class="code-block">
+<pre><code>mdebris detect --bbox -0.35,5.45,-0.05,5.65 --start 2024-01-01 --end 2024-06-30</code></pre>
+          <button class="copy" type="button">Copy</button>
+        </div>
+        <p><code>mdebris --help</code> lists the other commands.</p>
+        <p class="visually-hidden" aria-live="polite" id="copy-status"></p>
+      </section>
+
+      <section id="how" aria-labelledby="how-title">
+        <h2 id="how-title">How it works</h2>
+        <p>A Sentinel-2 scene is 120 megapixels and most of it is land, cloud or empty water. The pipeline narrows down with cheap arithmetic before it spends anything, and keeps every step's mask so the final answer can say what was not seen.</p>
+        <ol class="pipeline">
+          <li><b>Search.</b> A STAC query for Sentinel-2 L2A over the area and dates, with no credentials.</li>
+          <li><b>Read.</b> Windowed reads of the cloud-optimised GeoTIFFs, only the bytes inside the area, with an explicit reflectance offset per processing baseline.</li>
+          <li><b>Mask.</b> Cloud from the scene classification layer. Land from an OpenStreetMap coastline polygon buffered 15 m seaward, because MARIDA has no land class and bright sand looks like floating biomass. The cascade's NDWI water gate does a similar job but also removes dense sargassum, so the season runner does not use it.</li>
+          <li><b>Describe each pixel.</b> 11 reflectance bands and seven indices. The most informative feature is the red-edge band B05, ahead of every named index.</li>
+          <li><b>Classify.</b> A gradient-boosting model trained on MARIDA's 15 sea-surface classes, including the confusers: cloud, foam, wakes, ships and sediment.</li>
+          <li><b>Calibrate.</b> The isotonic remap turns the score into a probability. At 0.9 or more a pixel is sargassum. Below 0.056, an edge chosen on the validation split to keep 98% of true sargassum, it is clear. In between it is uncertain.</li>
+          <li><b>Roll up.</b> Pixels become per-segment coverage, affected shoreline and observability, and a season becomes gap statistics per stretch of coast.</li>
+        </ol>
+        <p>The open-vocabulary detector sits behind the same masks as a cascade: on a coastal scene off Accra it skipped 44% of detector calls. At 10 m it localises poorly, so it is kept for what it still does well, telling a ship or a wake from debris, and for imagery at 3 m or finer. <a href="https://github.com/danieltyukov/marine-debris-ml-model/blob/main/docs/ARCHITECTURE.md">docs/ARCHITECTURE.md</a> has the modules, the cascade measurements and the design reasoning.</p>
+      </section>
+
+      <section id="limits" aria-labelledby="limits-title">
+        <h2 id="limits-title">Limitations</h2>
+        <ul class="plain">
+          <li>Debris detection is weak at 10 m. Most litter is far smaller than a pixel, and the held-out debris F1 of 0.51 has an interval from 0.27 to 0.78.</li>
+          <li>No detection has been validated in the field. MARIDA's labels are annotated Sentinel-2 pixels, not observations from a boat or a beach, and a per-pixel score is not a landfall forecast.</li>
+          <li>MARIDA has Caribbean sargassum labels (every sargassum pixel in its test split is off Guatemala or Honduras) but none from Aruba, Bonaire or Cura&ccedil;ao, and no shallow lagoon. What the classifier flags inside Lac Bay has not been checked on the ground: it may be sargassum held in the bay, or the lagoon bottom.</li>
+          <li>Probabilities are calibrated on MARIDA only. Over another coast a calibrated 0.9 is an estimate until pixels from that coast have been checked.</li>
+          <li>Optical imagery cannot see through cloud. On Bonaire in 2025 the longest wait for a usable look was 20 days.</li>
+          <li>Per-pixel spectra cannot tell a vessel from a debris raft.</li>
+        </ul>
+      </section>
+
+      <section id="data" aria-labelledby="data-title">
+        <h2 id="data-title">Data and citation</h2>
+        <div class="scroll">
+          <table class="data sources">
+            <caption class="visually-hidden">Data sources</caption>
+            <thead><tr><th scope="col">Used for</th><th scope="col">Source</th><th scope="col">Terms</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Imagery</th><td>Sentinel-2 L2A via Microsoft Planetary Computer, AWS earth-search as fallback</td><td>Copernicus, free and open, no account</td></tr>
+              <tr><th scope="row">Training and benchmark</th><td><a href="https://doi.org/10.5281/zenodo.5151941">MARIDA</a>, the Marine Debris Archive</td><td>CC BY 4.0</td></tr>
+              <tr><th scope="row">Coastlines and segments</th><td>OpenStreetMap</td><td>ODbL</td></tr>
+              <tr><th scope="row">Optional commercial imagery</th><td>Planet</td><td>Needs <code>PL_API_KEY</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>If you use this software, cite it with the metadata in <a href="https://github.com/danieltyukov/marine-debris-ml-model/blob/main/CITATION.cff">CITATION.cff</a> (GitHub shows it under "Cite this repository"), and cite MARIDA for the training data:</p>
+        <div class="code-block">
+<pre><code>@article{kikaki2022marida,
+  author  = {Kikaki, Katerina and Kakogeorgiou, Ioannis and Mikeli, Paraskevi
+             and Raitsos, Dionysios E. and Karantzalos, Konstantinos},
+  title   = {MARIDA: A benchmark for Marine Debris detection from
+             Sentinel-2 remote sensing data},
+  journal = {PLOS ONE},
+  volume  = {17},
+  number  = {1},
+  pages   = {e0262247},
+  year    = {2022},
+  doi     = {10.1371/journal.pone.0262247}
+}</code></pre>
+          <button class="copy" type="button">Copy</button>
+        </div>
+        <p>The Floating Debris Index is from Biermann et al. (2020), <i>Scientific Reports</i> 10, 5364. Each index function in <code>mdebris.indices.spectral</code> cites its source.</p>
+      </section>
+    </main>
+
+    <footer>
+      <p class="foot-links">
+        <a href="https://github.com/danieltyukov/marine-debris-ml-model">Source on GitHub</a>
+        <a href="report.html">Interactive report</a>
+        <a href="https://github.com/danieltyukov/marine-debris-ml-model/blob/main/CONTRIBUTING.md">Contributing</a>
+        <a href="https://github.com/danieltyukov/marine-debris-ml-model/issues">Issues</a>
+        <a href="https://github.com/danieltyukov/marine-debris-ml-model/blob/main/LICENSE.md">MIT license</a>
+      </p>
+      <p>A rebuild of <a href="https://github.com/NASA-IMPACT/marine_debris_ML">NASA-IMPACT/marine_debris_ML</a>. Trained on MARIDA (Kikaki et al. 2022). Contains modified Copernicus Sentinel data. Coastlines &copy; OpenStreetMap contributors.</p>
+    </footer>
+  </div>
+  <script>
+    const status = document.getElementById('copy-status');
+    for (const button of document.querySelectorAll('.copy')) {
+      button.addEventListener('click', async () => {
+        const text = button.parentElement.querySelector('code').textContent;
+        try {
+          await navigator.clipboard.writeText(text);
+          button.textContent = 'Copied';
+          status.textContent = 'Copied to the clipboard.';
+        } catch {
+          button.textContent = 'Select and copy';
+          status.textContent = 'Copying failed. Select the text and copy it.';
+        }
+        setTimeout(() => { button.textContent = 'Copy'; status.textContent = ''; }, 1800);
+      });
+    }
+  </script>
+</body>
+</html>
