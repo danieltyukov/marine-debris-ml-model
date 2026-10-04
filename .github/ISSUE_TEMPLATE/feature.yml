@@ -1,0 +1,41 @@
+name: Feature request
+description: Something mdebris should do that it does not do yet.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For a new coast or island to monitor, use the "New region or island"
+        template instead.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do
+      description: Describe the task, for example the question you need answered about a coast, and who acts on the answer.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: What it should do or output. If it is a new index or a new data source, link the paper or the documentation.
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options:
+        - New spectral index or feature
+        - New imagery source or sensor
+        - Classifier, calibration or evaluation
+        - Beach segments, season runs or reports
+        - Open-vocabulary detection
+        - CLI or HTTP API
+        - Documentation or website
+        - Other
+  - type: textarea
+    id: evidence
+    attributes:
+      label: How would we know it works
+      description: The data or measurement that would show the change helps, for example a labelled set or a benchmark split.

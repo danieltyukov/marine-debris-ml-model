@@ -1,0 +1,65 @@
+name: New region or island
+description: Ask for a coast to be cut into segments and run through a season.
+labels: [region]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A new region means coast segments from OpenStreetMap, a season of
+        Sentinel-2 passes, and a report that leads with how often each stretch
+        of coast could be seen. CONTRIBUTING.md describes the steps if you want
+        to do it yourself.
+
+        Sentinel-2 at 10 m sees sargassum mats far better than debris. If you
+        need debris, say so below; the answer may be that 10 m is the wrong tool.
+  - type: input
+    id: place
+    attributes:
+      label: Island or coast
+      placeholder: Bonaire, windward coast
+    validations:
+      required: true
+  - type: textarea
+    id: bbox
+    attributes:
+      label: Area of interest
+      description: A bounding box as west,south,east,north in degrees, or a link to a map.
+      placeholder: -68.43,12.01,-68.18,12.32
+    validations:
+      required: true
+  - type: dropdown
+    id: target
+    attributes:
+      label: Target
+      multiple: true
+      options:
+        - Sargassum
+        - Floating debris
+        - Not sure yet
+    validations:
+      required: true
+  - type: input
+    id: period
+    attributes:
+      label: Period
+      description: The months or season to run, for example the local sargassum season.
+      placeholder: 2025-01-01 to 2025-08-31
+    validations:
+      required: true
+  - type: textarea
+    id: segments
+    attributes:
+      label: Stretches of coast
+      description: Named landmarks to cut the coast at, which stretches face the prevailing swell, and one stretch where material should not arrive, to use as a control.
+  - type: textarea
+    id: ground
+    attributes:
+      label: Ground observations
+      description: Are there dated observations from beaches, boats or drones that the detections could be checked against? Describe them; do not attach data you are not allowed to share.
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Checks
+      options:
+        - label: I understand the output is a satellite estimate that has not been validated on this coast.
+          required: true

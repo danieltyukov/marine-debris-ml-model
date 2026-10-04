@@ -1,0 +1,84 @@
+name: Bug report
+description: Something does not work as documented.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        If this is a security problem, do not open an issue. Report it privately
+        as described in SECURITY.md.
+
+        A detection you believe is wrong is welcome here too, but say what is on
+        the ground or in a higher-resolution image if you know, and include the
+        scene id so it can be reproduced.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of `mdebris --version`, or the commit if you run from a clone.
+      placeholder: 2.0.0
+    validations:
+      required: true
+  - type: input
+    id: python
+    attributes:
+      label: Python and operating system
+      placeholder: Python 3.12 on Ubuntu 24.04
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: How torch was installed
+      description: The CPU wheel from download.pytorch.org is what CI tests.
+      options:
+        - CPU wheel from download.pytorch.org
+        - Default PyPI wheel (with CUDA)
+        - Conda or another package manager
+        - Not installed (no models extra)
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part is affected
+      multiple: true
+      options:
+        - Imagery search or reading (STAC, COG, reflectance)
+        - Spectral indices or masks
+        - Spectral classifier or calibration
+        - Beach segments or season runs
+        - Open-vocabulary detection (OWLv2, SAM 2)
+        - A script in scripts/
+        - CLI or HTTP API
+        - MARIDA download or loading
+        - Website or report
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: The command you ran, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: input
+    id: scene
+    attributes:
+      label: Scene id or area
+      description: The Sentinel-2 item id, or the bbox and dates, if the problem is with a particular scene.
+      placeholder: S2A_MSIL2A_20250816T150731_R082_T19PEP_20250816T213319
+  - type: textarea
+    id: logs
+    attributes:
+      label: Output
+      description: The error and the lines around it. Run with `mdebris -v` for debug logging.
+      render: text
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Checks
+      options:
+        - label: This report contains no API keys (such as `PL_API_KEY`) or other credentials.
+          required: true

@@ -5,19 +5,22 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mdebris"
 version = "2.0.0"
-description = "Marine debris detection on satellite imagery with open-vocabulary and geospatial foundation models"
+description = "Sargassum and marine debris detection on free Sentinel-2 imagery, with calibrated per-pixel probabilities and per-beach observability"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE.md" }
 authors = [{ name = "danieltyukov" }]
 keywords = [
-    "marine-debris", "marine-litter", "remote-sensing", "sentinel-2",
-    "object-detection", "open-vocabulary", "owlv2", "sam2", "geospatial",
+    "marine-debris", "marine-litter", "sargassum", "remote-sensing", "sentinel-2",
+    "spectral-indices", "marida", "calibration", "object-detection", "open-vocabulary",
+    "owlv2", "sam2", "geospatial",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: GIS",
@@ -83,8 +86,11 @@ all = [
 mdebris = "mdebris.cli:app"
 
 [project.urls]
-Homepage = "https://github.com/danieltyukov/marine-debris-ml-model"
+Homepage = "https://danieltyukov.github.io/marine-debris-ml-model/"
 Repository = "https://github.com/danieltyukov/marine-debris-ml-model"
+Issues = "https://github.com/danieltyukov/marine-debris-ml-model/issues"
+Changelog = "https://github.com/danieltyukov/marine-debris-ml-model/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/danieltyukov/marine-debris-ml-model/tree/main/docs"
 
 [tool.setuptools.packages.find]
 where = ["src"]

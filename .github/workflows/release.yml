@@ -1,0 +1,61 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+# Nothing by default; the job asks for exactly what it needs. The third-party
+# action is pinned to a commit SHA because the job holds a write token.
+permissions: {}
+
+jobs:
+  release:
+    name: Publish ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Check that the tag matches the package version
+        run: |
+          version="$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
+          init="$(sed -n 's/^__version__ = "\(.*\)"$/\1/p' src/mdebris/__init__.py)"
+          if [ "v$version" != "$GITHUB_REF_NAME" ] || [ "$version" != "$init" ]; then
+            echo "Tag $GITHUB_REF_NAME, pyproject.toml ($version) and mdebris.__version__ ($init) must agree"
+            exit 1
+          fi
+      - name: Install CPU-only torch
+        run: pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+      - run: pip install -e ".[all,dev]" build
+      - run: ruff check src tests scripts
+      - run: ruff format --check src tests scripts
+      - run: pytest -q -m "not network and not slow"
+      - run: python -m build
+      - name: Check that no pickled model is packaged
+        # joblib files are pickles and run code when loaded; none may ship.
+        run: |
+          if { unzip -l dist/*.whl; tar -tzf dist/*.tar.gz; } | grep -E '\.(joblib|pkl|pickle)$'; then
+            echo "A pickled model file ended up in the distribution"
+            exit 1
+          fi
+      - name: Release notes from CHANGELOG.md
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v v="$version" '
+            $0 ~ "^## \\[" v "\\]" { found = 1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > release-notes.md
+          test -s release-notes.md || echo "See CHANGELOG.md." > release-notes.md
+      - uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          files: |
+            dist/*.whl
+            dist/*.tar.gz
+          body_path: release-notes.md
+          prerelease: ${{ contains(github.ref_name, '-') }}

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Results and their limits
+    url: https://github.com/danieltyukov/marine-debris-ml-model/blob/main/docs/RESULTS.md
+    about: Every number, the protocol behind it and what it does not show. Check here before reporting a score as a bug.
+  - name: Security report
+    url: https://github.com/danieltyukov/marine-debris-ml-model/security/advisories/new
+    about: Report a vulnerability privately instead of opening an issue.

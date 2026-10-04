@@ -1,0 +1,80 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata below, and cite MARIDA for the training data."
+type: software
+title: "mdebris: sargassum and marine debris detection on Sentinel-2 imagery"
+abstract: >-
+  An open Python pipeline and a per-pixel spectral classifier trained on the
+  MARIDA benchmark. It reads free Sentinel-2 L2A imagery over HTTP, calls each
+  sea pixel sargassum, uncertain or clear with a calibrated probability, and
+  rolls the result onto named stretches of coast with per-pass observability.
+authors:
+  - family-names: Tyukov
+    given-names: Daniel
+version: 2.0.0
+license: MIT
+repository-code: "https://github.com/danieltyukov/marine-debris-ml-model"
+url: "https://danieltyukov.github.io/marine-debris-ml-model/"
+keywords:
+  - sargassum
+  - marine debris
+  - marine litter
+  - remote sensing
+  - Sentinel-2
+  - spectral indices
+  - MARIDA
+references:
+  - type: article
+    title: "MARIDA: A benchmark for Marine Debris detection from Sentinel-2 remote sensing data"
+    authors:
+      - family-names: Kikaki
+        given-names: Katerina
+      - family-names: Kakogeorgiou
+        given-names: Ioannis
+      - family-names: Mikeli
+        given-names: Paraskevi
+      - family-names: Raitsos
+        given-names: Dionysios E.
+      - family-names: Karantzalos
+        given-names: Konstantinos
+    journal: "PLOS ONE"
+    volume: 17
+    issue: 1
+    start: e0262247
+    year: 2022
+    doi: 10.1371/journal.pone.0262247
+  - type: data
+    title: "MARIDA: Marine Debris Archive"
+    authors:
+      - family-names: Kikaki
+        given-names: Katerina
+      - family-names: Kakogeorgiou
+        given-names: Ioannis
+      - family-names: Mikeli
+        given-names: Paraskevi
+      - family-names: Raitsos
+        given-names: Dionysios E.
+      - family-names: Karantzalos
+        given-names: Konstantinos
+    doi: 10.5281/zenodo.5151941
+    license: CC-BY-4.0
+  - type: article
+    title: "Finding Plastic Patches in Coastal Waters using Optical Satellite Data"
+    authors:
+      - family-names: Biermann
+        given-names: Lauren
+      - family-names: Clewley
+        given-names: Daniel
+      - family-names: Martinez-Vicente
+        given-names: Victor
+      - family-names: Topouzelis
+        given-names: Konstantinos
+    journal: "Scientific Reports"
+    volume: 10
+    start: 5364
+    year: 2020
+    doi: 10.1038/s41598-020-62298-z
+  - type: software
+    title: "marine_debris_ML"
+    authors:
+      - name: "NASA IMPACT"
+    repository-code: "https://github.com/NASA-IMPACT/marine_debris_ML"

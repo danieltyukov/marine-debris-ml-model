@@ -1,0 +1,31 @@
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      pip-minor-and-patch:
+        update-types:
+          - minor
+          - patch
+    ignore:
+      # Major versions of the model stack change outputs and are upgraded
+      # deliberately, with the reports regenerated, not by bot.
+      - dependency-name: torch
+        update-types: ['version-update:semver-major']
+      - dependency-name: torchvision
+        update-types: ['version-update:semver-major']
+      - dependency-name: transformers
+        update-types: ['version-update:semver-major']
+      - dependency-name: scikit-learn
+        update-types: ['version-update:semver-major']
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns:
+          - '*'
