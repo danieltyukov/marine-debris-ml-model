@@ -1,0 +1,1603 @@
+{
+  "island": "curacao",
+  "part": "west",
+  "window": [
+    "2025-01-01",
+    "2025-08-31"
+  ],
+  "area_of_interest": [
+    -69.17,
+    12.175,
+    -68.935,
+    12.405
+  ],
+  "tiles": [
+    "19PDP"
+  ],
+  "orbits": [
+    "R082"
+  ],
+  "mangrove_mask": true,
+  "operating_points": {
+    "low": 0.05619834710743802,
+    "high": 0.9,
+    "calibrated": true,
+    "source": "docs/calibration.json: calibrated >= 0.9 is sargassum, low edge from band_calibrated"
+  },
+  "segments": [
+    {
+      "segment_id": "watamula_bartolbaai",
+      "name": "Watamula to Bartolbaai",
+      "n_passes": 64,
+      "n_observed": 23,
+      "n_partial": 19,
+      "n_blind": 22,
+      "usable_fraction": 0.65625,
+      "first_pass": "2025-01-01",
+      "last_pass": "2025-08-29",
+      "longest_gap_days": 25,
+      "median_gap_days": 5.0,
+      "n_detection_passes": 3,
+      "detection_dates": [
+        "2025-04-21",
+        "2025-05-21",
+        "2025-08-16"
+      ],
+      "max_affected_front_m": 2900.8,
+      "longest_clear_gap_days": 35,
+      "clear_gap_from": "2025-04-16",
+      "clear_gap_to": "2025-05-21"
+    },
+    {
+      "segment_id": "bartolbaai_san_pedro",
+      "name": "Bartolbaai to Boka San Pedro",
+      "n_passes": 64,
+      "n_observed": 30,
+      "n_partial": 12,
+      "n_blind": 22,
+      "usable_fraction": 0.65625,
+      "first_pass": "2025-01-01",
+      "last_pass": "2025-08-29",
+      "longest_gap_days": 15,
+      "median_gap_days": 5.0,
+      "n_detection_passes": 2,
+      "detection_dates": [
+        "2025-02-25",
+        "2025-06-17"
+      ],
+      "max_affected_front_m": 1116.6,
+      "longest_clear_gap_days": 28,
+      "clear_gap_from": "2025-06-07",
+      "clear_gap_to": "2025-07-05"
+    },
+    {
+      "segment_id": "san_pedro_hato",
+      "name": "Boka San Pedro to Hato",
+      "n_passes": 64,
+      "n_observed": 27,
+      "n_partial": 19,
+      "n_blind": 18,
+      "usable_fraction": 0.71875,
+      "first_pass": "2025-01-01",
+      "last_pass": "2025-08-29",
+      "longest_gap_days": 15,
+      "median_gap_days": 5.0,
+      "n_detection_passes": 4,
+      "detection_dates": [
+        "2025-04-01",
+        "2025-04-21",
+        "2025-06-17",
+        "2025-07-07"
+      ],
+      "max_affected_front_m": 2176.4,
+      "longest_clear_gap_days": 30,
+      "clear_gap_from": "2025-03-22",
+      "clear_gap_to": "2025-04-21"
+    },
+    {
+      "segment_id": "daaibooi_playa_largu",
+      "name": "Daaibooi to Playa Largu",
+      "n_passes": 64,
+      "n_observed": 26,
+      "n_partial": 12,
+      "n_blind": 26,
+      "usable_fraction": 0.59375,
+      "first_pass": "2025-01-01",
+      "last_pass": "2025-08-29",
+      "longest_gap_days": 15,
+      "median_gap_days": 5.0,
+      "n_detection_passes": 0,
+      "detection_dates": [],
+      "max_affected_front_m": 0.0,
+      "longest_clear_gap_days": 37,
+      "clear_gap_from": "2025-05-11",
+      "clear_gap_to": "2025-06-17"
+    }
+  ],
+  "stationary": {
+    "watamula_bartolbaai": {
+      "flagged_pixels": 216,
+      "stationary_pixels": 0,
+      "persistent_vegetation_pixels": 15,
+      "flagged_near_vegetation": 0
+    },
+    "bartolbaai_san_pedro": {
+      "flagged_pixels": 26,
+      "stationary_pixels": 0,
+      "persistent_vegetation_pixels": 39,
+      "flagged_near_vegetation": 0
+    },
+    "san_pedro_hato": {
+      "flagged_pixels": 88,
+      "stationary_pixels": 0,
+      "persistent_vegetation_pixels": 0,
+      "flagged_near_vegetation": 0
+    },
+    "daaibooi_playa_largu": {
+      "flagged_pixels": 0,
+      "stationary_pixels": 0,
+      "persistent_vegetation_pixels": 0,
+      "flagged_near_vegetation": 0
+    }
+  },
+  "segment_pixels": {
+    "watamula_bartolbaai": {
+      "water_side_pixels": 69945,
+      "mangrove_masked_pixels": 0
+    },
+    "bartolbaai_san_pedro": {
+      "water_side_pixels": 47873,
+      "mangrove_masked_pixels": 16
+    },
+    "san_pedro_hato": {
+      "water_side_pixels": 64628,
+      "mangrove_masked_pixels": 0
+    },
+    "daaibooi_playa_largu": {
+      "water_side_pixels": 18722,
+      "mangrove_masked_pixels": 0
+    }
+  },
+  "passes": {
+    "S2B_MSIL2A_20250101T150719_R082_T19PDP_20250101T184446": {
+      "date": "2025-01-01",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 40.38,
+      "zone_cloud_fraction": 0.6658,
+      "scl_cloud_fractions": [
+        0.4039,
+        0.9019,
+        0.7771,
+        0.7726
+      ],
+      "not_water_fractions": [
+        0.681,
+        0.5623,
+        0.7184,
+        0.1084
+      ],
+      "observed": 0,
+      "partial": 1,
+      "blind": 3,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250106T150721_R082_T19PDP_20250106T181449": {
+      "date": "2025-01-06",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 61.21,
+      "zone_cloud_fraction": 0.9002,
+      "scl_cloud_fractions": [
+        1.0,
+        0.9993,
+        0.7698,
+        0.7669
+      ],
+      "not_water_fractions": [
+        0.0,
+        0.0931,
+        0.014
+      ],
+      "observed": 0,
+      "partial": 0,
+      "blind": 4,
+      "sargassum_pixels": 12,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250111T150719_R082_T19PDP_20250111T183922": {
+      "date": "2025-01-11",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 24.19,
+      "zone_cloud_fraction": 0.0929,
+      "scl_cloud_fractions": [
+        0.025,
+        0.0025,
+        0.1991,
+        0.1733
+      ],
+      "not_water_fractions": [
+        0.0447,
+        0.003,
+        0.0436,
+        0.0414
+      ],
+      "observed": 4,
+      "partial": 0,
+      "blind": 0,
+      "sargassum_pixels": 3,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250116T150721_R082_T19PDP_20250116T180950": {
+      "date": "2025-01-16",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 9.49,
+      "zone_cloud_fraction": 0.0599,
+      "scl_cloud_fractions": [
+        0.108,
+        0.0308,
+        0.008,
+        0.1364
+      ],
+      "not_water_fractions": [
+        0.0356,
+        0.0077,
+        0.0004,
+        0.0051
+      ],
+      "observed": 4,
+      "partial": 0,
+      "blind": 0,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250121T150719_R082_T19PDP_20250121T203217": {
+      "date": "2025-01-21",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 62.04,
+      "zone_cloud_fraction": 0.4801,
+      "scl_cloud_fractions": [
+        0.9522,
+        0.5493,
+        0.0338,
+        0.0278
+      ],
+      "not_water_fractions": [
+        0.7831,
+        0.679,
+        0.0094,
+        0.5941
+      ],
+      "observed": 2,
+      "partial": 1,
+      "blind": 1,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250126T150751_R082_T19PDP_20250126T181511": {
+      "date": "2025-01-26",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 13.67,
+      "zone_cloud_fraction": 0.1675,
+      "scl_cloud_fractions": [
+        0.0868,
+        0.3521,
+        0.1302,
+        0.0987
+      ],
+      "not_water_fractions": [
+        0.0629,
+        0.037,
+        0.05,
+        0.0391
+      ],
+      "observed": 3,
+      "partial": 1,
+      "blind": 0,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250131T150729_R082_T19PDP_20250131T203125": {
+      "date": "2025-01-31",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 29.35,
+      "zone_cloud_fraction": 0.8169,
+      "scl_cloud_fractions": [
+        0.6631,
+        0.9942,
+        0.8355,
+        0.9392
+      ],
+      "not_water_fractions": [
+        0.02,
+        0.2616,
+        0.0027,
+        0.0009
+      ],
+      "observed": 0,
+      "partial": 1,
+      "blind": 3,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250205T150751_R082_T19PDP_20250205T181611": {
+      "date": "2025-02-05",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 18.46,
+      "zone_cloud_fraction": 0.0056,
+      "scl_cloud_fractions": [
+        0.0014,
+        0.0004,
+        0.0092,
+        0.0204
+      ],
+      "not_water_fractions": [
+        0.0008,
+        0.0026,
+        0.0026,
+        0.02
+      ],
+      "observed": 4,
+      "partial": 0,
+      "blind": 0,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250210T150729_R082_T19PDP_20250210T183855": {
+      "date": "2025-02-10",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 21.68,
+      "zone_cloud_fraction": 0.0908,
+      "scl_cloud_fractions": [
+        0.1934,
+        0.0057,
+        0.0093,
+        0.1841
+      ],
+      "not_water_fractions": [
+        0.0103,
+        0.0027,
+        0.0004,
+        0.0358
+      ],
+      "observed": 4,
+      "partial": 0,
+      "blind": 0,
+      "sargassum_pixels": 1,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250215T150741_R082_T19PDP_20250215T183054": {
+      "date": "2025-02-15",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 43.98,
+      "zone_cloud_fraction": 0.4199,
+      "scl_cloud_fractions": [
+        0.4523,
+        0.4443,
+        0.318,
+        0.6254
+      ],
+      "not_water_fractions": [
+        0.6162,
+        0.4289,
+        0.2893,
+        0.1756
+      ],
+      "observed": 0,
+      "partial": 4,
+      "blind": 0,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250220T150729_R082_T19PDP_20250220T184649": {
+      "date": "2025-02-20",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 2.93,
+      "zone_cloud_fraction": 0.05,
+      "scl_cloud_fractions": [
+        0.1241,
+        0.0015,
+        0.0128,
+        0.009
+      ],
+      "not_water_fractions": [
+        0.0899,
+        0.0022,
+        0.0074,
+        0.0008
+      ],
+      "observed": 4,
+      "partial": 0,
+      "blind": 0,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250225T150741_R082_T19PDP_20250225T181412": {
+      "date": "2025-02-25",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 12.84,
+      "zone_cloud_fraction": 0.2485,
+      "scl_cloud_fractions": [
+        0.1446,
+        0.155,
+        0.3858,
+        0.3355
+      ],
+      "not_water_fractions": [
+        0.0058,
+        0.0083,
+        0.0396,
+        0.0612
+      ],
+      "observed": 2,
+      "partial": 2,
+      "blind": 0,
+      "sargassum_pixels": 12,
+      "affected": [
+        "Bartolbaai to Boka San Pedro"
+      ]
+    },
+    "S2B_MSIL2A_20250302T150729_R082_T19PDP_20250302T183833": {
+      "date": "2025-03-02",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 2.45,
+      "zone_cloud_fraction": 0.0079,
+      "scl_cloud_fractions": [
+        0.0025,
+        0.0059,
+        0.0149,
+        0.0073
+      ],
+      "not_water_fractions": [
+        0.0011,
+        0.0421,
+        0.0092,
+        0.0211
+      ],
+      "observed": 4,
+      "partial": 0,
+      "blind": 0,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250307T150751_R082_T19PDP_20250307T202213": {
+      "date": "2025-03-07",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 24.93,
+      "zone_cloud_fraction": 0.2385,
+      "scl_cloud_fractions": [
+        0.4192,
+        0.2385,
+        0.0385,
+        0.1537
+      ],
+      "not_water_fractions": [
+        0.0132,
+        0.0679,
+        0.0215,
+        0.0526
+      ],
+      "observed": 2,
+      "partial": 2,
+      "blind": 0,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250312T150719_R082_T19PDP_20250312T202222": {
+      "date": "2025-03-12",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 7.34,
+      "zone_cloud_fraction": 0.1097,
+      "scl_cloud_fractions": [
+        0.0001,
+        0.0,
+        0.1197,
+        0.7206
+      ],
+      "not_water_fractions": [
+        0.0014,
+        0.0027,
+        0.0351,
+        0.1106
+      ],
+      "observed": 3,
+      "partial": 0,
+      "blind": 1,
+      "sargassum_pixels": 2,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250317T150741_R082_T19PDP_20250317T193358": {
+      "date": "2025-03-17",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 20.34,
+      "zone_cloud_fraction": 0.1275,
+      "scl_cloud_fractions": [
+        0.321,
+        0.0436,
+        0.0026,
+        0.0063
+      ],
+      "not_water_fractions": [
+        0.4366,
+        0.0281,
+        0.0038,
+        0.0083
+      ],
+      "observed": 3,
+      "partial": 1,
+      "blind": 0,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250319T150931_R082_T19PDP_20250319T202213": {
+      "date": "2025-03-19",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 72.21,
+      "zone_cloud_fraction": 0.6387,
+      "scl_cloud_fractions": [
+        0.3159,
+        0.4946,
+        0.9675,
+        1.0
+      ],
+      "not_water_fractions": [
+        0.151,
+        0.249,
+        0.5993
+      ],
+      "observed": 0,
+      "partial": 2,
+      "blind": 2,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250322T150729_R082_T19PDP_20250322T203640": {
+      "date": "2025-03-22",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 30.48,
+      "zone_cloud_fraction": 0.1905,
+      "scl_cloud_fractions": [
+        0.3638,
+        0.1824,
+        0.0858,
+        0.0064
+      ],
+      "not_water_fractions": [
+        0.01,
+        0.0345,
+        0.01,
+        0.0364
+      ],
+      "observed": 3,
+      "partial": 1,
+      "blind": 0,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250327T150741_R082_T19PDP_20250327T215859": {
+      "date": "2025-03-27",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 50.41,
+      "zone_cloud_fraction": 0.5133,
+      "scl_cloud_fractions": [
+        0.9843,
+        0.0882,
+        0.3102,
+        0.5015
+      ],
+      "not_water_fractions": [
+        0.0195,
+        0.0575,
+        0.1524,
+        0.068
+      ],
+      "observed": 1,
+      "partial": 2,
+      "blind": 1,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250329T150731_R082_T19PDP_20250330T005118": {
+      "date": "2025-03-29",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 39.84,
+      "zone_cloud_fraction": 0.8607,
+      "scl_cloud_fractions": [
+        0.9418,
+        0.9394,
+        0.9565,
+        0.0754
+      ],
+      "not_water_fractions": [
+        0.0074,
+        0.0381,
+        0.0151,
+        0.1112
+      ],
+      "observed": 1,
+      "partial": 0,
+      "blind": 3,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250401T150719_R082_T19PDP_20250401T184131": {
+      "date": "2025-04-01",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 57.44,
+      "zone_cloud_fraction": 0.8113,
+      "scl_cloud_fractions": [
+        1.0,
+        1.0,
+        0.4341,
+        1.0
+      ],
+      "not_water_fractions": [
+        0.0024
+      ],
+      "observed": 0,
+      "partial": 1,
+      "blind": 3,
+      "sargassum_pixels": 10,
+      "affected": [
+        "Boka San Pedro to Hato"
+      ]
+    },
+    "S2C_MSIL2A_20250406T150741_R082_T19PDP_20250406T215123": {
+      "date": "2025-04-06",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 34.61,
+      "zone_cloud_fraction": 0.6768,
+      "scl_cloud_fractions": [
+        0.8086,
+        0.4251,
+        0.8921,
+        0.0337
+      ],
+      "not_water_fractions": [
+        0.4381,
+        0.3171,
+        0.0076,
+        0.044
+      ],
+      "observed": 1,
+      "partial": 1,
+      "blind": 2,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250408T150931_R082_T19PDP_20250409T011158": {
+      "date": "2025-04-08",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 99.66,
+      "zone_cloud_fraction": 1.0,
+      "scl_cloud_fractions": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "not_water_fractions": [],
+      "observed": 0,
+      "partial": 0,
+      "blind": 4,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250411T150729_R082_T19PDP_20250411T183629": {
+      "date": "2025-04-11",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 63.7,
+      "zone_cloud_fraction": 1.0,
+      "scl_cloud_fractions": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "not_water_fractions": [],
+      "observed": 0,
+      "partial": 0,
+      "blind": 4,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250416T150741_R082_T19PDP_20250416T211512": {
+      "date": "2025-04-16",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 26.84,
+      "zone_cloud_fraction": 0.289,
+      "scl_cloud_fractions": [
+        0.0018,
+        0.0033,
+        0.6859,
+        0.6142
+      ],
+      "not_water_fractions": [
+        0.0099,
+        0.009,
+        0.0027,
+        0.062
+      ],
+      "observed": 2,
+      "partial": 2,
+      "blind": 0,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250421T150719_R082_T19PDP_20250421T184038": {
+      "date": "2025-04-21",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 23.04,
+      "zone_cloud_fraction": 0.3634,
+      "scl_cloud_fractions": [
+        0.5183,
+        0.3108,
+        0.1866,
+        0.487
+      ],
+      "not_water_fractions": [
+        0.0547,
+        0.0417,
+        0.0953,
+        0.1153
+      ],
+      "observed": 1,
+      "partial": 3,
+      "blind": 0,
+      "sargassum_pixels": 187,
+      "affected": [
+        "Watamula to Bartolbaai",
+        "Boka San Pedro to Hato"
+      ]
+    },
+    "S2A_MSIL2A_20250428T150941_R082_T19PDP_20250429T001013": {
+      "date": "2025-04-28",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 95.78,
+      "zone_cloud_fraction": 0.9567,
+      "scl_cloud_fractions": [
+        0.8821,
+        0.9691,
+        1.0,
+        1.0
+      ],
+      "not_water_fractions": [
+        0.0347,
+        0.0255
+      ],
+      "observed": 0,
+      "partial": 0,
+      "blind": 4,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250501T150719_R082_T19PDP_20250501T183953": {
+      "date": "2025-05-01",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 59.12,
+      "zone_cloud_fraction": 0.8461,
+      "scl_cloud_fractions": [
+        1.0,
+        0.9772,
+        0.5518,
+        0.9947
+      ],
+      "not_water_fractions": [
+        0.4445,
+        0.1488,
+        0.42
+      ],
+      "observed": 0,
+      "partial": 1,
+      "blind": 3,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250506T150741_R082_T19PDP_20250506T201416": {
+      "date": "2025-05-06",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 48.48,
+      "zone_cloud_fraction": 0.2494,
+      "scl_cloud_fractions": [
+        0.2716,
+        0.042,
+        0.4037,
+        0.0747
+      ],
+      "not_water_fractions": [
+        0.3382,
+        0.2667,
+        0.2477,
+        0.3221
+      ],
+      "observed": 2,
+      "partial": 2,
+      "blind": 0,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250508T150731_R082_T19PDP_20250508T214213": {
+      "date": "2025-05-08",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 76.0,
+      "zone_cloud_fraction": 0.7369,
+      "scl_cloud_fractions": [
+        0.6122,
+        0.9962,
+        0.6295,
+        0.9999
+      ],
+      "not_water_fractions": [
+        0.0424,
+        0.0881,
+        0.0217,
+        0.0
+      ],
+      "observed": 0,
+      "partial": 2,
+      "blind": 2,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250511T150719_R082_T19PDP_20250511T184208": {
+      "date": "2025-05-11",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 36.47,
+      "zone_cloud_fraction": 0.3246,
+      "scl_cloud_fractions": [
+        0.7931,
+        0.0354,
+        0.0554,
+        0.1742
+      ],
+      "not_water_fractions": [
+        0.0798,
+        0.0129,
+        0.0157,
+        0.061
+      ],
+      "observed": 3,
+      "partial": 0,
+      "blind": 1,
+      "sargassum_pixels": 4,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250516T150741_R082_T19PDP_20250516T201412": {
+      "date": "2025-05-16",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 86.4,
+      "zone_cloud_fraction": 0.9316,
+      "scl_cloud_fractions": [
+        0.9999,
+        0.9405,
+        0.8322,
+        1.0
+      ],
+      "not_water_fractions": [
+        0.0,
+        0.5231,
+        0.2976
+      ],
+      "observed": 0,
+      "partial": 0,
+      "blind": 4,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250518T150941_R082_T19PDP_20250518T192803": {
+      "date": "2025-05-18",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 73.68,
+      "zone_cloud_fraction": 1.0,
+      "scl_cloud_fractions": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "not_water_fractions": [],
+      "observed": 0,
+      "partial": 0,
+      "blind": 4,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250521T150719_R082_T19PDP_20250521T184503": {
+      "date": "2025-05-21",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 26.49,
+      "zone_cloud_fraction": 0.2326,
+      "scl_cloud_fractions": [
+        0.014,
+        0.0367,
+        0.4044,
+        0.866
+      ],
+      "not_water_fractions": [
+        0.0071,
+        0.0111,
+        0.0175,
+        0.0004
+      ],
+      "observed": 2,
+      "partial": 1,
+      "blind": 1,
+      "sargassum_pixels": 16,
+      "affected": [
+        "Watamula to Bartolbaai"
+      ]
+    },
+    "S2C_MSIL2A_20250526T150741_R082_T19PDP_20250526T214319": {
+      "date": "2025-05-26",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 16.19,
+      "zone_cloud_fraction": 0.1048,
+      "scl_cloud_fractions": [
+        0.0862,
+        0.0553,
+        0.0412,
+        0.4804
+      ],
+      "not_water_fractions": [
+        0.0216,
+        0.0378,
+        0.0275,
+        0.0454
+      ],
+      "observed": 3,
+      "partial": 1,
+      "blind": 0,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250528T150741_R082_T19PDP_20250528T214014": {
+      "date": "2025-05-28",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 72.5,
+      "zone_cloud_fraction": 0.9739,
+      "scl_cloud_fractions": [
+        1.0,
+        0.9245,
+        0.954,
+        0.9991
+      ],
+      "not_water_fractions": [
+        0.4578,
+        0.5906,
+        0.5294
+      ],
+      "observed": 0,
+      "partial": 0,
+      "blind": 4,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250531T150719_R082_T19PDP_20250531T183226": {
+      "date": "2025-05-31",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 99.5,
+      "zone_cloud_fraction": 1.0,
+      "scl_cloud_fractions": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "not_water_fractions": [],
+      "observed": 0,
+      "partial": 0,
+      "blind": 4,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250605T150741_R082_T19PDP_20250605T193611": {
+      "date": "2025-06-05",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 13.67,
+      "zone_cloud_fraction": 0.2154,
+      "scl_cloud_fractions": [
+        0.0006,
+        0.0017,
+        0.492,
+        0.5218
+      ],
+      "not_water_fractions": [
+        0.0163,
+        0.0201,
+        0.0251,
+        0.0524
+      ],
+      "observed": 2,
+      "partial": 2,
+      "blind": 0,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250607T150941_R082_T19PDP_20250607T213812": {
+      "date": "2025-06-07",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 28.79,
+      "zone_cloud_fraction": 0.1295,
+      "scl_cloud_fractions": [
+        0.0008,
+        0.0033,
+        0.2444,
+        0.4839
+      ],
+      "not_water_fractions": [
+        0.0027,
+        0.0041,
+        0.1343,
+        0.0242
+      ],
+      "observed": 2,
+      "partial": 2,
+      "blind": 0,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250610T150719_R082_T19PDP_20250610T184805": {
+      "date": "2025-06-10",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 96.43,
+      "zone_cloud_fraction": 1.0,
+      "scl_cloud_fractions": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "not_water_fractions": [],
+      "observed": 0,
+      "partial": 0,
+      "blind": 4,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250615T150741_R082_T19PDP_20250615T201416": {
+      "date": "2025-06-15",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 46.92,
+      "zone_cloud_fraction": 0.8718,
+      "scl_cloud_fractions": [
+        0.9515,
+        0.9916,
+        0.6744,
+        0.9983
+      ],
+      "not_water_fractions": [
+        0.3829,
+        0.9975,
+        0.301,
+        0.0
+      ],
+      "observed": 0,
+      "partial": 1,
+      "blind": 3,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250617T150731_R082_T19PDP_20250617T215516": {
+      "date": "2025-06-17",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 13.52,
+      "zone_cloud_fraction": 0.198,
+      "scl_cloud_fractions": [
+        0.2296,
+        0.4374,
+        0.0599,
+        0.0012
+      ],
+      "not_water_fractions": [
+        0.0171,
+        0.0235,
+        0.0087,
+        0.0067
+      ],
+      "observed": 2,
+      "partial": 2,
+      "blind": 0,
+      "sargassum_pixels": 19,
+      "affected": [
+        "Bartolbaai to Boka San Pedro",
+        "Boka San Pedro to Hato"
+      ]
+    },
+    "S2B_MSIL2A_20250620T150719_R082_T19PDP_20250620T202614": {
+      "date": "2025-06-20",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 51.01,
+      "zone_cloud_fraction": 0.401,
+      "scl_cloud_fractions": [
+        0.0015,
+        0.5406,
+        0.5755,
+        0.9578
+      ],
+      "not_water_fractions": [
+        0.0046,
+        0.0402,
+        0.1087,
+        0.1591
+      ],
+      "observed": 1,
+      "partial": 2,
+      "blind": 1,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250625T150741_R082_T19PDP_20250625T194815": {
+      "date": "2025-06-25",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 100.0,
+      "zone_cloud_fraction": 1.0,
+      "scl_cloud_fractions": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "not_water_fractions": [],
+      "observed": 0,
+      "partial": 0,
+      "blind": 4,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250627T150941_R082_T19PDP_20250627T194017": {
+      "date": "2025-06-27",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 11.21,
+      "zone_cloud_fraction": 0.0776,
+      "scl_cloud_fractions": [
+        0.0017,
+        0.2358,
+        0.0124,
+        0.1653
+      ],
+      "not_water_fractions": [
+        0.0262,
+        0.1697,
+        0.0435,
+        0.1138
+      ],
+      "observed": 3,
+      "partial": 1,
+      "blind": 0,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250630T150729_R082_T19PDP_20250630T184300": {
+      "date": "2025-06-30",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 70.59,
+      "zone_cloud_fraction": 0.9807,
+      "scl_cloud_fractions": [
+        1.0,
+        0.9959,
+        1.0,
+        0.8114
+      ],
+      "not_water_fractions": [
+        0.0254,
+        0.0972
+      ],
+      "observed": 0,
+      "partial": 0,
+      "blind": 4,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250705T150741_R082_T19PDP_20250705T194315": {
+      "date": "2025-07-05",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 52.95,
+      "zone_cloud_fraction": 0.4281,
+      "scl_cloud_fractions": [
+        0.6523,
+        0.0965,
+        0.4242,
+        0.4344
+      ],
+      "not_water_fractions": [
+        0.7918,
+        0.2674,
+        0.2653,
+        0.7191
+      ],
+      "observed": 1,
+      "partial": 3,
+      "blind": 0,
+      "sargassum_pixels": 1,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250707T150741_R082_T19PDP_20250707T211724": {
+      "date": "2025-07-07",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 21.9,
+      "zone_cloud_fraction": 0.0928,
+      "scl_cloud_fractions": [
+        0.1346,
+        0.0109,
+        0.0791,
+        0.1835
+      ],
+      "not_water_fractions": [
+        0.0811,
+        0.004,
+        0.0197,
+        0.0068
+      ],
+      "observed": 4,
+      "partial": 0,
+      "blind": 0,
+      "sargassum_pixels": 24,
+      "affected": [
+        "Boka San Pedro to Hato"
+      ]
+    },
+    "S2B_MSIL2A_20250710T150729_R082_T19PDP_20250710T184513": {
+      "date": "2025-07-10",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 10.61,
+      "zone_cloud_fraction": 0.1632,
+      "scl_cloud_fractions": [
+        0.314,
+        0.0033,
+        0.0952,
+        0.1812
+      ],
+      "not_water_fractions": [
+        0.1527,
+        0.0041,
+        0.0121,
+        0.1269
+      ],
+      "observed": 3,
+      "partial": 1,
+      "blind": 0,
+      "sargassum_pixels": 2,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250715T150741_R082_T19PDP_20250715T193512": {
+      "date": "2025-07-15",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 7.2,
+      "zone_cloud_fraction": 0.344,
+      "scl_cloud_fractions": [
+        0.7098,
+        0.0068,
+        0.2465,
+        0.0531
+      ],
+      "not_water_fractions": [
+        0.1071,
+        0.0108,
+        0.0286,
+        0.0823
+      ],
+      "observed": 2,
+      "partial": 1,
+      "blind": 1,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250717T150941_R082_T19PDP_20250717T193255": {
+      "date": "2025-07-17",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 8.33,
+      "zone_cloud_fraction": 0.2417,
+      "scl_cloud_fractions": [
+        0.2881,
+        0.4881,
+        0.0808,
+        0.105
+      ],
+      "not_water_fractions": [
+        0.0608,
+        0.1642,
+        0.0785,
+        0.1311
+      ],
+      "observed": 2,
+      "partial": 2,
+      "blind": 0,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250720T150729_R082_T19PDP_20250720T183906": {
+      "date": "2025-07-20",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 99.77,
+      "zone_cloud_fraction": 1.0,
+      "scl_cloud_fractions": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "not_water_fractions": [],
+      "observed": 0,
+      "partial": 0,
+      "blind": 4,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250725T150741_R082_T19PDP_20250725T193912": {
+      "date": "2025-07-25",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 23.04,
+      "zone_cloud_fraction": 0.324,
+      "scl_cloud_fractions": [
+        0.5494,
+        0.0251,
+        0.1833,
+        0.6033
+      ],
+      "not_water_fractions": [
+        0.2059,
+        0.0193,
+        0.0349,
+        0.141
+      ],
+      "observed": 2,
+      "partial": 2,
+      "blind": 0,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250727T150741_R082_T19PDP_20250727T213720": {
+      "date": "2025-07-27",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 46.69,
+      "zone_cloud_fraction": 0.3764,
+      "scl_cloud_fractions": [
+        0.4604,
+        0.0823,
+        0.339,
+        1.0
+      ],
+      "not_water_fractions": [
+        0.0881,
+        0.0178,
+        0.0566
+      ],
+      "observed": 1,
+      "partial": 2,
+      "blind": 1,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250730T150719_R082_T19PDP_20250730T185847": {
+      "date": "2025-07-30",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 6.52,
+      "zone_cloud_fraction": 0.0024,
+      "scl_cloud_fractions": [
+        0.0057,
+        0.0065,
+        0.0007,
+        0.0
+      ],
+      "not_water_fractions": [
+        0.0131,
+        0.0227,
+        0.0053,
+        0.0001
+      ],
+      "observed": 4,
+      "partial": 0,
+      "blind": 0,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250804T150741_R082_T19PDP_20250804T195015": {
+      "date": "2025-08-04",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 24.57,
+      "zone_cloud_fraction": 0.1792,
+      "scl_cloud_fractions": [
+        0.0032,
+        0.1583,
+        0.1478,
+        0.928
+      ],
+      "not_water_fractions": [
+        0.0222,
+        0.0481,
+        0.042,
+        0.1132
+      ],
+      "observed": 3,
+      "partial": 0,
+      "blind": 1,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250806T150941_R082_T19PDP_20250806T194007": {
+      "date": "2025-08-06",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 14.21,
+      "zone_cloud_fraction": 0.36,
+      "scl_cloud_fractions": [
+        0.2056,
+        0.8947,
+        0.1729,
+        0.4691
+      ],
+      "not_water_fractions": [
+        0.0056,
+        0.0783,
+        0.0335,
+        0.0132
+      ],
+      "observed": 1,
+      "partial": 2,
+      "blind": 1,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250809T150719_R082_T19PDP_20250809T184923": {
+      "date": "2025-08-09",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 27.92,
+      "zone_cloud_fraction": 0.1913,
+      "scl_cloud_fractions": [
+        0.4861,
+        0.0495,
+        0.0057,
+        0.0797
+      ],
+      "not_water_fractions": [
+        0.327,
+        0.1058,
+        0.004,
+        0.0112
+      ],
+      "observed": 3,
+      "partial": 1,
+      "blind": 0,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250814T150741_R082_T19PDP_20250814T194512": {
+      "date": "2025-08-14",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 18.68,
+      "zone_cloud_fraction": 0.1132,
+      "scl_cloud_fractions": [
+        0.0017,
+        0.1786,
+        0.1985,
+        0.1767
+      ],
+      "not_water_fractions": [
+        0.0237,
+        0.0164,
+        0.0181,
+        0.055
+      ],
+      "observed": 4,
+      "partial": 0,
+      "blind": 0,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250816T150731_R082_T19PDP_20250816T213319": {
+      "date": "2025-08-16",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 17.54,
+      "zone_cloud_fraction": 0.3115,
+      "scl_cloud_fractions": [
+        0.1682,
+        0.0711,
+        0.4779,
+        0.7687
+      ],
+      "not_water_fractions": [
+        0.0068,
+        0.0034,
+        0.0389,
+        0.0411
+      ],
+      "observed": 2,
+      "partial": 1,
+      "blind": 1,
+      "sargassum_pixels": 39,
+      "affected": [
+        "Watamula to Bartolbaai"
+      ]
+    },
+    "S2B_MSIL2A_20250819T150729_R082_T19PDP_20250819T183822": {
+      "date": "2025-08-19",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 97.36,
+      "zone_cloud_fraction": 0.9999,
+      "scl_cloud_fractions": [
+        1.0,
+        0.9995,
+        1.0,
+        1.0
+      ],
+      "not_water_fractions": [
+        0.0769,
+        0.0
+      ],
+      "observed": 0,
+      "partial": 0,
+      "blind": 4,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2C_MSIL2A_20250824T150741_R082_T19PDP_20250824T195416": {
+      "date": "2025-08-24",
+      "platform": "Sentinel-2C",
+      "tile_cloud_pct": 25.13,
+      "zone_cloud_fraction": 0.1445,
+      "scl_cloud_fractions": [
+        0.0597,
+        0.4217,
+        0.0587,
+        0.1888
+      ],
+      "not_water_fractions": [
+        0.0061,
+        0.0372,
+        0.0235,
+        0.0119
+      ],
+      "observed": 3,
+      "partial": 1,
+      "blind": 0,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2A_MSIL2A_20250826T150941_R082_T19PDP_20250826T192612": {
+      "date": "2025-08-26",
+      "platform": "Sentinel-2A",
+      "tile_cloud_pct": 41.55,
+      "zone_cloud_fraction": 0.673,
+      "scl_cloud_fractions": [
+        0.6977,
+        0.9945,
+        0.6335,
+        0.0205
+      ],
+      "not_water_fractions": [
+        0.0002,
+        0.0679,
+        0.0862,
+        0.0002
+      ],
+      "observed": 1,
+      "partial": 2,
+      "blind": 1,
+      "sargassum_pixels": 0,
+      "affected": []
+    },
+    "S2B_MSIL2A_20250829T150719_R082_T19PDP_20250829T184452": {
+      "date": "2025-08-29",
+      "platform": "Sentinel-2B",
+      "tile_cloud_pct": 62.34,
+      "zone_cloud_fraction": 0.1788,
+      "scl_cloud_fractions": [
+        0.0005,
+        0.0008,
+        0.359,
+        0.6067
+      ],
+      "not_water_fractions": [
+        0.0034,
+        0.0089,
+        0.0136,
+        0.0696
+      ],
+      "observed": 2,
+      "partial": 2,
+      "blind": 0,
+      "sargassum_pixels": 0,
+      "affected": []
+    }
+  },
+  "dropped": {},
+  "failures": []
+}

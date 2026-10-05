@@ -16,6 +16,7 @@ caveats = [
     """Aruba sits where four Sentinel-2 tiles meet (19PCP, 19PCQ, 19PDP, 19PDQ). Tile 19PCP alone holds the island and every surf zone, and the other three carry the same datatakes, so only 19PCP is read.""",
     """OpenStreetMap has no shore node for California Lighthouse or for Colorado Point. Kudareu, the cape at the north-west point about 1.4 km from the lighthouse, and Punta Basora, below Seroe Colorado lighthouse, stand in for them.""",
     """Eagle Beach to Palm Beach is the leeward control rather than the Oranjestad waterfront, whose surf zone holds the harbour, reef islands and a lagoon. The hotel piers at Palm Beach still put boats in it.""",
+    """Orbit R125 is glint-prone: in summer it looks towards the sun's reflection on the windward sea (median glint angle 18 degrees at the coast, under 20 degrees on 47 of 63 passes). Flags here fell to none from April, in the months it glints most, so a quiet season on this orbit cannot be scored as a clean coast. docs/islands.md has the measurements.""",
 ]
 
 [osm]

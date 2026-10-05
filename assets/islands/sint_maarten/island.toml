@@ -19,6 +19,7 @@ caveats = [
     """The obvious landmark at the Oyster Pond inlet, Babit Point, is on the French headland. The Dutch windward coast starts at the south end of the line OpenStreetMap closes Oyster Pond with across the inlet (relation 9589207).""",
     """The Dutch windward coast stops at Point Blanche Bay, about 950 m from the cruise piers, so the piers stay out of a 500 m zone. The Dutch windward coast is only about 7 km long, so its two segments are shorter than any windward segment on the other islands, and their partial and blind verdicts are a little noisier.""",
     """Simpson Bay Lagoon is open to the sea at both ends, so the coastline does not close into one ring. Segments are cut on the two largest rings, and the land mask is every closed ring, islets included, so islet rock inside a windward zone is not classified as water.""",
+    """Orbit R039 looks into the sun's glint over the windward sea in summer (median glint angle 10.7 degrees at the coast, under 20 degrees on 49 of 64 passes); R139 never does. On 16 mornings when both passed about 10 minutes apart, R039 saw about twice the cloud over the windward zones and flagged no pixel where R139 flagged 437 to 846 per segment. docs/islands.md has the measurements.""",
 ]
 
 # For scripts/eval_glint.py: a point on the Dutch windward coast for the sun and view
