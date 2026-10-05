@@ -264,6 +264,9 @@ class PassResult:
     rgb: np.ndarray | None = None
     uncertain_mask: np.ndarray | None = None
     cloud_mask: np.ndarray | None = None
+    # Kept only with keep_scores: the usable pixels (flat C-order indices), their
+    # calibrated sargassum score and the FAI, FDI and NDVI feature columns.
+    scores: dict[str, np.ndarray] | None = None
 
 
 def process_pass(
@@ -281,6 +284,7 @@ def process_pass(
     land_buffer_m: float = 15.0,
     mangrove_buffer_m: float = 20.0,
     keep_arrays: bool = False,
+    keep_scores: bool = False,
 ) -> PassResult:
     """Read one pass over the island and roll it onto the segments.
 
@@ -289,6 +293,9 @@ def process_pass(
         land: Land polygons, EPSG:4326, removed with a ``land_buffer_m`` seaward strip.
         mangroves: Vegetated wetland polygons, removed with a ``mangrove_buffer_m``
             strip; ``None`` (or empty) to classify them as the 2.0 runner did.
+        keep_arrays: Keep true colour and the class masks, for the pass figure.
+        keep_scores: Keep every usable pixel's score and index values, for
+            ``scripts/eval_index_vs_model.py``.
     """
     import rasterio
 
@@ -298,7 +305,7 @@ def process_pass(
     from mdebris.geo.georef import georeference_detections
     from mdebris.geo.raster import read_bands, window_transform
     from mdebris.indices.masks import cloud_mask_from_scl, water_mask
-    from mdebris.models.spectral import build_features
+    from mdebris.models.spectral import build_features, feature_names
     from mdebris.types import BBox, Detection, DetectionSet, SurfaceClass
 
     hrefs = get_scene_assets(scene.scene_id, [*BANDS, "SCL"])
@@ -338,8 +345,16 @@ def process_pass(
     leafy = usable & vegetated(reflectance)
 
     score_map = np.full(shape, np.nan, dtype=np.float32)
+    kept: dict[str, np.ndarray] = {
+        "flat": np.flatnonzero(usable).astype(np.int32),
+        "score": np.zeros(0, np.float32),
+        **{k: np.zeros(0, np.float32) for k in ("FAI", "FDI", "NDVI")},
+    }
     if usable.any():
         features = build_features({b: reflectance[b][usable] for b in BANDS})
+        if keep_scores:
+            names = feature_names()
+            kept.update({k: features[:, names.index(k)].copy() for k in ("FAI", "FDI", "NDVI")})
         proba = clf.predict_proba(features)
         classes = list(clf._model.classes_)
         idx = [classes.index(c) for c in SARGASSUM_CLASSES if c in classes]
@@ -347,6 +362,7 @@ def process_pass(
         if calibrator is not None:
             score = calibrator.apply(score)
         score_map[usable] = score
+        kept["score"] = np.asarray(score, dtype=np.float32)
 
     with np.errstate(invalid="ignore"):
         hits = score_map >= points.high
@@ -412,6 +428,8 @@ def process_pass(
         transform=transform,
         crs=crs,
     )
+    if keep_scores:
+        result.scores = kept
     if keep_arrays:
         from mdebris.geo.raster import to_rgb
 
