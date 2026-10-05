@@ -151,7 +151,10 @@ test patches.
 | Bonaire | 64% to 73% of 64 passes | 20 days | 97 days (Lac Bay) | 0 pixels |
 | Aruba | 57% to 71% of 63 | 30 days | 40 days | 0 |
 | Curaçao | 66% to 73% of 64 | 25 days | 35 days | 0 |
-| Sint Maarten | 58% to 66% of 64 | 30 days | 68 days | 1 |
+| Sint Maarten, Dutch side | 62% to 66% of 64 | 28 days | 38 days | 1 |
+
+On the same orbit, French Saint-Martin's windward stretch (Coralita to Orient Bay) was
+usable on 58% of passes, with a 30-day gap and 68 days without a fully clear pass.
 
 - Sun glint is part of observability. Sint Maarten's comparable orbit looks into the
   sun's reflection in summer: on 16 mornings when a second orbit passed about 10

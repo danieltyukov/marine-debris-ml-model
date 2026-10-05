@@ -514,7 +514,10 @@ Maarten sits in the overlap of two orbits, and its second orbit is reported apar
 | Bonaire | R082 | 64% to 73% (71% pooled) | 20 days | 97 days (Lac Bay) | 9 of 64 passes | 56% usable, 0 pixels flagged |
 | Aruba | R125 | 57% to 71% (63%) | 30 days | 40 days | 12 of 63 | 57%, 0 |
 | Curaçao | R082 | 66% to 73% (69%) | 25 days | 35 days | 12 of 65 dates | 59%, 0 |
-| Sint Maarten | R039 | 58% to 66% (62%) | 30 days | 68 days | 20 of 64 | 66%, 1 |
+| Sint Maarten, Dutch side | R039 | 62% to 66% (64%) | 28 days | 38 days | 20 of 64 | 66%, 1 |
+
+French Saint-Martin's windward stretch on the same orbit (Coralita to Orient Bay): 58% usable,
+a 30-day gap, 68 days without a fully clear pass.
 
 Two findings beyond the table. **Sun glint is part of observability.** Sint Maarten's
 comparable orbit looks into the sun's reflection in summer; on 16 mornings when both orbits
