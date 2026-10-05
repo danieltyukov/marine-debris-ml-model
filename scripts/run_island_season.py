@@ -69,6 +69,12 @@ def add_common_arguments(parser: argparse.ArgumentParser) -> None:
         default=None,
         help="Only redraw the pass figure for this scene id; nothing else runs.",
     )
+    parser.add_argument(
+        "--note",
+        action="append",
+        default=[],
+        help="A paragraph to add at the end of the report (repeatable).",
+    )
 
 
 def inputs_for(args: argparse.Namespace, island, part, *, segments=None, land=None) -> SeasonInputs:
@@ -92,8 +98,25 @@ def inputs_for(args: argparse.Namespace, island, part, *, segments=None, land=No
         high=args.high,
         surf_zone_m=args.surf_zone_m,
         max_scenes=args.max_scenes,
-        command=" ".join(["python", *map(shlex.quote, sys.argv)]),
+        command=" ".join(["python", *map(shlex.quote, _without_notes(sys.argv))]),
+        extra_notes=list(args.note),
     )
+
+
+def _without_notes(argv: list[str]) -> list[str]:
+    """The command line as run, minus ``--note`` paragraphs, for the report header."""
+    out, skip = [], False
+    for arg in argv:
+        if skip:
+            skip = False
+            continue
+        if arg == "--note":
+            skip = True
+            continue
+        if arg.startswith("--note="):
+            continue
+        out.append(arg)
+    return out
 
 
 def main() -> None:

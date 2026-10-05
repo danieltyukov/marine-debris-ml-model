@@ -2,6 +2,7 @@
 
     python scripts/compare_islands.py            # print the tables
     python scripts/compare_islands.py --write    # also rewrite them in docs/islands.md
+    python scripts/compare_islands.py --write --figure assets/islands_observability.png
 
 Reads ``docs/<prefix>_season.csv`` and ``.json`` for every part of every island under
 ``assets/islands/``; nothing is downloaded. An island run in two parts on two tiles of
@@ -136,12 +137,54 @@ def build(docs: Path) -> tuple[list[str], dict]:
     return out, records
 
 
+def figure(records: list[dict], path: Path) -> None:
+    """Usable share and the longest wait for a fully clear pass, per segment and island."""
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    from mdebris.viz.plots import save_figure
+
+    rows = list(reversed(records))
+    labels = [f"{r['island']}: {r['name']}" for r in rows]
+    colours = {"windward": "#1f77b4", "leeward": "#9e9e9e"}
+    fig, (left, right) = plt.subplots(
+        1, 2, figsize=(13, 0.32 * len(rows) + 1.6), sharey=True, constrained_layout=True
+    )
+    y = range(len(rows))
+    left.barh(
+        y, [100 * r["usable_fraction"] for r in rows], color=[colours[r["exposure"]] for r in rows]
+    )
+    left.set_xlim(0, 100)
+    left.set_xlabel("passes on which the segment could be used, %")
+    right.barh(
+        y,
+        [r["longest_clear_gap_days"] or 0 for r in rows],
+        color=[colours[r["exposure"]] for r in rows],
+    )
+    right.set_xlabel("longest wait for a fully clear pass, days")
+    left.set_yticks(list(y))
+    left.set_yticklabels(labels, fontsize=8)
+    for ax in (left, right):
+        ax.grid(axis="x", color="0.9")
+        ax.set_axisbelow(True)
+        for side in ("top", "right"):
+            ax.spines[side].set_visible(False)
+    fig.suptitle(
+        "January to August 2025, one Sentinel-2 orbit per island (grey: leeward control)",
+        fontsize=11,
+    )
+    save_figure(fig, path, tight=False)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument("--docs-dir", type=Path, default=Path("docs"))
     parser.add_argument("--write", action="store_true")
+    parser.add_argument("--figure", type=Path, help="Also draw the summary figure here.")
     args = parser.parse_args()
 
     lines, records = build(args.docs_dir)
@@ -158,6 +201,8 @@ def main() -> None:
         (args.docs_dir / "islands.json").write_text(
             json.dumps(records, indent=1, ensure_ascii=False) + "\n", encoding="utf-8"
         )
+    if args.figure:
+        figure(records["comparable"], args.figure)
 
 
 if __name__ == "__main__":

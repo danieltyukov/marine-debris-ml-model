@@ -285,7 +285,8 @@ def test_persistence_from_a_2_0_file_has_no_vegetation_counts(tmp_path):
     )
     old = Persistence.load(path)
     assert old.vegetated_total is None and old.masked is None
-    assert old.per_segment()["z"]["persistent_vegetation_pixels"] == 0
+    assert old.per_segment()["z"]["persistent_vegetation_pixels"] is None
+    assert old.per_segment()["z"]["flagged_near_vegetation"] is None
 
 
 def test_pass_table_and_segment_pixels_roll_up_rows():

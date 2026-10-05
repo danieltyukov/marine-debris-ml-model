@@ -493,17 +493,25 @@ class Persistence:
             return np.zeros(self.hit_total.shape, dtype=bool)
         return persistent_vegetation(self.vegetated_total, self.usable_total)
 
-    def per_segment(self) -> dict[str, dict[str, int]]:
+    def per_segment(self) -> dict[str, dict[str, int | None]]:
+        """Per segment: pixels ever flagged, stationary, and the vegetation check.
+
+        A grid written before the vegetation counts existed (version 2.0) gives ``None``
+        for the two vegetation numbers: not recorded, which is not the same as zero.
+        """
         flagged = self.hit_total > 0
         stationary = self.stationary
+        recorded = self.vegetated_total is not None
         leafy = self.persistent_vegetation
         near_leafy = near(leafy, VEGETATION_NEAR_PIXELS)
         return {
             seg: {
                 "flagged_pixels": int((zone & flagged).sum()),
                 "stationary_pixels": int((zone & stationary).sum()),
-                "persistent_vegetation_pixels": int((zone & leafy).sum()),
-                "flagged_near_vegetation": int((zone & flagged & near_leafy).sum()),
+                "persistent_vegetation_pixels": int((zone & leafy).sum()) if recorded else None,
+                "flagged_near_vegetation": (
+                    int((zone & flagged & near_leafy).sum()) if recorded else None
+                ),
             }
             for seg, zone in self.zones.items()
         }
