@@ -1,0 +1,158 @@
+# Aruba.
+#
+# Read by mdebris.coastal.islands.load_island. scripts/make_island_segments.py builds
+# segments.geojson, island.geojson and mangroves.geojson in this folder from
+# OpenStreetMap; scripts/run_island_season.py --island aruba runs the season.
+
+key = "aruba"
+name = "Aruba"
+utm_epsg = 32619
+description = """
+Six windward segments from the north-west point round the north and east coast to the
+south-east point below Seroe Colorado, plus Eagle Beach to Palm Beach on the leeward side
+as a control that sargassum should not reach.
+"""
+caveats = [
+    """Aruba sits where four Sentinel-2 tiles meet (19PCP, 19PCQ, 19PDP, 19PDQ). Tile 19PCP alone holds the island and every surf zone, and the other three carry the same datatakes, so only 19PCP is read.""",
+    """OpenStreetMap has no shore node for California Lighthouse or for Colorado Point. Kudareu, the cape at the north-west point about 1.4 km from the lighthouse, and Punta Basora, below Seroe Colorado lighthouse, stand in for them.""",
+    """Eagle Beach to Palm Beach is the leeward control rather than the Oranjestad waterfront, whose surf zone holds the harbour, reef islands and a lagoon. The hotel piers at Palm Beach still put boats in it.""",
+]
+
+[osm]
+# south, west, north, east
+bbox = [12.38, -70.10, 12.66, -69.84]
+segment_rings = 1
+land = "main"
+simplify_m = 15.0
+
+[masks]
+land_buffer_m = 15.0
+mangrove_buffer_m = 20.0
+
+[season]
+leeward_control = "eagle_palm"
+aoi_margin_m = 1000.0
+
+[[season.parts]]
+key = ""
+tiles = ["19PCP"]
+orbits = ["R125"]
+min_cover = 0.99
+# Kept 1 km inside the east edge of 19PCP (easting 409.8 km in UTM 19N).
+aoi = [-70.09, 12.39, -69.84, 12.65]
+
+[figures]
+whole = { title = "whole island", box = [-70.08, 12.64, -69.85, 12.40] }
+zoom = { title = "Conchi to Dos Playa", box = [-69.945, 12.532, -69.905, 12.500] }
+
+# OpenStreetMap elements, (lon, lat) of the node or the element's centre, OSM base
+# 2026-10-04. Snapped to the coastline at build time.
+[landmarks.kudareu]
+label = "Kudareu, the north-west point by California Lighthouse"
+lon = -70.058267
+lat = 12.6240598
+osm = "node/7452989994"
+
+[landmarks.boca_chiquito]
+label = "Boca Chiquito"
+lon = -69.9992787
+lat = 12.5713241
+osm = "node/3101287429"
+
+[landmarks.bushiribana]
+label = "Bushiribana gold smelter ruins"
+lon = -69.9766188
+lat = 12.5536851
+osm = "way/79210010"
+
+[landmarks.andicuri]
+label = "Andicuri"
+lon = -69.9564155
+lat = 12.5409812
+osm = "node/7452928954"
+
+[landmarks.boca_prins]
+label = "Boca Prins"
+lon = -69.9064736
+lat = 12.4988541
+osm = "node/6496597934"
+
+[landmarks.rincon]
+label = "Rincon"
+lon = -69.8818703
+lat = 12.4640462
+osm = "node/7452929386"
+
+[landmarks.punta_basora]
+label = "Punta Basora, below Seroe Colorado lighthouse"
+lon = -69.866259
+lat = 12.4165246
+osm = "node/7452929444"
+
+[landmarks.eagle_beach]
+label = "Eagle Beach"
+lon = -70.0593675
+lat = 12.5465346
+osm = "way/25590792"
+
+[landmarks.palm_beach]
+label = "Palm Beach"
+lon = -70.0490297
+lat = 12.5747796
+osm = "way/23060047"
+
+[[segments]]
+id = "kudareu_boca_chiquito"
+name = "Kudareu to Boca Chiquito"
+from = "kudareu"
+to = "boca_chiquito"
+exposure = "windward"
+note = "North coast from the north-west point past the California dunes to Boca Chiquito below Alto Vista."
+
+[[segments]]
+id = "boca_chiquito_bushiribana"
+name = "Boca Chiquito to Bushiribana"
+from = "boca_chiquito"
+to = "bushiribana"
+exposure = "windward"
+note = "Alto Vista coast, Wariruri and Boedoei, to the gold smelter ruins."
+
+[[segments]]
+id = "bushiribana_andicuri"
+name = "Bushiribana to Andicuri"
+from = "bushiribana"
+to = "andicuri"
+exposure = "windward"
+note = "Boca Mahos and the collapsed Natural Bridge."
+
+[[segments]]
+id = "andicuri_boca_prins"
+name = "Andicuri to Boca Prins"
+from = "andicuri"
+to = "boca_prins"
+exposure = "windward"
+note = "Blackstone Beach, Daimari, Boca Keto, Conchi and Dos Playa, along Arikok National Park."
+
+[[segments]]
+id = "boca_prins_rincon"
+name = "Boca Prins to Rincon"
+from = "boca_prins"
+to = "rincon"
+exposure = "windward"
+note = "Fontein and Punt Kalkoven."
+
+[[segments]]
+id = "rincon_punta_basora"
+name = "Rincon to Punta Basora (Boca Grandi)"
+from = "rincon"
+to = "punta_basora"
+exposure = "windward"
+note = "Grapefield Beach, Boca Grandi and Bachelor's Beach, to the south-east point at Seroe Colorado."
+
+[[segments]]
+id = "eagle_palm"
+name = "Eagle Beach to Palm Beach"
+from = "eagle_beach"
+to = "palm_beach"
+exposure = "leeward"
+note = "Leeward control: the hotel beaches north of Oranjestad, which sargassum should not reach."

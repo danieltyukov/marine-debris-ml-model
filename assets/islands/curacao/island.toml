@@ -1,0 +1,198 @@
+# Curaçao.
+#
+# Read by mdebris.coastal.islands.load_island. scripts/make_island_segments.py builds
+# segments.geojson, island.geojson and mangroves.geojson in this folder from
+# OpenStreetMap; scripts/run_island_season.py --island curacao runs both parts.
+
+key = "curacao"
+name = "Curaçao"
+utm_epsg = 32619
+description = """
+Seven windward segments along the north coast from Watamula on the north-west point to
+Oostpunt, with Sint Joris Baai (a shallow lagoon behind a 220 m mouth) as its own segment,
+plus Daaibooi to Playa Largu on the Bandabou beaches as the leeward control. The island is
+wider than one Sentinel-2 tile, so it is run in two parts on two tiles of the same orbit.
+"""
+caveats = [
+    """Curaçao does not fit on one tile. The west part is read from 19PDP and the east part from 19PEP, both on relative orbit R082 (Bonaire's), so a date means the same overpass on both and the halves join by date. The split is on the north coast below Landhuis Hato, inside the tile overlap; every surf zone is at least 3.7 km inside the tile it is read from.""",
+    """Relative orbit R125 (Aruba's) also clips the western tip, but no R125 granule covers a whole segment, so it is not counted. The Watamula end of the north coast is therefore seen somewhat more often than these tables say.""",
+    """Sint Joris Baai's mouth has no named node. Its two ends are the ends of the line OpenStreetMap closes the bay polygon with (way 298797383), 226 m across.""",
+    """Daaibooi to Playa Largu is the leeward control rather than a stretch next to Willemstad, whose coast has the harbour mouth, Piscadera Bay, Spanish Water and the Bullenbaai oil terminal. The dive piers at Porto Marie and Cas Abao still put a few structures in it.""",
+]
+
+[osm]
+# south, west, north, east
+bbox = [12.02, -69.18, 12.40, -68.72]
+segment_rings = 1
+# Every closed ring: the main island and 44 islets in Spanish Water and Caracasbaai.
+land = "all"
+simplify_m = 15.0
+
+[masks]
+land_buffer_m = 15.0
+mangrove_buffer_m = 20.0
+
+[season]
+leeward_control = "daaibooi_playa_largu"
+aoi_margin_m = 1000.0
+
+# Tile 19PDP is easting 400.0 to 509.8 km in UTM 19N, east edge at 68.910 W. The surf
+# zones of this part end at 68.945 W; the area read ends at 68.935 W.
+[[season.parts]]
+key = "west"
+label = "west, Watamula to Hato"
+tiles = ["19PDP"]
+orbits = ["R082"]
+min_cover = 0.99
+segments = ["watamula_bartolbaai", "bartolbaai_san_pedro", "san_pedro_hato", "daaibooi_playa_largu"]
+aoi = [-69.17, 12.175, -68.935, 12.405]
+figures.whole = { title = "west, Watamula to Hato", box = [-69.17, 12.405, -68.935, 12.175] }
+figures.zoom = { title = "Watamula and Shete Boka", box = [-69.165, 12.400, -69.095, 12.350] }
+
+# Tile 19PEP is easting 500.0 to 609.8 km, west edge at 69.000 W. The surf zones of this
+# part start at 68.954 W; the area read starts at 68.965 W.
+[[season.parts]]
+key = "east"
+label = "east, Hato to Oostpunt"
+tiles = ["19PEP"]
+orbits = ["R082"]
+min_cover = 0.99
+segments = ["hato_kanoa", "kanoa_sint_joris", "sint_joris", "sint_joris_oostpunt"]
+aoi = [-68.965, 12.03, -68.722, 12.20]
+figures.whole = { title = "east, Hato to Oostpunt", box = [-68.965, 12.20, -68.722, 12.03] }
+figures.zoom = { title = "Sint Joris Baai", box = [-68.840, 12.150, -68.790, 12.100] }
+
+# OpenStreetMap elements, (lon, lat) of the node or the element's centre, OSM base
+# 2026-10-04. The two Sint Joris Baai mouth points are the ends of the bay's closing
+# line. Snapped to the coastline at build time.
+[landmarks.watamula]
+label = "Watamula, by Noordpunt"
+lon = -69.1561554
+lat = 12.3905288
+osm = "node/332795865"
+
+[landmarks.bartolbaai]
+label = "Bartolbaai"
+lon = -69.0608116
+lat = 12.3325227
+osm = "node/12618775611"
+
+[landmarks.san_pedro]
+label = "Boka San Pedro"
+lon = -69.0394623
+lat = 12.2589162
+osm = "node/3197111424"
+
+[landmarks.hato]
+label = "Hato, the coast below Landhuis Hato and the airport"
+lon = -68.9507032
+lat = 12.1824486
+osm = "way/398421880"
+
+[landmarks.kanoa]
+label = "Playa Kanoa"
+lon = -68.8661494
+lat = 12.1748484
+osm = "way/313159341"
+
+[landmarks.joris_north]
+label = "Sint Joris Baai mouth, north side"
+lon = -68.80616863144635
+lat = 12.129412371798756
+osm = "way/298797383"
+
+[landmarks.joris_south]
+label = "Sint Joris Baai mouth, south side"
+lon = -68.80509948528692
+lat = 12.127770854463218
+osm = "way/298797383"
+
+[landmarks.oostpunt]
+label = "Oostpunt"
+lon = -68.7372235
+lat = 12.043777
+osm = "node/306397390"
+
+[landmarks.daaibooi]
+label = "Daaibooi"
+lon = -69.0847108
+lat = 12.2120655
+osm = "way/234450596"
+
+[landmarks.playa_largu]
+label = "Playa Largu"
+lon = -69.1002376
+lat = 12.2352909
+osm = "relation/9513683"
+
+[[segments]]
+id = "watamula_bartolbaai"
+name = "Watamula to Bartolbaai"
+from = "watamula"
+to = "bartolbaai"
+exposure = "windward"
+tile = "19PDP"
+note = "North-west point, the Shete Boka inlets (Boka Tabla, Boka Pistol) and the Christoffel park coast."
+
+[[segments]]
+id = "bartolbaai_san_pedro"
+name = "Bartolbaai to Boka San Pedro"
+from = "bartolbaai"
+to = "san_pedro"
+exposure = "windward"
+tile = "19PDP"
+note = "Playa Grandi, Bergantinbaai, Boka Santu Pretu, Boka Patrick and Boka Ascension."
+
+[[segments]]
+id = "san_pedro_hato"
+name = "Boka San Pedro to Hato"
+from = "san_pedro"
+to = "hato"
+exposure = "windward"
+tile = "19PDP"
+note = "The open north coast past Kueba Shingot to the airport."
+
+[[segments]]
+id = "hato_kanoa"
+name = "Hato to Playa Kanoa"
+from = "hato"
+to = "kanoa"
+exposure = "windward"
+tile = "19PEP"
+note = "The airport coast and Noordkant."
+
+[[segments]]
+id = "kanoa_sint_joris"
+name = "Playa Kanoa to Sint Joris Baai"
+from = "kanoa"
+to = "joris_north"
+exposure = "windward"
+tile = "19PEP"
+note = "Boka Grandi, Boka Labadera and Boka Tabla on the north-east coast, to the mouth of Sint Joris Baai."
+
+[[segments]]
+id = "sint_joris"
+name = "Sint Joris Baai"
+from = "joris_north"
+to = "joris_south"
+exposure = "windward"
+tile = "19PEP"
+note = "The shallow lagoon inside the mouth, its whole shore, as Lac Bay is for Bonaire."
+
+[[segments]]
+id = "sint_joris_oostpunt"
+name = "Sint Joris Baai to Oostpunt"
+from = "joris_south"
+to = "oostpunt"
+exposure = "windward"
+tile = "19PEP"
+note = "Boka Kokolishi, Duivelsklip and the undeveloped east point."
+
+[[segments]]
+id = "daaibooi_playa_largu"
+name = "Daaibooi to Playa Largu"
+from = "daaibooi"
+to = "playa_largu"
+exposure = "leeward"
+tile = "19PDP"
+note = "Leeward control: the Bandabou beaches Daaibooi, Porto Marie and Cas Abao, which sargassum should not reach."

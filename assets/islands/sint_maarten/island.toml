@@ -1,0 +1,144 @@
+# Sint Maarten, the Dutch half of Saint Martin, with one French windward segment for
+# context.
+#
+# Read by mdebris.coastal.islands.load_island. scripts/make_island_segments.py builds
+# segments.geojson, island.geojson and mangroves.geojson in this folder from
+# OpenStreetMap; scripts/run_island_season.py --island sint_maarten runs both orbits.
+
+key = "sint_maarten"
+name = "Sint Maarten"
+utm_epsg = 32620
+description = """
+The Dutch windward coast in two segments, from the Dutch side of the Oyster Pond inlet to
+Point Blanche Bay; Coralita to Orient Bay on the French side, for context; and Fort
+Amsterdam to Cole Bay on the Dutch south coast as the leeward control. The island sits in
+the overlap of two Sentinel-2 swaths, so it is run once per orbit.
+"""
+caveats = [
+    """Saint Martin is the only one of these islands inside a swath overlap. Relative orbit R039 covers the whole island and is the run compared with the other islands. Relative orbit R139 sees the windward east coast on other days and never the leeward control; it is run on the windward segments and reported on its own. Reading the R039 numbers alone as how often this coast can be seen undercounts it.""",
+    """The obvious landmark at the Oyster Pond inlet, Babit Point, is on the French headland. The Dutch windward coast starts at the south end of the line OpenStreetMap closes Oyster Pond with across the inlet (relation 9589207).""",
+    """The Dutch windward coast stops at Point Blanche Bay, about 950 m from the cruise piers, so the piers stay out of a 500 m zone. The Dutch windward coast is only about 7 km long, so its two segments are shorter than any windward segment on the other islands, and their partial and blind verdicts are a little noisier.""",
+    """Simpson Bay Lagoon is open to the sea at both ends, so the coastline does not close into one ring. Segments are cut on the two largest rings, and the land mask is every closed ring, islets included, so islet rock inside a windward zone is not classified as water.""",
+]
+
+[osm]
+# south, west, north, east
+bbox = [17.99, -63.16, 18.135, -62.96]
+segment_rings = 2
+land = "all"
+simplify_m = 15.0
+
+[masks]
+land_buffer_m = 15.0
+mangrove_buffer_m = 20.0
+
+[season]
+leeward_control = "fort_amsterdam_cole_bay"
+aoi_margin_m = 1000.0
+
+# Tile 20QMF is easting 400.0 to 509.8 km and northing 1990.2 to 2100.0 km in UTM 20N;
+# its south edge is at 18.000 N here, so the area read starts at 18.001 N and every
+# surf zone is at least 800 m inside the tile.
+[[season.parts]]
+key = ""
+tiles = ["20QMF"]
+orbits = ["R039"]
+min_cover = 0.99
+aoi = [-63.095, 18.001, -63.002, 18.100]
+figures.whole = { title = "Saint Martin, south and east", box = [-63.095, 18.100, -63.002, 18.001] }
+figures.zoom = { title = "Oyster Pond to Point Blanche Bay", box = [-63.045, 18.060, -63.005, 18.005] }
+
+# R139's swath edge runs at about 63.05 to 63.07 W here; its granules count only when
+# they cover all three windward surf zones.
+[[season.parts]]
+key = "r139"
+label = "windward, second orbit R139"
+tiles = ["20QMF"]
+orbits = ["R139"]
+min_cover = 0.99
+comparable = false
+segments = ["oyster_pond_guana", "guana_point_blanche_bay", "coralita_orient_bay"]
+aoi = [-63.045, 18.001, -63.002, 18.100]
+figures.whole = { title = "windward coast", box = [-63.045, 18.100, -63.002, 18.001] }
+figures.zoom = { title = "Oyster Pond to Point Blanche Bay", box = [-63.045, 18.060, -63.005, 18.005] }
+
+# OpenStreetMap elements, (lon, lat) of the node or the element's centre, OSM base
+# 2026-10-04. The Oyster Pond point is the south end of the pond's closing line across
+# the inlet. Snapped to the nearer of the two coastline rings at build time.
+[landmarks.oyster_pond]
+label = "Oyster Pond inlet, Dutch side"
+lon = -63.0135660909032
+lat = 18.053887466026467
+osm = "relation/9589207"
+
+[landmarks.guana_bay_point]
+label = "Guana Bay Point"
+lon = -63.0198784
+lat = 18.0314387
+osm = "node/246556047"
+
+[landmarks.point_blanche_bay]
+label = "Point Blanche Bay"
+lon = -63.0350145
+lat = 18.0111467
+osm = "node/5098430630"
+
+[landmarks.coralita]
+label = "Coralita Beach"
+lon = -63.0132296
+lat = 18.0617867
+osm = "relation/9558436"
+
+[landmarks.orient_bay]
+label = "Orient Bay, the northern beach"
+lon = -63.0200028
+lat = 18.0904226
+osm = "way/151155089"
+
+[landmarks.fort_amsterdam]
+label = "Fort Amsterdam, the point between Great Bay and Little Bay"
+lon = -63.0595917
+lat = 18.0147669
+osm = "way/525178259"
+
+[landmarks.cole_bay]
+label = "Cole Bay"
+lon = -63.0853843
+lat = 18.0215479
+osm = "node/4903522603"
+
+[[segments]]
+id = "oyster_pond_guana"
+name = "Oyster Pond to Guana Bay Point"
+from = "oyster_pond"
+to = "guana_bay_point"
+exposure = "windward"
+side = "Sint Maarten (Dutch)"
+note = "Dawn Beach, Gibb's Bay and Guana Bay. The inlet and the south part of Oyster Pond are within 500 m of the north end."
+
+[[segments]]
+id = "guana_point_blanche_bay"
+name = "Guana Bay Point to Point Blanche Bay"
+from = "guana_bay_point"
+to = "point_blanche_bay"
+exposure = "windward"
+side = "Sint Maarten (Dutch)"
+note = "Geneve Bay, Back Bay and Point Blanche Bay, stopping short of the cruise piers."
+
+[[segments]]
+id = "coralita_orient_bay"
+name = "Coralita to Orient Bay (French Saint-Martin)"
+from = "coralita"
+to = "orient_bay"
+exposure = "windward"
+side = "Saint-Martin (French)"
+note = "French side, for context: Baie Lucas, Baie de l'Embouchure (Le Galion) and the south half of Orient Bay."
+
+[[segments]]
+id = "fort_amsterdam_cole_bay"
+name = "Fort Amsterdam to Cole Bay"
+from = "fort_amsterdam"
+to = "cole_bay"
+exposure = "leeward"
+side = "Sint Maarten (Dutch)"
+note = "Leeward control on the Dutch south coast: Little Bay, Kleine Baai and Cay Bay, west of the cruise port and east of the lagoon entrance, which sargassum should not reach."
