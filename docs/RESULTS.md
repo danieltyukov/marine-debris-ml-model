@@ -17,6 +17,10 @@ rather than fitting a new one, so their numbers describe the same model.
 - [Is the probability an uncertainty?](#is-the-probability-an-uncertainty)
 - [From detections to a beach a crew can be sent to](#from-detections-to-a-beach-a-crew-can-be-sent-to)
 - [Bonaire, every pass of one season](#bonaire-every-pass-of-one-season)
+- [Lac Bay was mangroves](#lac-bay-was-mangroves)
+- [Four islands](#four-islands)
+- [Physical indices against the classifier](#physical-indices-against-the-classifier)
+- [Radar over Lac Bay](#radar-over-lac-bay)
 
 ## How to read the numbers
 
@@ -386,16 +390,20 @@ island's own account, the worst on record.
 
 ![bonaire season](../assets/bonaire_season.png)
 
-| segment | seen on | longest gap | passes with a detection | pixels ever flagged | stationary |
-|---|---|---|---|---|---|
-| Willemstoren to Sorobon | 72% of passes | 15 days | 1 | 13 | 0 |
-| Lac Bay | 64% | 20 days | 24 | 1,167 | 25 |
-| Cai to Boka Washikemba | 72% | 15 days | 10 | 285 | 5 |
-| Boka Washikemba to Spelonk | 70% | 15 days | 3 | 41 | 0 |
-| Spelonk to Boka Onima | 73% | 15 days | 2 | 24 | 0 |
-| Boka Onima to Playa Chikitu | 73% | 15 days | 0 | 5 | 0 |
-| Playa Chikitu to Boka Kokolishi | 73% | 15 days | 0 | 13 | 0 |
-| Kralendijk waterfront, leeward control | 56% | 20 days | 0 | 0 | 0 |
+| segment | seen on | longest gap | longest wait for a fully clear pass | passes with flags | pixels ever flagged | stationary | near persistent vegetation |
+|---|---|---|---|---|---|---|---|
+| Willemstoren to Sorobon | 72% of passes | 15 days | 25 days | 1 | 12 | 0 | 0 |
+| Lac Bay | 64% | 20 days | 97 days | 8 | 204 | 1 | 151 |
+| Cai to Boka Washikemba | 72% | 15 days | 20 days | 4 | 69 | 0 | 18 |
+| Boka Washikemba to Spelonk | 70% | 15 days | 35 days | 3 | 41 | 0 | 0 |
+| Spelonk to Boka Onima | 73% | 15 days | 35 days | 2 | 24 | 0 | 0 |
+| Boka Onima to Playa Chikitu | 73% | 15 days | 30 days | 0 | 5 | 0 | 0 |
+| Playa Chikitu to Boka Kokolishi | 73% | 15 days | 18 days | 0 | 13 | 0 | 0 |
+| Kralendijk waterfront, leeward control | 56% | 20 days | 75 days | 0 | 0 | 0 | 0 |
+
+These are the 2.1 numbers, with mapped mangrove masked. Version 2.0 had the same
+observability and flagged 1,167 pixels in Lac Bay (25 stationary) and 285 in Cai to Boka
+Washikemba; the next section says why that was wrong.
 
 Three things came out of it, and the first is the one a proposal needs.
 
@@ -421,21 +429,21 @@ diluted by land, since a surf zone is buffered on both sides of a shoreline;
 `segment_cloud_fractions` now takes a mask of the pixels that could have been
 observed.
 
-**What was flagged, and what that is.** Almost everything the classifier called
-sargassum at a calibrated 0.9 sits in the sheltered back-bay of Lac and on the reef
-flat at Cai: hundreds of pixels per clear pass from January to mid-March, tens from
-May to August, and 362 on 16 August. The leeward control was flagged on no pixel in
-64 passes and the open windward coast on almost none. Because a fixed bottom feature
-would be flagged on every clear pass, the runner keeps a per-pixel count of passes
-that flagged it against passes that could see it; only 25 of the 1,167 Lac Bay
-pixels were flagged on half or more of their clear passes, so this is not a
-stationary confuser, and the flagged area moves around the mangrove channels
-between passes. What it is has not been checked on the ground. MARIDA contains no
-shallow lagoon, and the Wageningen authors, whose random forest was trained on this
-island, say the bays and the open sea need separate models. Sargassum held in the
-bay after entering it, which is what the 2017 to 2022 record says happens, is the
-plausible reading; the uncertain band in the pass figure below is the classifier
-saying it is not sure, in the same place.
+**What was flagged, and what that is.** In version 2.0 almost everything the classifier
+called sargassum at a calibrated 0.9 sat in Lac Bay and at Cai: hundreds of pixels per
+clear pass in January, tens from May to August, 362 on 16 August. The 2.0 text read them
+as the shallow back-bay and the reef flat, and read the low stationary count (25 of 1,167
+pixels) as a sign the flags were floating. Both readings were wrong. The OpenStreetMap
+coastline runs round the landward edge of Lac Bay's mangrove forest, so the canopy sat on
+the water side and was classified; 93% of the flagged pixels sit on that canopy or within
+20 m of it, and the flags hop because a canopy-edge pixel, part leaf and part water,
+crosses the 0.9 edge on clean passes and drops back on hazy ones. 2.1 removes mapped
+mangrove before classifying, which takes Lac Bay from 1,167 flagged pixels to 204 and Cai
+from 285 to 69 and changes no usable share or gap. Most of what is left in Lac Bay is canopy
+the map misses, which the new vegetation check names (151 of the 204). The leeward control
+was flagged on no pixel in 64 passes and the open windward coast on almost none. Nothing
+here has been checked on the ground. [Lac Bay was mangroves](#lac-bay-was-mangroves) below
+has the evidence.
 
 ![bonaire pass](../assets/bonaire_pass.png)
 
@@ -450,12 +458,105 @@ five days after the material was first seen at sea. That five days is the lead t
 this whole product is for.
 
 Per-pass rows are in [`bonaire_season.csv`](bonaire_season.csv), the report in
-[`bonaire_season.md`](bonaire_season.md). The segments and the island polygon are
-ODbL, from OpenStreetMap.
+[`bonaire_season.md`](bonaire_season.md). The segments, land polygon and mangrove mask
+are ODbL, from OpenStreetMap, in `assets/islands/bonaire/`.
 
 ```bash
-python scripts/make_bonaire_segments.py --fetch     # OSM coastline to segments and island polygon
-python scripts/run_bonaire_season.py                # every pass, about 17 minutes over HTTP
+python scripts/make_island_segments.py --island bonaire --fetch   # segments, land and mangrove mask from OSM
+python scripts/run_island_season.py --island bonaire              # every pass, about 17 minutes on a quiet machine
 ```
 
 <!-- ISLANDS-RESULTS -->
+
+## Lac Bay was mangroves
+
+Version 2.0 classified Lac Bay's mangrove canopy as water, because the OpenStreetMap
+coastline used as the land mask runs round the landward edge of the forest. A diagnosis
+that re-read the 14 fully observed Lac Bay passes found five lines of evidence that agree:
+
+- **Where.** 97% of the 2,562 flag events on those passes sit on persistent vegetation or
+  within 20 m of it or of a mapped mangrove polygon; over the season, 93% of the 1,167
+  flagged pixels and all 25 stationary ones do. None is on the reef crest.
+- **Same places.** 271 of the 362 pixels flagged on 16 August had also been flagged in
+  January, and 347 sat within 20 m of a January flag.
+- **Nothing arrives.** On the day a pixel is flagged its near-infrared is 0.009 lower than
+  its own median on its other clear passes; material that drifts in raises it.
+- **Mixed pixels.** Pure canopy scores 0. Canopy mixed with 26% to 52% water scores 0.9 or
+  more on the clean passes and on none of the hazy ones.
+- **Atmosphere, not season.** The flag rate per clear pass tracks the haze and glint over
+  the open sea (Spearman -0.89 with open-sea B08, n = 14), which is why the count peaked in
+  January rather than during the spring influx.
+
+The stationarity check missed it because an edge pixel crosses 0.9 on a few passes and
+sits in the uncertain band on the rest, so it is never flagged on half its passes. 2.1
+removes OpenStreetMap's mapped mangrove and vegetated wetland, buffered 20 m, before
+classifying, on by default, and reports a per-pixel persistent vegetation check beside the
+stationary one. On Bonaire that takes Lac Bay from 1,167 flagged pixels to 204 and its
+stationary pixels from 25 to 1, while its usable share (64%), longest gap (20 days) and
+97 days without a fully clear pass (12 March to 17 June) stay as they were. Two events
+behave like something arriving and are not confirmed: an 11-pixel patch in open lagoon
+water on 17 June 2025, and a radar-bright patch on the west shore on 6 May 2025 with a
+floating-vegetation signal in Sentinel-2 two and five days later.
+[lac_bay_mangroves.md](lac_bay_mangroves.md) has the evidence, the before and after, and
+the limits.
+
+![Lac Bay, the 2.0 flags with the 2.1 mangrove mask over them](../assets/lac_bay_mask.png)
+
+## Four islands
+
+Aruba, Curaçao and Sint Maarten were run the same way as Bonaire, January to August 2025,
+each from its own `assets/islands/<island>/island.toml`, one Sentinel-2 orbit per island.
+Curaçao needs two tiles of Bonaire's orbit and is run in two parts joined by date; Sint
+Maarten sits in the overlap of two orbits, and its second orbit is reported apart.
+
+| island | orbit | windward segments usable | longest gap, windward | worst wait for a fully clear pass, windward | every windward segment blind at once | leeward control |
+|---|---|---|---|---|---|---|
+| Bonaire | R082 | 64% to 73% (71% pooled) | 20 days | 97 days (Lac Bay) | 9 of 64 passes | 56% usable, 0 pixels flagged |
+| Aruba | R125 | 57% to 71% (63%) | 30 days | 40 days | 12 of 63 | 57%, 0 |
+| Curaçao | R082 | 66% to 73% (69%) | 25 days | 35 days | 12 of 65 dates | 59%, 0 |
+| Sint Maarten | R039 | 58% to 66% (62%) | 30 days | 68 days | 20 of 64 | 66%, 1 |
+
+Two findings beyond the table. **Sun glint is part of observability.** Sint Maarten's
+comparable orbit looks into the sun's reflection in summer; on 16 mornings when both orbits
+passed about 10 minutes apart, it recorded about twice the cloud over the windward coast
+and flagged no pixel where the other orbit flagged 437 to 846 per segment. With both orbits
+the Dutch windward coast had no gap longer than 11 days. **Silence is not a clean coast.**
+Aruba's orbit is the next most glint-prone, and its flags fell from 15 per million pixel
+looks to none from April, so its quiet season cannot be scored. On the glint-free orbit,
+Sint Maarten's flags rose from 12 windward pixels in January to March to 1,391 in May alone,
+in step with a public report of a heavy influx there; none is confirmed.
+[islands.md](islands.md) has every segment, the glint measurements and the detection
+rates, and `python scripts/compare_islands.py --write` rebuilds them.
+
+![Usable share and longest wait for a fully clear pass, four islands](../assets/islands_observability.png)
+
+## Physical indices against the classifier
+
+On the same 64 Bonaire passes of the 2.0 run, a single index with a single cut chosen on
+MARIDA (FAI at 0.0443, NDVI at 0.2375, FDI at 0.0240) was compared with the classifier
+pixel by pixel. At 10 m the two are nested: in Lac Bay 99% of the classifier's flags are
+over the FAI cut, but FAI flags 85 times as much, and 98% of FAI's flags there sit on
+pixels it flags on most passes, the mangrove canopy. Where there is no canopy the indices
+false-alarm and the classifier does not: on the Kralendijk leeward control FAI flags 4.9,
+NDVI 14 and FDI 19 per 1,000 visible water pixels and the classifier none. The classifier's
+January peak in Lac Bay (8.4 flags per 1,000 visible pixels, against 0.65 from April to
+June) is its own; the indices flag the canopy at a flat or rising rate all season. Read as
+a pipeline, the index is a near-lossless prescreen and the classifier keeps about 1% of
+what it flags; the chain runs out at the mangrove edge, where a 10 m pixel is part canopy
+and part water. [index_vs_model.md](index_vs_model.md) has the tables, and
+`python scripts/eval_index_vs_model.py --island bonaire --focus lac_bay --no-mangrove-mask`
+reproduces them.
+
+## Radar over Lac Bay
+
+Sentinel-1 passed over Lac Bay 9 times in the 97 days without a fully clear optical look,
+never more than 12 days apart, so radar fills the gap in time. It found nothing floating:
+in lagoon water more than 30 m from canopy and land there was no bright patch at 4 dB
+contrast on any of the 9 gap passes, and at 3 dB the lagoon threw up fewer transient
+patches per km2 than the open-sea control. The pixels the 2.0 run flagged behave like a
+fixed surface in radar (as steady over 19 passes as canopy, no brightening on the day they
+were flagged). One lead remains, not a detection: a 5,400 m2 radar patch on the west shore
+on 6 May 2025, with a floating-vegetation signal in Sentinel-2 at the same spot through
+cloud gaps on 8 and 11 May. Every pass had 5 to 10 m/s of wind, so the null result holds
+for those conditions. [sentinel1_lac.md](sentinel1_lac.md) has the details, and
+`python scripts/eval_sentinel1_lac.py` reruns the radar side.

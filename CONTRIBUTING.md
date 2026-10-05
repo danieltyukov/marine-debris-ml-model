@@ -54,7 +54,8 @@ creates under pytest's `tmp_path`.
 | MARIDA, 1.1 GB | training and every `eval_*` script | downloaded on first use to `~/.cache/mdebris/marida`, resumable and checked against its md5; set `MDEBRIS_CACHE_DIR` to move it |
 | `models/marida_spectral.joblib` | anything that scores pixels | written by `python scripts/train_marida.py`, never committed |
 | `models/sargassum_calibration.json` | calibrated season runs | committed, written by `scripts/eval_calibration.py` |
-| OpenStreetMap coastline | building segments | Overpass, through `make_bonaire_segments.py --fetch` |
+| OpenStreetMap coastline and wetland | building segments, land polygons and mangrove masks | Overpass, through `make_island_segments.py --island <key> --fetch` |
+| Sentinel-1 RTC | `eval_sentinel1_lac.py` | read over HTTP from Planetary Computer, no account |
 | Model weights for OWLv2 and SAM 2 | the open-vocabulary path | downloaded on first use |
 
 Do not commit a trained `.joblib` file. joblib is pickle-based, so loading one runs
@@ -66,34 +67,55 @@ under terms that do not allow redistribution.
 ## Layout
 
 The code is in `src/mdebris/`, the runs that produce every report and figure are in
-`scripts/`, their outputs are in `docs/` and `assets/`, and the project site is in
-`site/`. [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) has a table of modules and a
+`scripts/`, their outputs are in `docs/` and `assets/`, per-island configuration and
+OpenStreetMap data are in `assets/islands/`, and the project site is in `site/`. [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) has a table of modules and a
 table of which script writes which file.
 
 ## Adding an island or a region
 
 Open an issue with the "New region or island" template first, so the segments and
-the control stretch can be agreed before anything runs. Then:
+the control stretch can be agreed before anything runs. An island is a folder,
+`assets/islands/<key>/`, with an `island.toml`; the four in the repository are worked
+examples (`bonaire` is the simplest, `curacao` needs two tiles, `sint_maarten` two
+orbits). Then:
 
-1. **Cut the coast into segments.** `scripts/make_bonaire_segments.py` is the
-   pattern. Landmarks are OpenStreetMap nodes in a `LANDMARKS` table, segments are
-   the arcs of the OSM coastline between consecutive landmarks in a `SEGMENTS`
-   table, each with an exposure (windward or leeward) and a note. Include one
-   stretch where sargassum should not arrive, as a control. The script writes the
-   segments and an island polygon to `assets/`; keep the ODbL attribution it
-   records in the file.
-2. **Run a season.** `scripts/run_bonaire_season.py` takes `--segments`, `--island`,
-   `--start`, `--end` and the output paths as arguments. Its area of interest is the
-   `BONAIRE` bounding box at the top of the script, and its report names tile 19PEP,
-   so another island needs its own box there. Try `--max-scenes 2` before a full
-   run; the run resumes from its CSV if it stops.
-3. **Test the segment file.** `tests/test_bonaire_segments.py` shows what to pin:
-   every segment loads, has a name, sits on the island, is a plausible length, and
-   exactly one is the control.
-4. **Report it the same way.** Observability first (usable passes and the longest
-   gap), then detections, then the per-pixel stationary check. Add the results to
-   [docs/RESULTS.md](docs/RESULTS.md) under the islands marker, and say plainly
-   that the detections have not been checked on the ground unless they have.
+1. **Write `island.toml`.** Give the name, the UTM EPSG code, the Overpass box under
+   `[osm]`, and the landmarks the coast is cut at, each with `label`, `lon`, `lat` and
+   the OpenStreetMap element it came from. List the segments as `[[segments]]` with
+   `id`, `name`, `from`, `to`, `exposure` (windward or leeward) and a `note`, and
+   include one stretch where sargassum should not arrive as the
+   `season.leeward_control`. Under `[[season.parts]]` name the Sentinel-2 tile and
+   relative orbit to read. Leave out `aoi` to derive the area read from the island
+   polygon and the surf zones, or pin it when the island sits near a tile edge. An
+   island wider than one tile, or inside the overlap of two orbits, gets one part per
+   tile or orbit; mark a second-orbit part `comparable = false`. A granule counts as a
+   pass only if it is on those tiles and orbits, is the best of its datatake, and covers
+   at least 99% of every surf zone. Add a `[glint]` point on the windward coast and an
+   `offshore_box` of open water for `scripts/eval_glint.py`, and list sheltered windward
+   lagoons in `season.lagoons` so cross-island tables report them apart.
+2. **Build the segments, land and mangrove mask.**
+   `python scripts/make_island_segments.py --island <key> --fetch` cuts the
+   OpenStreetMap coastline at the landmarks and writes `segments.geojson`,
+   `island.geojson` and `mangroves.geojson` next to the config, with the ODbL
+   attribution recorded in each file. Set `osm.land = "all"` when islets sit inside a
+   surf zone, and `osm.segment_rings = 2` when the coastline does not close into one
+   ring (Saint Martin, with Simpson Bay Lagoon open at both ends).
+3. **Run a season.** `python scripts/run_island_season.py --island <key> --max-scenes 2`
+   first, then without `--max-scenes`. Check the report's "Granules not counted as
+   passes" list and the area read before trusting a full run. The mangrove mask is on
+   by default; look at the persistence figure and the "near persistent vegetation"
+   column to see whether canopy the map missed is being flagged.
+4. **Test it.** Add the key to `SHIPPED` in `tests/test_coastal_islands.py`, which
+   pins that every configured segment is in the segment file, the control is one of
+   them and every part has a tile and an orbit.
+5. **Report it the same way.** Observability first (usable passes and the longest
+   gap), then detections, then the stationary and vegetation checks.
+   `python scripts/compare_islands.py` rebuilds the cross-island table in
+   [docs/islands.md](docs/islands.md). Say plainly that the detections have not been
+   checked on the ground unless they have. Run `python scripts/eval_glint.py` too: an
+   orbit that looks into the sun's glint in summer makes the coast look cloudier than it
+   is and can silence the classifier, and a quiet season on such an orbit is not a
+   clean coast.
 
 ## Adding a spectral index
 

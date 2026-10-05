@@ -54,7 +54,7 @@ Everything is in `src/mdebris/`:
 | `models/supervised.py` | RT-DETRv2 detection with a fine-tuning loop |
 | `models/prompts.py` | Prompt sets, including the confusers |
 | `pipeline/` | Scene orchestration and the screening cascade |
-| `coastal/` | Detections rolled onto named stretches of coast, and seasons of passes reduced to gap statistics |
+| `coastal/` | Detections rolled onto named stretches of coast; per-island configuration (`islands`), the season runner (`runner`), land, mangrove and vegetation masks (`masks`), the season report (`report`), the OpenStreetMap segment builder (`build`), and seasons reduced to gap statistics (`season`) |
 | `eval/` | Box matching and detection metrics, the band ablation, and calibration |
 | `viz/` | Plotting primitives and the figures in `assets/` |
 
@@ -71,8 +71,14 @@ Everything is in `src/mdebris/`:
 | `eval_lanot_operator.py` | `docs/lanot_comparison.md` |
 | `package_lanot_subset.py` | `docs/lanot_subset.csv.gz` and `.md` |
 | `make_beach_segments.py` | `docs/beach_segments.md`, `docs/beach_segments_cloudy.md` and figures |
-| `make_bonaire_segments.py` | `assets/bonaire_segments.geojson`, `assets/bonaire_island.geojson` |
-| `run_bonaire_season.py` | `docs/bonaire_season.md`, `.csv`, `.json`, persistence and figures |
+| `make_island_segments.py` | `assets/islands/<island>/segments.geojson`, `island.geojson`, `mangroves.geojson` |
+| `run_island_season.py` | `docs/<island>_season.md`, `.csv`, `.json`, `docs/<island>_persistence.npz`, and three figures in `assets/` |
+| `make_bonaire_segments.py`, `run_bonaire_season.py` | the same for Bonaire, with the 2.0 flags |
+| `compare_islands.py` | `docs/islands.md` and `.json`, from the season outputs |
+| `eval_mangrove_mask.py` | how much of a persistence grid the mangrove mask covers (printed) |
+| `eval_index_vs_model.py` | `docs/<island>_index_vs_model.csv` and `.json` |
+| `eval_sentinel1_lac.py` | `docs/sentinel1_lac.json` |
+| `eval_glint.py` | `docs/glint.csv`: glint angle and offshore 1.6 um reflectance per pass, per island |
 | `make_ocean_detections.py`, `make_classification_samples.py` | the open-ocean and per-patch figures |
 | `build_demo_page.py` | `docs/index.html`, the interactive report |
 
@@ -123,11 +129,15 @@ need the cascade, because classifying a pixel is cheap:
 1. Search and read the scene as above, converting stored integers to reflectance
    with the offset the scene's processing baseline requires.
 2. Mask cloud with the scene classification layer.
-3. Remove land with a coastline polygon buffered 15 m seaward. MARIDA has no land
-   class, so a land pixel is forced into whichever sea-surface class it resembles,
-   and bright sand resembles floating biomass. The NDWI water gate in the cascade
-   would also do this, but it removes dense sargassum, which has the near-infrared
-   of vegetation (see [RESULTS.md](RESULTS.md#bonaire-every-pass-of-one-season)).
+3. Remove land with a coastline polygon buffered 15 m seaward, and mapped mangrove
+   and other vegetated wetland buffered 20 m. MARIDA has no land class and no
+   mangrove class, so a land pixel is forced into whichever sea-surface class it
+   resembles: bright sand resembles floating biomass, and a mangrove edge pixel,
+   part leaf and part water, resembles sargassum
+   ([lac_bay_mangroves.md](lac_bay_mangroves.md)). The NDWI water gate in the cascade
+   would also remove land, but it removes dense sargassum, which has the
+   near-infrared of vegetation (see
+   [RESULTS.md](RESULTS.md#bonaire-every-pass-of-one-season)).
 4. Build 18 features per pixel: 11 bands and seven indices.
 5. Score with the gradient-boosting model, then remap the sargassum probability
    with the isotonic calibrator in `models/sargassum_calibration.json`.
