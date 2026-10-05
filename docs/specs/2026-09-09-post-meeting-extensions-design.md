@@ -164,3 +164,7 @@ flagged pixels are stationary, and draws the map. The reading is the one the
 Wageningen report already gave: the open coast and the bays need separate models, and
 MARIDA has no lagoon in it. That is the Bonaire-specific training data a thesis-lab
 project would collect.
+
+> Correction, 2026-10-05: most of these Lac Bay and Cai flags were not the bottom or the
+> reef flat but the mangrove canopy edge, which the OpenStreetMap land mask left on the
+> water side. Version 2.1 masks mapped mangrove; see `docs/lac_bay_mangroves.md`.
