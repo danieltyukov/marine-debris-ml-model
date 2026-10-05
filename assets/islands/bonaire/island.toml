@@ -1,0 +1,160 @@
+# Bonaire, Caribbean Netherlands.
+#
+# Read by mdebris.coastal.islands.load_island. scripts/make_island_segments.py builds
+# segments.geojson, island.geojson and mangroves.geojson in this folder from
+# OpenStreetMap; scripts/run_island_season.py --island bonaire runs the season.
+
+key = "bonaire"
+name = "Bonaire"
+utm_epsg = 32619
+description = """
+Seven windward segments from Willemstoren lighthouse in the south round the east coast to
+Boka Kokolishi in Washington Slagbaai park, plus the Kralendijk waterfront on the leeward
+side as a control that sargassum should not reach.
+"""
+
+[osm]
+# south, west, north, east
+bbox = [12.0, -68.45, 12.33, -68.17]
+segment_rings = 1
+# The main island only. Klein Bonaire is about 800 m off Kralendijk, outside every
+# 500 m surf zone, so it is left out as in the 2.0 runner.
+land = "main"
+simplify_m = 15.0
+
+[masks]
+land_buffer_m = 15.0
+mangrove_buffer_m = 20.0
+
+[season]
+leeward_control = "kralendijk"
+aoi_margin_m = 1000.0
+
+[[season.parts]]
+key = ""
+tiles = ["19PEP"]
+orbits = ["R082"]
+min_cover = 0.99
+# The area the 2.0 runner read, kept so the persistence grids of the two versions line
+# up pixel for pixel.
+aoi = [-68.43, 12.01, -68.18, 12.32]
+
+[figures]
+whole = { title = "whole island", box = [-68.43, 12.32, -68.18, 12.01] }
+zoom = { title = "Lac Bay and Cai", box = [-68.255, 12.130, -68.195, 12.070] }
+
+# OpenStreetMap nodes, (lon, lat), looked up on 2026-09-09. Snapped to the coastline at
+# build time.
+[landmarks.willemstoren]
+label = "Willemstoren lighthouse"
+lon = -68.2373
+lat = 12.0283
+
+[landmarks.sorobon]
+label = "Sorobon"
+lon = -68.2358
+lat = 12.0921
+
+[landmarks.cai]
+label = "Cai"
+lon = -68.2225
+lat = 12.1032
+
+[landmarks.washikemba]
+label = "Boka Washikemba"
+lon = -68.2101
+lat = 12.1736
+
+[landmarks.spelonk]
+label = "Spelonk lighthouse"
+lon = -68.1966
+lat = 12.2123
+
+[landmarks.onima]
+label = "Boka Onima"
+lon = -68.3114
+lat = 12.2533
+
+[landmarks.chikitu]
+label = "Playa Chikitu"
+lon = -68.3492
+lat = 12.2797
+
+[landmarks.kokolishi]
+label = "Boka Kokolishi"
+lon = -68.3687
+lat = 12.3048
+
+[landmarks.te_amo]
+label = "Te Amo Beach"
+lon = -68.2798
+lat = 12.1346
+
+[landmarks.playa_lechi]
+label = "Playa Lechi"
+lon = -68.2833
+lat = 12.1615
+
+[[segments]]
+id = "willemstoren_sorobon"
+name = "Willemstoren to Sorobon"
+from = "willemstoren"
+to = "sorobon"
+exposure = "windward"
+note = "South-east coast past the Pekelmeer salt flats to the south shore of Lac."
+
+[[segments]]
+id = "lac_bay"
+name = "Lac Bay"
+from = "sorobon"
+to = "cai"
+exposure = "windward"
+note = "The lagoon behind the reef, Sorobon to Cai, mangroves included."
+
+[[segments]]
+id = "cai_washikemba"
+name = "Cai to Boka Washikemba"
+from = "cai"
+to = "washikemba"
+exposure = "windward"
+note = "Open east coast north of Lac."
+
+[[segments]]
+id = "washikemba_spelonk"
+name = "Boka Washikemba to Spelonk"
+from = "washikemba"
+to = "spelonk"
+exposure = "windward"
+note = "Lagun and the coast up to the easternmost point."
+
+[[segments]]
+id = "spelonk_onima"
+name = "Spelonk to Boka Onima"
+from = "spelonk"
+to = "onima"
+exposure = "windward"
+note = "The long north-east coast."
+
+[[segments]]
+id = "onima_chikitu"
+name = "Boka Onima to Playa Chikitu"
+from = "onima"
+to = "chikitu"
+exposure = "windward"
+note = "North coast towards Washington Slagbaai."
+
+[[segments]]
+id = "chikitu_kokolishi"
+name = "Playa Chikitu to Boka Kokolishi"
+from = "chikitu"
+to = "kokolishi"
+exposure = "windward"
+note = "Inside Washington Slagbaai National Park."
+
+[[segments]]
+id = "kralendijk"
+name = "Kralendijk waterfront"
+from = "te_amo"
+to = "playa_lechi"
+exposure = "leeward"
+note = "Leeward control: Te Amo Beach to Playa Lechi, which sargassum should not reach."

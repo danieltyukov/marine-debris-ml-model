@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from mdebris.coastal.season import SegmentSeason, summarize_history
+from mdebris.coastal.season import SegmentSeason, coast_at_once, longest_gap, summarize_history
 
 
 def _row(seg, date, obs, dets=0, front=0.0, cloud=0.0, scene="S"):
@@ -116,3 +116,54 @@ class TestSummarizeHistory:
         assert flat["segment_id"] == "a"
         assert flat["n_passes"] == 1
         assert flat["longest_gap_days"] is None
+
+
+class TestClearGap:
+    def test_longest_wait_for_a_fully_observed_pass(self):
+        rows = [
+            _row("a", "2025-03-12", "observed"),
+            _row("a", "2025-03-17", "partial"),
+            _row("a", "2025-04-06", "blind"),
+            _row("a", "2025-05-01", "partial"),
+            _row("a", "2025-06-17", "observed"),
+            _row("a", "2025-06-22", "observed"),
+        ]
+        (season,) = summarize_history(rows)
+        # Partial looks shorten the usable gap but not the wait for a clear one.
+        assert season.longest_gap_days == 47
+        assert season.longest_clear_gap_days == 97
+        assert (season.clear_gap_from, season.clear_gap_to) == ("2025-03-12", "2025-06-17")
+        assert season.to_row()["longest_clear_gap_days"] == 97
+
+    def test_fewer_than_two_clear_passes_has_no_clear_gap(self):
+        rows = [_row("a", "2025-03-12", "observed"), _row("a", "2025-03-17", "partial")]
+        (season,) = summarize_history(rows)
+        assert season.longest_clear_gap_days is None
+        assert season.clear_gap_from is None
+
+    def test_longest_gap_helper(self):
+        assert longest_gap(["2025-01-11", "2025-01-01", "2025-01-06"]) == (
+            5,
+            "2025-01-06",
+            "2025-01-11",
+        )
+        assert longest_gap(["2025-01-01"]) is None
+
+
+class TestCoastAtOnce:
+    def test_counts_passes_where_every_or_no_segment_was_seen(self):
+        rows = [
+            _row("a", "2025-01-01", "observed"),
+            _row("b", "2025-01-01", "observed"),
+            _row("a", "2025-01-06", "partial"),
+            _row("b", "2025-01-06", "observed"),
+            _row("a", "2025-01-11", "blind"),
+            _row("b", "2025-01-11", "blind"),
+            _row("a", "2025-01-16", "observed"),  # b has no granule this date
+            _row("c", "2025-01-16", "observed"),  # not asked about
+        ]
+        result = coast_at_once(rows, ["a", "b"])
+        assert result.n_dates == 4
+        assert result.all_usable == 2
+        assert result.all_clear == 1
+        assert result.none_usable == 1

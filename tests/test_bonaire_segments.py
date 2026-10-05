@@ -1,4 +1,4 @@
-"""The Bonaire segment file ships in ``assets/`` and has to be usable offline.
+"""The Bonaire segment file ships in ``assets/islands/bonaire/`` and has to be usable offline.
 
 These tests pin what the season runner relies on: every segment loads, is named,
 sits on Bonaire, is a plausible stretch of coast rather than a stray fragment, and
@@ -16,7 +16,7 @@ from shapely.ops import transform as shapely_transform
 
 from mdebris.coastal import load_segments
 
-ASSET = Path(__file__).resolve().parents[1] / "assets" / "bonaire_segments.geojson"
+ASSET = Path(__file__).resolve().parents[1] / "assets" / "islands" / "bonaire" / "segments.geojson"
 
 # Bonaire and its waters, generously. Klein Bonaire sits inside this box too, which
 # is fine: the point is to catch a coordinate typo, not to draw a border.
@@ -60,7 +60,7 @@ def test_lac_bay_is_a_segment(segments):
     assert any("Lac" in seg.name for seg in segments)
 
 
-ISLAND = Path(__file__).resolve().parents[1] / "assets" / "bonaire_island.geojson"
+ISLAND = Path(__file__).resolve().parents[1] / "assets" / "islands" / "bonaire" / "island.geojson"
 
 
 def test_island_polygon_holds_rincon_and_not_the_sea():

@@ -144,6 +144,9 @@ outputs/
 # beach-segment definitions are inputs, not detector output; scripts/make_beach_segments.py
 # will not run without them
 !assets/*.geojson
+# per-island segments, land polygons and mangrove masks, built from OpenStreetMap by
+# scripts/make_island_segments.py; the season runner reads them
+!assets/islands/*/*.geojson
 .cache/
 .pytest_cache/
 .ruff_cache/

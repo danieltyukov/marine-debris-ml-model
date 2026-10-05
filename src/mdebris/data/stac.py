@@ -47,6 +47,8 @@ __all__ = [
     "get_scene_assets",
     "normalize_assets",
     "provider_for_endpoint",
+    "scene_ref",
+    "search_items",
     "search_scenes",
 ]
 
@@ -579,6 +581,32 @@ def search_scenes(
     return _client(endpoint).search(
         bbox, start, end, collection=collection, max_cloud=max_cloud, limit=limit
     )
+
+
+def search_items(
+    bbox: GeoBBox | Sequence[float],
+    start: str,
+    end: str,
+    *,
+    collection: str | None = None,
+    max_cloud: float | None = None,
+    limit: int = 10,
+    endpoint: str | None = None,
+) -> list[Item]:
+    """Like :func:`search_scenes`, but return the raw STAC items.
+
+    Use this when the item's geometry is needed, for example to check that a
+    granule's data footprint covers the area before counting it as a pass. The items
+    are remembered, so resolving their assets afterwards costs no second search.
+    """
+    return _client(endpoint).search_items(
+        bbox, start, end, collection=collection, max_cloud=max_cloud, limit=limit
+    )
+
+
+def scene_ref(item: Item, *, endpoint: str | None = None) -> SceneRef:
+    """The provenance record for a STAC item returned by :func:`search_items`."""
+    return _client(endpoint)._to_scene_ref(item)
 
 
 def get_scene_assets(

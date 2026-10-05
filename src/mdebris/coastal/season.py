@@ -7,7 +7,8 @@ unseen. Those are the gap statistics, and they are the honest size of the cloud
 problem for a specific coast, measured rather than quoted from elsewhere.
 
 This module is pure: it takes rows and returns dataclasses, so it is tested offline.
-The script that produces the rows over the network is ``scripts/run_bonaire_season.py``.
+The rows are produced over the network by :mod:`mdebris.coastal.runner`, which
+``scripts/run_island_season.py`` drives.
 """
 
 from __future__ import annotations
@@ -22,7 +23,7 @@ import numpy as np
 
 from mdebris.coastal.segments import Observability
 
-__all__ = ["SegmentSeason", "summarize_history"]
+__all__ = ["CoastAtOnce", "SegmentSeason", "coast_at_once", "longest_gap", "summarize_history"]
 
 _USABLE = {Observability.OBSERVED, Observability.PARTIAL}
 
@@ -44,6 +45,12 @@ class SegmentSeason:
     n_detection_passes: int
     detection_dates: list[str] = field(default_factory=list)
     max_affected_front_m: float = 0.0
+    # The longest stretch between two passes on which the segment was fully observed,
+    # with its two ends. Partial looks see some of the water; this is the wait for a
+    # pass that sees all of it.
+    longest_clear_gap_days: int | None = None
+    clear_gap_from: str | None = None
+    clear_gap_to: str | None = None
 
     @property
     def n_usable(self) -> int:
@@ -70,7 +77,19 @@ class SegmentSeason:
             "n_detection_passes": self.n_detection_passes,
             "detection_dates": list(self.detection_dates),
             "max_affected_front_m": self.max_affected_front_m,
+            "longest_clear_gap_days": self.longest_clear_gap_days,
+            "clear_gap_from": self.clear_gap_from,
+            "clear_gap_to": self.clear_gap_to,
         }
+
+
+def longest_gap(dates: Iterable[str]) -> tuple[int, str, str] | None:
+    """The longest wait between consecutive ISO dates: ``(days, from, to)``, or None."""
+    ordered = sorted(dates)
+    gaps = [
+        ((date.fromisoformat(b) - date.fromisoformat(a)).days, a, b) for a, b in pairwise(ordered)
+    ]
+    return max(gaps) if gaps else None
 
 
 def _iso_date(value: Any) -> str:
@@ -114,12 +133,15 @@ def summarize_history(rows: Iterable[Mapping[str, Any]]) -> list[SegmentSeason]:
         dates = sorted(by_date)
         counts = dict.fromkeys(Observability, 0)
         usable_dates: list[str] = []
+        clear_dates: list[str] = []
         detection_dates: list[str] = []
         max_front = 0.0
         for when in dates:
             row = by_date[when]
             obs = _observability(row["observability"])
             counts[obs] += 1
+            if obs is Observability.OBSERVED:
+                clear_dates.append(when)
             if obs in _USABLE:
                 usable_dates.append(when)
                 if int(row.get("detection_count", 0) or 0) > 0:
@@ -129,6 +151,7 @@ def summarize_history(rows: Iterable[Mapping[str, Any]]) -> list[SegmentSeason]:
         gaps = [
             (date.fromisoformat(b) - date.fromisoformat(a)).days for a, b in pairwise(usable_dates)
         ]
+        clear = longest_gap(clear_dates)
         seasons.append(
             SegmentSeason(
                 segment_id=seg,
@@ -144,6 +167,45 @@ def summarize_history(rows: Iterable[Mapping[str, Any]]) -> list[SegmentSeason]:
                 n_detection_passes=len(detection_dates),
                 detection_dates=detection_dates,
                 max_affected_front_m=max_front,
+                longest_clear_gap_days=clear[0] if clear else None,
+                clear_gap_from=clear[1] if clear else None,
+                clear_gap_to=clear[2] if clear else None,
             )
         )
     return seasons
+
+
+@dataclass(frozen=True, slots=True)
+class CoastAtOnce:
+    """How often a set of segments could be seen on the same pass."""
+
+    n_dates: int
+    all_usable: int
+    all_clear: int
+    none_usable: int
+
+
+def coast_at_once(rows: Iterable[Mapping[str, Any]], segment_ids: Iterable[str]) -> CoastAtOnce:
+    """Count the passes on which every one, or none, of ``segment_ids`` could be seen.
+
+    A segment with no row for a date (a granule that was not a pass on its tile) counts
+    as blind on that date.
+    """
+    wanted = list(segment_ids)
+    verdicts: dict[str, dict[str, Observability]] = {s: {} for s in wanted}
+    for row in rows:
+        seg = str(row["segment_id"])
+        if seg in verdicts:
+            verdicts[seg][_iso_date(row["observed_on"])] = _observability(row["observability"])
+    dates = sorted({d for by_date in verdicts.values() for d in by_date})
+
+    def seen(seg: str, when: str, ok: set[Observability]) -> bool:
+        return verdicts[seg].get(when, Observability.BLIND) in ok
+
+    clear = {Observability.OBSERVED}
+    return CoastAtOnce(
+        n_dates=len(dates),
+        all_usable=sum(all(seen(s, d, _USABLE) for s in wanted) for d in dates),
+        all_clear=sum(all(seen(s, d, clear) for s in wanted) for d in dates),
+        none_usable=sum(not any(seen(s, d, _USABLE) for s in wanted) for d in dates),
+    )
