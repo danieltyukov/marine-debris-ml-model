@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mdebris"
-version = "2.0.0"
+version = "2.1.0"
 description = "Sargassum and marine debris detection on free Sentinel-2 imagery, with calibrated per-pixel probabilities and per-beach observability"
 readme = "README.md"
 requires-python = ">=3.11"
