@@ -1,0 +1,283 @@
+{
+ "window_utm19n": [
+  581400.0,
+  1335500.0,
+  589000.0,
+  1340750.0
+ ],
+ "optical_gap": [
+  "2025-03-12",
+  "2025-06-17"
+ ],
+ "passes": [
+  {
+   "date": "2025-01-06",
+   "time_local": "18:43",
+   "orbit": "ascending",
+   "relative_orbit": 33,
+   "in_optical_gap": false,
+   "era5_wind_ms": 8.0,
+   "vv_open_sea_db": -11.6,
+   "vv_lagoon_db": -12.4
+  },
+  {
+   "date": "2025-01-18",
+   "time_local": "18:43",
+   "orbit": "ascending",
+   "relative_orbit": 33,
+   "in_optical_gap": false,
+   "era5_wind_ms": 8.12,
+   "vv_open_sea_db": -10.2,
+   "vv_lagoon_db": -11.1
+  },
+  {
+   "date": "2025-01-30",
+   "time_local": "18:43",
+   "orbit": "ascending",
+   "relative_orbit": 33,
+   "in_optical_gap": false,
+   "era5_wind_ms": 8.57,
+   "vv_open_sea_db": -11.5,
+   "vv_lagoon_db": -12.3
+  },
+  {
+   "date": "2025-02-11",
+   "time_local": "18:43",
+   "orbit": "ascending",
+   "relative_orbit": 33,
+   "in_optical_gap": false,
+   "era5_wind_ms": 8.86,
+   "vv_open_sea_db": -11.8,
+   "vv_lagoon_db": -12.9
+  },
+  {
+   "date": "2025-02-23",
+   "time_local": "18:43",
+   "orbit": "ascending",
+   "relative_orbit": 33,
+   "in_optical_gap": false,
+   "era5_wind_ms": 5.74,
+   "vv_open_sea_db": -13.4,
+   "vv_lagoon_db": -14.2
+  },
+  {
+   "date": "2025-03-07",
+   "time_local": "18:43",
+   "orbit": "ascending",
+   "relative_orbit": 33,
+   "in_optical_gap": false,
+   "era5_wind_ms": 7.08,
+   "vv_open_sea_db": -13.6,
+   "vv_lagoon_db": -14.3
+  },
+  {
+   "date": "2025-03-19",
+   "time_local": "18:43",
+   "orbit": "ascending",
+   "relative_orbit": 33,
+   "in_optical_gap": true,
+   "era5_wind_ms": 6.2,
+   "vv_open_sea_db": -15.1,
+   "vv_lagoon_db": -15.0
+  },
+  {
+   "date": "2025-03-24",
+   "time_local": "06:25",
+   "orbit": "descending",
+   "relative_orbit": 98,
+   "in_optical_gap": true,
+   "era5_wind_ms": 9.99,
+   "vv_open_sea_db": -11.4,
+   "vv_lagoon_db": -12.7
+  },
+  {
+   "date": "2025-04-12",
+   "time_local": "18:43",
+   "orbit": "ascending",
+   "relative_orbit": 33,
+   "in_optical_gap": true,
+   "era5_wind_ms": 8.71,
+   "vv_open_sea_db": -11.6,
+   "vv_lagoon_db": -12.2
+  },
+  {
+   "date": "2025-04-24",
+   "time_local": "18:43",
+   "orbit": "ascending",
+   "relative_orbit": 33,
+   "in_optical_gap": true,
+   "era5_wind_ms": 6.43,
+   "vv_open_sea_db": -14.4,
+   "vv_lagoon_db": -15.1
+  },
+  {
+   "date": "2025-05-06",
+   "time_local": "18:43",
+   "orbit": "ascending",
+   "relative_orbit": 33,
+   "in_optical_gap": true,
+   "era5_wind_ms": 5.55,
+   "vv_open_sea_db": -14.3,
+   "vv_lagoon_db": -14.7
+  },
+  {
+   "date": "2025-05-18",
+   "time_local": "18:43",
+   "orbit": "ascending",
+   "relative_orbit": 33,
+   "in_optical_gap": true,
+   "era5_wind_ms": 8.16,
+   "vv_open_sea_db": -14.2,
+   "vv_lagoon_db": -14.7
+  },
+  {
+   "date": "2025-05-30",
+   "time_local": "18:43",
+   "orbit": "ascending",
+   "relative_orbit": 33,
+   "in_optical_gap": true,
+   "era5_wind_ms": 7.86,
+   "vv_open_sea_db": -9.5,
+   "vv_lagoon_db": -12.4
+  },
+  {
+   "date": "2025-06-11",
+   "time_local": "18:43",
+   "orbit": "ascending",
+   "relative_orbit": 33,
+   "in_optical_gap": true,
+   "era5_wind_ms": 9.22,
+   "vv_open_sea_db": -12.2,
+   "vv_lagoon_db": -13.1
+  },
+  {
+   "date": "2025-06-23",
+   "time_local": "18:43",
+   "orbit": "ascending",
+   "relative_orbit": 33,
+   "in_optical_gap": false,
+   "era5_wind_ms": 8.59,
+   "vv_open_sea_db": -11.7,
+   "vv_lagoon_db": -12.5
+  },
+  {
+   "date": "2025-07-05",
+   "time_local": "18:43",
+   "orbit": "ascending",
+   "relative_orbit": 33,
+   "in_optical_gap": false,
+   "era5_wind_ms": 6.8,
+   "vv_open_sea_db": -13.3,
+   "vv_lagoon_db": -13.8
+  },
+  {
+   "date": "2025-07-17",
+   "time_local": "18:43",
+   "orbit": "ascending",
+   "relative_orbit": 33,
+   "in_optical_gap": false,
+   "era5_wind_ms": 8.17,
+   "vv_open_sea_db": -11.2,
+   "vv_lagoon_db": -12.4
+  },
+  {
+   "date": "2025-07-29",
+   "time_local": "18:43",
+   "orbit": "ascending",
+   "relative_orbit": 33,
+   "in_optical_gap": false,
+   "era5_wind_ms": 8.07,
+   "vv_open_sea_db": -12.1,
+   "vv_lagoon_db": -12.9
+  },
+  {
+   "date": "2025-08-22",
+   "time_local": "18:43",
+   "orbit": "ascending",
+   "relative_orbit": 33,
+   "in_optical_gap": false,
+   "era5_wind_ms": 6.46,
+   "vv_open_sea_db": -14.3,
+   "vv_lagoon_db": -15.0
+  }
+ ],
+ "passes_in_gap": 8,
+ "region_km2": {
+  "lagoon interior": 2.814,
+  "seaward of the mouth": 0.658,
+  "open sea": 8.346
+ },
+ "canopy_in_bay_km2": 1.179,
+ "detector": {
+  "index": "VV + 3 VH, linear gamma0",
+  "smoothing_px": 3,
+  "background_px": 41,
+  "min_patch_px": 4,
+  "transient_max_passes": 2
+ },
+ "by_threshold": {
+  "3 dB": {
+   "patches_any_kind": {
+    "lagoon interior|gap": 13,
+    "lagoon interior|outside": 33,
+    "seaward of the mouth|gap": 19,
+    "seaward of the mouth|outside": 31,
+    "open sea|gap": 187,
+    "open sea|outside": 304
+   },
+   "transient_per_km2_per_ascending_pass": {
+    "lagoon interior|gap": 0.46,
+    "lagoon interior|outside": 1.03,
+    "seaward of the mouth|gap": 2.17,
+    "seaward of the mouth|outside": 3.45,
+    "open sea|gap": 2.57,
+    "open sea|outside": 3.26
+   }
+  },
+  "4 dB": {
+   "patches_any_kind": {
+    "lagoon interior|gap": 0,
+    "lagoon interior|outside": 0,
+    "seaward of the mouth|gap": 4,
+    "seaward of the mouth|outside": 4,
+    "open sea|gap": 13,
+    "open sea|outside": 17
+   },
+   "transient_per_km2_per_ascending_pass": {
+    "lagoon interior|gap": 0.0,
+    "lagoon interior|outside": 0.0,
+    "seaward of the mouth|gap": 0.43,
+    "seaward of the mouth|outside": 0.55,
+    "open sea|gap": 0.21,
+    "open sea|outside": 0.19
+   }
+  },
+  "5 dB": {
+   "patches_any_kind": {
+    "lagoon interior|gap": 0,
+    "lagoon interior|outside": 0,
+    "seaward of the mouth|gap": 0,
+    "seaward of the mouth|outside": 0,
+    "open sea|gap": 0,
+    "open sea|outside": 1
+   },
+   "transient_per_km2_per_ascending_pass": {
+    "lagoon interior|gap": 0.0,
+    "lagoon interior|outside": 0.0,
+    "seaward of the mouth|gap": 0.0,
+    "seaward of the mouth|outside": 0.0,
+    "open sea|gap": 0.0,
+    "open sea|outside": 0.01
+   }
+  }
+ },
+ "largest_non_stationary_in_gap_bay_patch_3db": {
+  "date": "2025-05-06",
+  "pixels": 49,
+  "area_m2": 4900,
+  "max_contrast_db": 5.5,
+  "passes_detected": 2,
+  "lon": -68.2402,
+  "lat": 12.1022
+ }
+}
