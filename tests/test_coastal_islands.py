@@ -183,3 +183,23 @@ def test_bonaire_reads_the_area_the_previous_runner_read():
         12.32,
     )
     assert Path(load_island("bonaire").directory).name == "bonaire"
+
+
+def test_glint_points_and_lagoons_are_configured():
+    bonaire, curacao = load_island("bonaire"), load_island("curacao")
+    assert bonaire.lagoons == ("lac_bay",) and curacao.lagoons == ("sint_joris",)
+    assert load_island("aruba").lagoons == ()
+    west, east = curacao.part("west"), curacao.part("east")
+    assert west.glint_point != east.glint_point
+    for key in SHIPPED:
+        for part in load_island(key).parts:
+            assert part.glint_point is not None and part.glint_box is not None
+            west_, south, east_, north = part.glint_box
+            assert west_ < east_ and south < north
+
+
+def test_a_lagoon_must_be_a_segment(tmp_path):
+    blob = _minimal()
+    blob["season"]["lagoons"] = ["nowhere"]
+    with pytest.raises(ValueError, match="lagoons"):
+        parse_island(blob, tmp_path / "testa")

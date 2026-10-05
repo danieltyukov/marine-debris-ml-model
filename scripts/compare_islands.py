@@ -84,6 +84,24 @@ def _segment_lines(island, rows: list[dict], per_pixel: dict) -> tuple[list[str]
     return lines, records
 
 
+def flag_rates(rows: list[dict], segment_ids: list[str]) -> tuple[float | None, float | None]:
+    """Flagged pixels per million usable pixel looks, January to March and April to August."""
+    sums = {"early": [0, 0], "late": [0, 0]}
+    for r in rows:
+        if r["segment_id"] not in segment_ids:
+            continue
+        period = "early" if r["observed_on"][:10] < "2025-04-01" else "late"
+        sums[period][0] += int(r.get("sargassum_pixels") or 0)
+        sums[period][1] += int(r.get("usable_pixels") or 0)
+    return tuple(1e6 * f / n if n else None for f, n in sums.values())  # type: ignore[return-value]
+
+
+def _rate(value: float | None) -> str:
+    if value is None:
+        return "-"
+    return f"{value:,.0f}" if value >= 10 else f"{value:.1f}"
+
+
 HEADER = [
     "| island | segment | exposure | usable | longest gap, days | longest wait for a fully clear pass "
     "| passes with flags | pixels ever flagged | of which stationary | of which near persistent vegetation |",
@@ -93,6 +111,10 @@ HEADER = [
 
 def build(docs: Path) -> tuple[list[str], dict]:
     main, extra, missing, at_once = list(HEADER), [], [], []
+    rates = [
+        "| coast, orbit | flagged per million usable pixel looks, Jan to Mar | Apr to Aug |",
+        "|---|---|---|",
+    ]
     records: dict[str, list] = {"comparable": [], "other": []}
     for key in list_islands():
         island = load_island(key)
@@ -110,6 +132,18 @@ def build(docs: Path) -> tuple[list[str], dict]:
             main += lines
             records["comparable"] += recs
             windward = [s.segment_id for s in island.segments if s.exposure == "windward"]
+            orbit = ", ".join(sorted({o for p in island.parts if p.comparable for o in p.orbits}))
+            open_coast = [s for s in windward if s not in island.lagoons]
+            label = "windward" if open_coast == windward else "windward without lagoons"
+            early, late = flag_rates(rows, open_coast)
+            rates.append(f"| {island.name} {label}, {orbit} | {_rate(early)} | {_rate(late)} |")
+            names = {s.segment_id: s.name for s in island.segments}
+            for lagoon in island.lagoons:
+                early, late = flag_rates(rows, [lagoon])
+                rates.append(f"| {island.name}, {names[lagoon]} | {_rate(early)} | {_rate(late)} |")
+            control = [island.leeward_control] if island.leeward_control else []
+            early, late = flag_rates(rows, control)
+            rates.append(f"| {island.name} leeward control | {_rate(early)} | {_rate(late)} |")
             seen = coast_at_once(rows, windward)
             at_once.append(
                 f"- {island.name}: on {seen.n_dates} pass dates, every windward segment was "
@@ -122,6 +156,11 @@ def build(docs: Path) -> tuple[list[str], dict]:
                 missing.append(f"{island.name} ({part.prefix(island.key)})")
                 continue
             lines, recs = _segment_lines(island, got[0], got[1].get("stationary", {}))
+            early, late = flag_rates(got[0], list(part.segment_ids))
+            rates.append(
+                f"| {island.name} windward, {', '.join(part.orbits)} (not comparable) | "
+                f"{_rate(early)} | {_rate(late)} |"
+            )
             extra += [
                 "",
                 f"{island.name}, {part.label} (tile {', '.join(part.tiles)}, "
@@ -131,7 +170,18 @@ def build(docs: Path) -> tuple[list[str], dict]:
                 *lines,
             ]
             records["other"] += [{**r, "part": part.key} for r in recs]
-    out = [*main, "", "The whole windward coast on the same pass:", "", *at_once, *extra]
+    out = [
+        *main,
+        "",
+        "The whole windward coast on the same pass:",
+        "",
+        *at_once,
+        *extra,
+        "",
+        "Flagged pixels per million usable pixel looks, before April and from April:",
+        "",
+        *rates,
+    ]
     if missing:
         out += ["", "Not run yet: " + ", ".join(missing) + "."]
     return out, records

@@ -21,6 +21,12 @@ caveats = [
     """Simpson Bay Lagoon is open to the sea at both ends, so the coastline does not close into one ring. Segments are cut on the two largest rings, and the land mask is every closed ring, islets included, so islet rock inside a windward zone is not classified as water.""",
 ]
 
+# For scripts/eval_glint.py: a point on the Dutch windward coast for the sun and view
+# angles, and open water a few kilometres off it for the 1.6 um reflectance.
+[glint]
+point = [-63.017, 18.045]
+offshore_box = [-63.000, 18.035, -62.985, 18.052]
+
 [osm]
 # south, west, north, east
 bbox = [17.99, -63.16, 18.135, -62.96]

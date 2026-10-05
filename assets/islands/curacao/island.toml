@@ -34,6 +34,7 @@ mangrove_buffer_m = 20.0
 
 [season]
 leeward_control = "daaibooi_playa_largu"
+lagoons = ["sint_joris"]
 aoi_margin_m = 1000.0
 
 # Tile 19PDP is easting 400.0 to 509.8 km in UTM 19N, east edge at 68.910 W. The surf
@@ -48,6 +49,8 @@ segments = ["watamula_bartolbaai", "bartolbaai_san_pedro", "san_pedro_hato", "da
 aoi = [-69.17, 12.175, -68.935, 12.405]
 figures.whole = { title = "west, Watamula to Hato", box = [-69.17, 12.405, -68.935, 12.175] }
 figures.zoom = { title = "Watamula and Shete Boka", box = [-69.165, 12.400, -69.095, 12.350] }
+glint.point = [-69.10, 12.36]
+glint.offshore_box = [-69.10, 12.38, -69.08, 12.40]
 
 # Tile 19PEP is easting 500.0 to 609.8 km, west edge at 69.000 W. The surf zones of this
 # part start at 68.954 W; the area read starts at 68.965 W.
@@ -61,6 +64,8 @@ segments = ["hato_kanoa", "kanoa_sint_joris", "sint_joris", "sint_joris_oostpunt
 aoi = [-68.965, 12.03, -68.722, 12.20]
 figures.whole = { title = "east, Hato to Oostpunt", box = [-68.965, 12.20, -68.722, 12.03] }
 figures.zoom = { title = "Sint Joris Baai", box = [-68.840, 12.150, -68.790, 12.100] }
+glint.point = [-68.80, 12.12]
+glint.offshore_box = [-68.78, 12.12, -68.76, 12.14]
 
 # OpenStreetMap elements, (lon, lat) of the node or the element's centre, OSM base
 # 2026-10-04. The two Sint Joris Baai mouth points are the ends of the bay's closing

@@ -111,6 +111,10 @@ class SeasonPart:
             such as a second orbit over part of the coast.
         whole: Figure window for the overview panel; defaults to the area read.
         zoom: Figure window for the close-up panel.
+        glint_point: ``(lon, lat)`` on the windward coast where
+            ``scripts/eval_glint.py`` reads the sun and view angles.
+        glint_box: ``(west, south, east, north)`` of open water a few kilometres
+            offshore, where it reads the 1.6 um reflectance.
     """
 
     key: str
@@ -123,6 +127,8 @@ class SeasonPart:
     comparable: bool = True
     whole: Window | None = None
     zoom: Window | None = None
+    glint_point: tuple[float, float] | None = None
+    glint_box: tuple[float, float, float, float] | None = None
 
     def prefix(self, island_key: str) -> str:
         """File-name stem for this part's outputs, e.g. ``curacao_west``."""
@@ -145,6 +151,9 @@ class IslandConfig:
     utm_epsg: int
     parts: tuple[SeasonPart, ...]
     leeward_control: str | None = None
+    # Sheltered lagoons on the windward coast (Lac Bay, Sint Joris Baai), reported apart
+    # from the open coast in cross-island tables because their bottoms and shores differ.
+    lagoons: tuple[str, ...] = ()
     land_buffer_m: float = 15.0
     mangrove_buffer_m: float = 20.0
     aoi_margin_m: float = 1000.0
@@ -204,7 +213,17 @@ def _bbox(raw: Any, where: str) -> GeoBBox:
     return GeoBBox(west=west, south=south, east=east, north=north)
 
 
-def _part(raw: dict[str, Any], island: str, figures: dict[str, Any]) -> SeasonPart:
+def _floats(raw: Any, n: int, where: str) -> tuple[float, ...] | None:
+    if raw is None:
+        return None
+    if not isinstance(raw, list | tuple) or len(raw) != n:
+        raise ValueError(f"{where}: expected {n} numbers, got {raw!r}")
+    return tuple(float(v) for v in raw)
+
+
+def _part(
+    raw: dict[str, Any], island: str, figures: dict[str, Any], glint: dict[str, Any]
+) -> SeasonPart:
     key = str(raw.get("key", ""))
     where = f"{island} part {key!r}"
     tiles = tuple(str(t).upper().removeprefix("T") for t in raw.get("tiles", ()))
@@ -217,6 +236,7 @@ def _part(raw: dict[str, Any], island: str, figures: dict[str, Any]) -> SeasonPa
     if not 0.0 < min_cover <= 1.0:
         raise ValueError(f"{where}: min_cover must be in (0, 1], got {min_cover}")
     merged = {**figures, **raw.get("figures", {})}
+    glint = {**glint, **raw.get("glint", {})}
     return SeasonPart(
         key=key,
         label=str(raw.get("label", "")),
@@ -228,6 +248,8 @@ def _part(raw: dict[str, Any], island: str, figures: dict[str, Any]) -> SeasonPa
         comparable=bool(raw.get("comparable", True)),
         whole=_window(merged["whole"], "whole island", where) if "whole" in merged else None,
         zoom=_window(merged["zoom"], "close-up", where) if "zoom" in merged else None,
+        glint_point=_floats(glint.get("point"), 2, f"{where} glint.point"),  # type: ignore[arg-type]
+        glint_box=_floats(glint.get("offshore_box"), 4, f"{where} glint.offshore_box"),  # type: ignore[arg-type]
     )
 
 
@@ -246,7 +268,7 @@ def parse_island(blob: dict[str, Any], directory: Path) -> IslandConfig:
     raw_parts = season.get("parts") or []
     if not raw_parts:
         raise ValueError(f"{key}: island.toml has no [[season.parts]]")
-    parts = tuple(_part(p, key, figures) for p in raw_parts)
+    parts = tuple(_part(p, key, figures, blob.get("glint", {})) for p in raw_parts)
     if len({p.key for p in parts}) != len(parts):
         raise ValueError(f"{key}: two season parts share a key")
 
@@ -286,6 +308,9 @@ def parse_island(blob: dict[str, Any], directory: Path) -> IslandConfig:
     control = season.get("leeward_control")
     if control is not None and specs and control not in ids:
         raise ValueError(f"{key}: leeward_control {control!r} is not a segment id")
+    lagoons = tuple(str(x) for x in season.get("lagoons", ()))
+    if specs and set(lagoons) - ids:
+        raise ValueError(f"{key}: lagoons {sorted(set(lagoons) - ids)} are not segment ids")
     for part in parts:
         unknown = set(part.segment_ids) - ids if specs else set()
         if unknown:
@@ -299,6 +324,7 @@ def parse_island(blob: dict[str, Any], directory: Path) -> IslandConfig:
         utm_epsg=int(blob["utm_epsg"]),
         parts=parts,
         leeward_control=str(control) if control is not None else None,
+        lagoons=lagoons,
         land_buffer_m=float(blob.get("masks", {}).get("land_buffer_m", 15.0)),
         mangrove_buffer_m=float(blob.get("masks", {}).get("mangrove_buffer_m", 20.0)),
         aoi_margin_m=float(season.get("aoi_margin_m", 1000.0)),

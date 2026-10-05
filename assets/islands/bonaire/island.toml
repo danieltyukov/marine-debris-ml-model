@@ -28,6 +28,7 @@ mangrove_buffer_m = 20.0
 
 [season]
 leeward_control = "kralendijk"
+lagoons = ["lac_bay"]
 aoi_margin_m = 1000.0
 
 [[season.parts]]
@@ -38,6 +39,12 @@ min_cover = 0.99
 # The area the 2.0 runner read, kept so the persistence grids of the two versions line
 # up pixel for pixel.
 aoi = [-68.43, 12.01, -68.18, 12.32]
+
+# For scripts/eval_glint.py: a point on the windward coast for the sun and view angles,
+# and open water a few kilometres off it for the 1.6 um reflectance.
+[glint]
+point = [-68.205, 12.12]
+offshore_box = [-68.185, 12.10, -68.165, 12.12]
 
 [figures]
 whole = { title = "whole island", box = [-68.43, 12.32, -68.18, 12.01] }
