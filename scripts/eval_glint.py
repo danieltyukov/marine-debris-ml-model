@@ -125,6 +125,22 @@ def offshore_b11(scene_id: str, box) -> tuple[float, float | None]:
     return float(water.mean()), (float(np.median(b11[water])) if water.sum() > 50 else None)
 
 
+def _retry(fn, *args, attempts: int = 5):
+    """Call ``fn``, waiting and trying again when the archive rate-limits or drops us."""
+    import time
+
+    for attempt in range(attempts):
+        try:
+            return fn(*args)
+        except Exception as exc:
+            if attempt == attempts - 1:
+                raise
+            wait = 15 * 2**attempt
+            print(f"  {type(exc).__name__}; trying again in {wait} s")
+            time.sleep(wait)
+    return None
+
+
 def survey(docs: Path, out: Path, threads: int) -> list[dict]:
     rows: list[dict] = []
     for key in list_islands():
@@ -136,15 +152,17 @@ def survey(docs: Path, out: Path, threads: int) -> list[dict]:
                 print(f"{prefix}: skipped (no glint point and box, or no season CSV)")
                 continue
             orbit = ", ".join(part.orbits)
-            label = f"{island.name}{' ' + part.key if part.key else ''}, {orbit}"
+            # "Curaçao west, R082", but "Sint Maarten, R139" for a part named after its orbit.
+            named = part.key and part.key.upper() not in part.orbits
+            label = f"{island.name}{' ' + part.key if named else ''}, {orbit}"
             with season_csv.open(encoding="utf-8", newline="") as fh:
                 scenes = sorted(
                     {(r["observed_on"][:10], r["scene_id"]) for r in csv.DictReader(fh)}
                 )
 
             def one(s, point=part.glint_point, box=part.glint_box, label=label, prefix=prefix):
-                sz, sa, vz, va, g = angles(s[1], *point)
-                share, b11 = offshore_b11(s[1], box)
+                sz, sa, vz, va, g = _retry(angles, s[1], *point)
+                share, b11 = _retry(offshore_b11, s[1], box)
                 return {
                     "run": label,
                     "prefix": prefix,
@@ -275,7 +293,7 @@ def main() -> None:
     parser.add_argument("--pair", action="store_true", help="Only the 4 June 2025 comparison.")
     parser.add_argument("--docs-dir", type=Path, default=Path("docs"))
     parser.add_argument("--out", type=Path, default=Path("docs/glint.csv"))
-    parser.add_argument("--threads", type=int, default=4)
+    parser.add_argument("--threads", type=int, default=2)
     args = parser.parse_args()
     if args.pair:
         pair()

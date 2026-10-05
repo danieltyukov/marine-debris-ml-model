@@ -104,7 +104,11 @@ def inputs_for(args: argparse.Namespace, island, part, *, segments=None, land=No
 
 
 def _without_notes(argv: list[str]) -> list[str]:
-    """The command line as run, minus ``--note`` paragraphs, for the report header."""
+    """The command that reproduces the report, for its header.
+
+    ``--note`` paragraphs are left out, and so is ``--summary-only``: a report rebuilt
+    from the CSV and the persistence grid is the one the full run writes.
+    """
     out, skip = [], False
     for arg in argv:
         if skip:
@@ -113,7 +117,7 @@ def _without_notes(argv: list[str]) -> list[str]:
         if arg == "--note":
             skip = True
             continue
-        if arg.startswith("--note="):
+        if arg.startswith("--note=") or arg == "--summary-only":
             continue
         out.append(arg)
     return out

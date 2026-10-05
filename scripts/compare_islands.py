@@ -48,7 +48,8 @@ def _read(docs: Path, prefix: str) -> tuple[list[dict], dict] | None:
 def _segment_lines(island, rows: list[dict], per_pixel: dict) -> tuple[list[str], list[dict]]:
     exposure = {s.segment_id: s.exposure for s in island.segments}
     lines, records = [], []
-    for s in summarize_history(rows):
+    order = {spec.segment_id: i for i, spec in enumerate(island.segments)}
+    for s in sorted(summarize_history(rows), key=lambda s: order.get(s.segment_id, len(order))):
         px = per_pixel.get(s.segment_id, {})
         clear = (
             f"{s.longest_clear_gap_days} days ({_short(s.clear_gap_from)} to {_short(s.clear_gap_to)})"
