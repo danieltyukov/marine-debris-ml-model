@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- The LANOT comparison and the LANOT subset score expression (1) with the B8A term as the platform runs it, `b8A > 0.07`. The paper prints it as `b8A < 0.07`, and both pages used that sign, so they said the rule loses dense mats and that it and this classifier find different pixels. As run, the rule finds 731 of 760 dense pixels and 141 of 881 sparse on the held-out tiles, with precision 0.933, and the union with this classifier adds 5 pixels. `lanot_expr1` in `docs/lanot_subset.csv.gz` changes with it; the printed sign stays as a reference row in `docs/lanot_comparison.md` (`lanot_operator_as_printed`).
+
 ## [2.1.0] - 2026-10-05
 
 The season runner works on any island, removes mapped mangrove before classifying, and

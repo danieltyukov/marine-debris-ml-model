@@ -226,13 +226,23 @@ stretch of that footprint.
 LANOT publish their detection rule in full, and it is not a learned model: five
 hand-calibrated inequalities on L2A reflectance ([Arellano-Verdejo et al.
 2025](https://doi.org/10.1038/s41598-025-93001-9)). Because the rule is published
-and the tiles overlap, both can be run on the same held-out pixels.
+and the tiles overlap, both can be run on the same held-out pixels. The paper
+prints the B8A term as `b8A < 0.07`; the platform runs `b8A > 0.07`, and that is
+what is scored here.
 
-They miss different things. 872 sargassum pixels are found only by this
-classifier, 41 only by the published rule, and just 13 of 1,641 by neither, a
-union recall of 0.992. Both are defeated by the same optically thin cloud, which is
-dark at 1610 nm and so slips through the SWIR gate that rejects 61% of cloud
-otherwise.
+The rule as run is a dense-mat detector. It finds 731 of 760 Dense Sargassum
+pixels and 141 of 881 Sparse, with 63 false alarms, precision 0.933. The B8A floor
+draws that line: MARIDA's dense mats are bright in the near-infrared and its sparse
+ones mostly under 0.07. This classifier finds most of the sparse pixels the rule
+leaves, so running both adds little: union recall 0.970 against 0.967 for the
+classifier alone. Both are still caught by optically thin cloud, which is dark at
+1610 nm and slips through the SWIR gate that rejects 61% of cloud otherwise; the
+floor removes most of it for the rule (52 cloud false alarms against the
+classifier's 390).
+
+An earlier version of this section scored the printed sign, reported that the two
+methods found different pixels with a union recall of 0.992, and said the rule
+loses dense mats. Both came from the sign.
 
 ```bash
 python scripts/eval_lanot_operator.py
@@ -248,7 +258,7 @@ cloud, cloud shadows, and shallow water where the bottom shows through. MARIDA
 labels all three as classes, so the pixels to test a mask against already exist
 inside their footprint. [`lanot_subset.csv.gz`](lanot_subset.csv.gz) is every
 MARIDA pixel on the four shared tiles annotated as one of those confusers or as
-sargassum, with the 11 bands, coordinates, and whether the published rule fires.
+sargassum, with the 11 bands, coordinates, and whether the rule fires as run.
 [`lanot_subset.md`](lanot_subset.md) describes the columns and gives the per-class
 baseline. The reflectance is ACOLITE Rayleigh-corrected, not Sen2Cor L2A, which
 matters for both the rule and anyone evaluating ACOLITE.

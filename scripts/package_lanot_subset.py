@@ -25,7 +25,9 @@ Every annotated pixel on the four overlap tiles, in every split, whose class is 
 with the 11 MARIDA bands, the annotation confidence, pixel-centre coordinates in the
 patch CRS and in WGS84, and two booleans: whether expression (1) of Arellano-Verdejo
 et al. 2025 fires on the pixel, and whether the pixel passes that expression's
-``b11 < 0.05`` term on its own.
+``b11 < 0.05`` term on its own. Expression (1) is scored as the platform runs it, with
+``b8A > 0.07``; the paper prints that term as ``b8A < 0.07``, and the first version of
+this file used the printed sign.
 
 All three splits are included and tagged. The use here is testing a mask, which has no
 training split to keep clean. Anyone scoring a learned model on these rows should keep
@@ -112,7 +114,7 @@ COLUMN_NOTES: dict[str, str] = {
     "label": "MARIDA class name",
     "confidence": "annotator confidence, High / Moderate / Low",
     "B01 .. B12": "ACOLITE Rayleigh-corrected reflectance, 0-1, the 11 MARIDA bands",
-    "lanot_expr1": "True where expression (1) of Arellano-Verdejo et al. 2025 fires",
+    "lanot_expr1": "True where expression (1) of Arellano-Verdejo et al. 2025 fires, as the platform runs it",
     "b11_gate": "True where B11 < 0.05, the SWIR term of expression (1) on its own",
 }
 
@@ -120,7 +122,7 @@ COLUMN_NOTES: dict[str, str] = {
 # The five terms of expression (1), separately, so the report can say which one rejects
 # each class. ``lanot_operator`` is their conjunction and stays the source of truth.
 EXPRESSION_TERMS: dict[str, str] = {
-    "b8A < 0.07": "B8A < 0.07",
+    "b8A > 0.07": "B8A > 0.07",
     "b04 < 0.1": "B04 < 0.1",
     "b11 < 0.05": "B11 < 0.05",
     "b04 < b8A": "B04 < B8A",
@@ -131,7 +133,7 @@ EXPRESSION_TERMS: dict[str, str] = {
 def expression_terms(df: pd.DataFrame) -> dict[str, pd.Series]:
     """Each term of expression (1) evaluated per row, keyed as in :data:`EXPRESSION_TERMS`."""
     return {
-        "b8A < 0.07": df["B8A"] < 0.07,
+        "b8A > 0.07": df["B8A"] > 0.07,
         "b04 < 0.1": df["B04"] < 0.1,
         "b11 < 0.05": df["B11"] < SWIR_GATE,
         "b04 < b8A": df["B04"] < df["B8A"],
@@ -329,7 +331,10 @@ def _markdown(summary: dict, csv_name: str) -> str:
         "## Baseline: what expression (1) does on each class",
         "",
         "Expression (1) of Arellano-Verdejo et al. 2025 is the platform's per-pixel detection",
-        "rule, `(b8A < 0.07) and (b04 < 0.1) and (b11 < 0.05) and (b04 < b8A) and (b04 < b08)`.",
+        "rule. As the platform runs it,",
+        "`(b8A > 0.07) and (b04 < 0.1) and (b11 < 0.05) and (b04 < b8A) and (b04 < b08)`.",
+        "The paper prints the first term as `b8A < 0.07`; LANOT confirmed the operational",
+        "sign in October 2026, and the first version of this file used the printed one.",
         "For the sargassum rows the `fires` column is recall, and higher is better. For the",
         "confuser rows it is the leak a mask would have to close, and lower is better. The",
         "`b11 < 0.05` column is that one term alone.",
@@ -347,7 +352,8 @@ def _markdown(summary: dict, csv_name: str) -> str:
     lines += [
         "",
         "The cloud the platform actually sees as noise is the thin kind, and the SWIR term",
-        "does not remove it because it is not bright. On these rows:",
+        "does not remove it because it is not bright. The B8A floor removes most of it,",
+        "because most of it stays dark in the near-infrared. On these rows:",
         "",
         "| thin cloud (Clouds with B11 < 0.05) | |",
         "|---|---|",
@@ -375,15 +381,13 @@ def _markdown(summary: dict, csv_name: str) -> str:
         )
     lines += [
         "",
-        "Two things follow. Cloud shadow and shallow water are rejected by the red-edge",
-        "terms, `b04 < b08` above all, not by the SWIR gate, which nearly all of them pass.",
-        "And what MARIDA annotates as Dense Sargassum is lost almost entirely to the",
-        "`b8A < 0.07` ceiling: those mats are bright in the near-infrared, well above the",
-        "cap, while passing the other four terms. Some of that gap is the processor, since",
-        "Rayleigh-corrected reflectance sits above Sen2Cor's in the NIR, but not a doubling.",
-        "Whether the ceiling is a deliberate choice against land and foam, or whether dense",
-        "mats in Sen2Cor L2A really do stay under it, is a question for the people who",
-        "calibrated the rule.",
+        "Two things follow. Cloud shadow and shallow water are rejected twice over, by the",
+        "B8A floor and by the red-edge terms, `b04 < b08` above all; nearly all of them pass",
+        "the SWIR gate. And the floor is what separates the two sargassum classes: what",
+        "MARIDA annotates as Dense Sargassum is bright in the near-infrared and passes it,",
+        "while most Sparse Sargassum sits under 0.07 and is left out. So the rule as run is",
+        "a detector for dense mats. A mask tested on these rows against the rule should",
+        "expect sparse recall to be low before the mask does anything.",
         "",
         "## Per split",
         "",
@@ -436,7 +440,7 @@ def _markdown(summary: dict, csv_name: str) -> str:
         "not Sen2Cor Level-2A, which is what the LANOT pipeline runs and what expression (1)",
         "was calibrated on. Both are unitless 0-1 reflectance, but the Rayleigh-corrected",
         "product still carries the aerosol term, which is largest in the blue and smallest in",
-        "the SWIR. So the `lanot_expr1` column is the published rule applied to reflectance it",
+        "the SWIR. So the `lanot_expr1` column is the operational rule applied to reflectance it",
         "was not tuned for. It is a baseline for these classes, not a measurement of the",
         "platform, which segments and filters the pixel mask before anything is published.",
         "",

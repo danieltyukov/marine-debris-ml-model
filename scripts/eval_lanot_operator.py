@@ -12,7 +12,10 @@ and Honduras. Their method paper publishes the detection rule in full:
 
 It is not a learned model. Expression (1) of that paper is five hand-calibrated
 inequalities on Sentinel-2 L2A surface reflectance, derived by photointerpretation and
-tuned for the optical properties of Caribbean coastal water.
+tuned for the optical properties of Caribbean coastal water. The paper prints its B8A
+term as ``b8A < 0.07``; the platform runs ``b8A > 0.07``, a floor, which LANOT confirmed
+in October 2026. This scores the rule as it runs and keeps the printed sign as a
+reference row, because an earlier version of this script scored that.
 
 Two facts make a direct comparison possible rather than hypothetical:
 
@@ -86,20 +89,32 @@ SWIR_GATE = 0.05
 
 
 def lanot_operator(bands: dict[str, np.ndarray]) -> np.ndarray:
-    """Expression (1) of Arellano-Verdejo et al. 2025, applied per pixel.
+    """Expression (1) of Arellano-Verdejo et al. 2025 as the platform runs it, per pixel.
 
-        (b8A < 0.07) and (b04 < 0.1) and (b11 < 0.05) and (b04 < b8A) and (b04 < b08)
+        (b8A > 0.07) and (b04 < 0.1) and (b11 < 0.05) and (b04 < b8A) and (b04 < b08)
 
-    The first three terms are rejection gates against bright surfaces: cloud, land and
-    sun glint are all bright somewhere in 665-1610 nm and open water is nearly black at
-    1610 nm. The last two are the detection, requiring near-infrared above red, which is
-    the red-edge signature of floating vegetation.
+    The B8A term is a floor: it asks for brightness in the near-infrared and leaves out
+    what is dark there, shadow, deep water and much thin cloud over water. The next two
+    reject bright surfaces, cloud, land and sun glint, which are bright somewhere in
+    665-1610 nm while open water is nearly black at 1610 nm. The last two require
+    near-infrared above red, the red-edge signature of floating vegetation.
 
     Args:
         bands: Surface reflectance keyed by MARIDA band name, any matching shape.
 
     Returns:
         Boolean array, True where the operator fires.
+    """
+    b04, b08, b8a, b11 = bands["B04"], bands["B08"], bands["B8A"], bands["B11"]
+    return (b8a > 0.07) & (b04 < 0.1) & (b11 < SWIR_GATE) & (b04 < b8a) & (b04 < b08)
+
+
+def lanot_operator_as_printed(bands: dict[str, np.ndarray]) -> np.ndarray:
+    """Expression (1) with the B8A term as the paper prints it, ``b8A < 0.07``.
+
+    Kept for the reference row only. Earlier versions of this script and of
+    ``package_lanot_subset.py`` scored this sign, which turns the floor into a ceiling
+    and loses the bright mats the rule is built to find.
     """
     b04, b08, b8a, b11 = bands["B04"], bands["B08"], bands["B8A"], bands["B11"]
     return (b8a < 0.07) & (b04 < 0.1) & (b11 < SWIR_GATE) & (b04 < b8a) & (b04 < b08)
@@ -215,6 +230,12 @@ def main() -> None:
     log.info(
         "LANOT expression (1):        P %.3f  R %.3f  F1 %.3f",
         *(results["LANOT expression (1)"][k] for k in ("precision", "recall", "f1")),
+    )
+    printed = "LANOT expression (1), as printed"
+    results[printed] = _score(truth, lanot_operator_as_printed(bands))
+    log.info(
+        "  as printed (b8A < 0.07):   P %.3f  R %.3f  F1 %.3f",
+        *(results[printed][k] for k in ("precision", "recall", "f1")),
     )
 
     clf = SpectralClassifier.load(args.model)
@@ -354,6 +375,7 @@ def main() -> None:
     payload = {
         "pixels": len(y),
         "sargassum_pixels": int(truth.sum()),
+        "sargassum_by_class": {c: int((y == c).sum()) for c in SARGASSUM_CLASSES},
         "tiles": sorted(set(tiles.tolist())),
         "results": results,
         "breakdowns": breakdowns,
@@ -371,11 +393,15 @@ def _markdown(d: dict) -> str:
     r, a, g = d["results"], d["agreement"], d["gate_diagnostic"]
     order = [
         "LANOT expression (1)",
+        "LANOT expression (1), as printed",
         "this classifier, argmax",
         "this classifier, best F1",
         "this classifier + b11 gate, argmax",
         "this classifier + b11 gate, best F1",
     ]
+    n = d["sargassum_by_class"]
+    missed = d["breakdowns"]["LANOT expression (1)"]["missed_as_truth"]
+    found = {c: n[c] - missed.get(c, 0) for c in SARGASSUM_CLASSES}
     lines = [
         "# Where this classifier and LANOT's published operator disagree",
         "",
@@ -390,25 +416,34 @@ def _markdown(d: dict) -> str:
         "is run here, and all of which exists precisely to clear up isolated per-pixel",
         "false positives. Scoring the gate alone measures the gate alone.",
         "",
-        "The comparison is here for one reason: the two detectors fail on different pixels,",
-        "and the union is better than either. That is the result, not the ranking.",
+        "The comparison is here to show where each detector's errors fall. The rule as run",
+        "finds dense mats with few false alarms and leaves most sparse ones; the classifier",
+        "finds both and pays for it in cloud. That is the result, not the ranking.",
         "",
         "## The systems",
         "",
         "The LANOT platform (Instituto de Geografia UNAM) is the operational Sargassum",
         "monitoring system for the Mexican Caribbean, Belize, Guatemala and Honduras. Its",
-        "detection rule is published in full and is not a learned model:",
+        "detection rule is published in full and is not a learned model. As the platform",
+        "runs it:",
         "",
-        "> (b8A < 0.07) and (b04 < 0.1) and (b11 < 0.05) and (b04 < b8A) and (b04 < b08)",
+        "> (b8A > 0.07) and (b04 < 0.1) and (b11 < 0.05) and (b04 < b8A) and (b04 < b08)",
         "",
         "Arellano-Verdejo, J., Lazcano-Hernandez, H.E., Prado Molina, J. et al. *Towards",
         "enhanced Sargassum monitoring in the Caribbean Sea.* Sci Rep 15, 8965 (2025).",
         "<https://doi.org/10.1038/s41598-025-93001-9>",
         "",
-        "The first three terms reject bright surfaces: cloud, land and sun glint are bright",
+        "The paper prints the first term as `b8A < 0.07`. The platform runs `b8A > 0.07`,",
+        "which LANOT confirmed in October 2026, and that is what this page scores. Earlier",
+        "versions of this page scored the printed sign and concluded that the rule loses",
+        "dense mats; that conclusion came from the sign, not from the rule. The",
+        "operating-points table keeps the printed sign as a reference row.",
+        "",
+        "The B8A term is a floor: it asks for brightness in the near-infrared and leaves out",
+        "what is dark there, shadow, deep water and much thin cloud over water. `b04 < 0.1`",
+        "and `b11 < 0.05` reject bright surfaces: cloud, land and sun glint are bright",
         "somewhere in 665-1610 nm and open water is nearly black at 1610 nm. The last two",
-        "are the detection, requiring near-infrared above red, the red-edge signature of",
-        "floating vegetation.",
+        "require near-infrared above red, the red-edge signature of floating vegetation.",
         "",
         "## Why these pixels",
         "",
@@ -422,7 +457,15 @@ def _markdown(d: dict) -> str:
         "inside LANOT's footprint. The classifier is scored on scenes it never trained on,",
         "and the operator, which has no training, is scored on the same pixels.",
         "",
-        "## The result: they miss different things",
+        "## The result: the rule finds the dense mats",
+        "",
+        f"The rule as run finds {found['Dense Sargassum']:,} of {n['Dense Sargassum']:,} Dense Sargassum",
+        f"pixels and {found['Sparse Sargassum']:,} of {n['Sparse Sargassum']:,} Sparse, with",
+        f"{r['LANOT expression (1)']['fp']:,} false alarms on {d['pixels']:,} labelled pixels. The B8A",
+        "floor is what draws that line: MARIDA's sparse mats are mostly under 0.07 in B8A",
+        "and its dense mats mostly over it. The classifier finds the sparse pixels the rule",
+        "leaves, so on this benchmark running both adds little recall to the classifier",
+        "alone:",
         "",
         "| | sargassum pixels |",
         "|---|---|",
@@ -432,11 +475,12 @@ def _markdown(d: dict) -> str:
         f"| **found by either** | **{a['sargassum_found_by_either']:,}** |",
         f"| missed by both | {a['sargassum_found_by_neither']:,} |",
         "",
-        f"Union recall is {a['union_recall']:.3f}. Only {a['sargassum_found_by_neither']} of",
-        f"{d['sargassum_pixels']:,} annotated sargassum pixels are invisible to both methods, so",
-        "the floor on this benchmark is far lower than either detector reaches alone. A",
-        "hand-calibrated physical rule and a gradient-boosted classifier trained on different",
-        "evidence keep some genuinely independent signal from each other.",
+        f"Union recall is {a['union_recall']:.3f}, against {r['this classifier, argmax']['recall']:.3f} for the",
+        f"classifier alone. Only {a['sargassum_only_lanot']} sargassum pixels are found by the rule and",
+        "not the classifier. An earlier version of this page, scoring the printed sign,",
+        "reported that the two found different pixels and that their union recovered",
+        "1,628 of 1,641; that came from the sign, which turned the floor into a ceiling and",
+        "moved the rule onto the sparse and dark pixels.",
         "",
         f"They make identical calls on {100 * a['identical_calls_fraction']:.1f}% of all labelled pixels, and",
         f"{a['false_positives_shared']:,} false positives are shared. What those shared errors are:",
@@ -465,7 +509,10 @@ def _markdown(d: dict) -> str:
         "below. Those pixels are optically thin cloud, with a median B11 of",
         f"{g['median_b11_classifier_cloud_fp']:.4f} against {g['median_b11_all_cloud']:.4f} for cloud",
         "generally. LANOT's own cloud false positives sit in the same population, median B11",
-        f"{g['median_b11_lanot_cloud_fp']:.4f}.",
+        f"{g['median_b11_lanot_cloud_fp']:.4f}, but there are far fewer of them:",
+        f"{d['breakdowns']['LANOT expression (1)']['false_alarms_from'].get('Clouds', 0):,} against",
+        f"{g['classifier_cloud_false_positives']:,}. The B8A floor leaves out the thin cloud that",
+        "stays dark in the near-infrared, which the classifier has no equivalent for.",
         "",
         "Thin cloud over dark water is dim in SWIR and lifts red-edge reflectance, so it",
         "looks like floating vegetation to a physical rule and to a learned classifier alike.",
@@ -475,9 +522,10 @@ def _markdown(d: dict) -> str:
         "",
         "## Operating points",
         "",
-        "Per-pixel, on the tiles and split described above. The first row is a front gate",
-        "with no post-processing behind it and the others are a trained classifier, so the",
-        "rows are not like for like and the F1 column is not a ranking.",
+        "Per-pixel, on the tiles and split described above. The first two rows are the front",
+        "gate, as the platform runs it and as the paper prints it, with no post-processing",
+        "behind them; the others are a trained classifier. The rows are not like for like and",
+        "the F1 column is not a ranking.",
         "",
         "| detector | precision | recall | F1 | TP | FP | FN |",
         "|---|---|---|---|---|---|---|",

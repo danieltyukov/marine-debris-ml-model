@@ -138,8 +138,11 @@ test patches.
   flagged there sit on the canopy or within 20 m of it. With mapped mangrove masked,
   Lac Bay drops to 204 flagged pixels, most of them canopy the map misses, and its
   observability figures do not change.
-- Against LANOT's published sargassum rule on the four MARIDA tiles both cover, the
-  two methods miss different pixels: together they find 1,628 of 1,641.
+- Against LANOT's sargassum rule as their platform runs it, on the four MARIDA tiles
+  both cover, the rule finds 731 of 760 dense sargassum pixels with 63 false alarms,
+  and 141 of 881 sparse ones; this classifier finds 1,587 of the 1,641. An earlier
+  version scored the paper's printed `b8A < 0.07`, which the platform runs as
+  `b8A > 0.07`; see [docs/lanot_comparison.md](docs/lanot_comparison.md).
 
 <!-- ISLANDS-RESULTS -->
 

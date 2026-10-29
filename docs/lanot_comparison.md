@@ -11,25 +11,34 @@ segmentation, entropy filtering and threshold denoising afterwards, none of whic
 is run here, and all of which exists precisely to clear up isolated per-pixel
 false positives. Scoring the gate alone measures the gate alone.
 
-The comparison is here for one reason: the two detectors fail on different pixels,
-and the union is better than either. That is the result, not the ranking.
+The comparison is here to show where each detector's errors fall. The rule as run
+finds dense mats with few false alarms and leaves most sparse ones; the classifier
+finds both and pays for it in cloud. That is the result, not the ranking.
 
 ## The systems
 
 The LANOT platform (Instituto de Geografia UNAM) is the operational Sargassum
 monitoring system for the Mexican Caribbean, Belize, Guatemala and Honduras. Its
-detection rule is published in full and is not a learned model:
+detection rule is published in full and is not a learned model. As the platform
+runs it:
 
-> (b8A < 0.07) and (b04 < 0.1) and (b11 < 0.05) and (b04 < b8A) and (b04 < b08)
+> (b8A > 0.07) and (b04 < 0.1) and (b11 < 0.05) and (b04 < b8A) and (b04 < b08)
 
 Arellano-Verdejo, J., Lazcano-Hernandez, H.E., Prado Molina, J. et al. *Towards
 enhanced Sargassum monitoring in the Caribbean Sea.* Sci Rep 15, 8965 (2025).
 <https://doi.org/10.1038/s41598-025-93001-9>
 
-The first three terms reject bright surfaces: cloud, land and sun glint are bright
+The paper prints the first term as `b8A < 0.07`. The platform runs `b8A > 0.07`,
+which LANOT confirmed in October 2026, and that is what this page scores. Earlier
+versions of this page scored the printed sign and concluded that the rule loses
+dense mats; that conclusion came from the sign, not from the rule. The
+operating-points table keeps the printed sign as a reference row.
+
+The B8A term is a floor: it asks for brightness in the near-infrared and leaves out
+what is dark there, shadow, deep water and much thin cloud over water. `b04 < 0.1`
+and `b11 < 0.05` reject bright surfaces: cloud, land and sun glint are bright
 somewhere in 665-1610 nm and open water is nearly black at 1610 nm. The last two
-are the detection, requiring near-infrared above red, the red-edge signature of
-floating vegetation.
+require near-infrared above red, the red-edge signature of floating vegetation.
 
 ## Why these pixels
 
@@ -43,31 +52,37 @@ every sargassum pixel in the test split: on this benchmark, sargassum occurs onl
 inside LANOT's footprint. The classifier is scored on scenes it never trained on,
 and the operator, which has no training, is scored on the same pixels.
 
-## The result: they miss different things
+## The result: the rule finds the dense mats
+
+The rule as run finds 731 of 760 Dense Sargassum
+pixels and 141 of 881 Sparse, with
+63 false alarms on 190,431 labelled pixels. The B8A
+floor is what draws that line: MARIDA's sparse mats are mostly under 0.07 in B8A
+and its dense mats mostly over it. The classifier finds the sparse pixels the rule
+leaves, so on this benchmark running both adds little recall to the classifier
+alone:
 
 | | sargassum pixels |
 |---|---|
-| found by both | 715 |
-| found only by this classifier | 872 |
-| found only by LANOT expression (1) | 41 |
-| **found by either** | **1,628** |
-| missed by both | 13 |
+| found by both | 867 |
+| found only by this classifier | 720 |
+| found only by LANOT expression (1) | 5 |
+| **found by either** | **1,592** |
+| missed by both | 49 |
 
-Union recall is 0.992. Only 13 of
-1,641 annotated sargassum pixels are invisible to both methods, so
-the floor on this benchmark is far lower than either detector reaches alone. A
-hand-calibrated physical rule and a gradient-boosted classifier trained on different
-evidence keep some genuinely independent signal from each other.
+Union recall is 0.970, against 0.967 for the
+classifier alone. Only 5 sargassum pixels are found by the rule and
+not the classifier. An earlier version of this page, scoring the printed sign,
+reported that the two found different pixels and that their union recovered
+1,628 of 1,641; that came from the sign, which turned the floor into a ceiling and
+moved the rule onto the sparse and dark pixels.
 
-They make identical calls on 98.6% of all labelled pixels, and
-291 false positives are shared. What those shared errors are:
+They make identical calls on 99.4% of all labelled pixels, and
+39 false positives are shared. What those shared errors are:
 
 | actually | pixels |
 |---|---|
-| Clouds | 260 |
-| Shallow Water | 13 |
-| Marine Water | 12 |
-| Cloud Shadows | 6 |
+| Clouds | 39 |
 
 ## The cloud that neither one rejects
 
@@ -86,7 +101,10 @@ the learned model changes nothing at all: the two rows are identical in the tabl
 below. Those pixels are optically thin cloud, with a median B11 of
 0.0406 against 0.0612 for cloud
 generally. LANOT's own cloud false positives sit in the same population, median B11
-0.0392.
+0.0416, but there are far fewer of them:
+52 against
+390. The B8A floor leaves out the thin cloud that
+stays dark in the near-infrared, which the classifier has no equivalent for.
 
 Thin cloud over dark water is dim in SWIR and lifts red-edge reflectance, so it
 looks like floating vegetation to a physical rule and to a learned classifier alike.
@@ -96,13 +114,15 @@ pixels, so any candidate cloud mask can be tested against them directly.
 
 ## Operating points
 
-Per-pixel, on the tiles and split described above. The first row is a front gate
-with no post-processing behind it and the others are a trained classifier, so the
-rows are not like for like and the F1 column is not a ranking.
+Per-pixel, on the tiles and split described above. The first two rows are the front
+gate, as the platform runs it and as the paper prints it, with no post-processing
+behind them; the others are a trained classifier. The rows are not like for like and
+the F1 column is not a ranking.
 
 | detector | precision | recall | F1 | TP | FP | FN |
 |---|---|---|---|---|---|---|
-| LANOT expression (1) | 0.294 | 0.461 | 0.359 | 756 | 1,816 | 885 |
+| LANOT expression (1) | 0.933 | 0.531 | 0.677 | 872 | 63 | 769 |
+| LANOT expression (1), as printed | 0.294 | 0.461 | 0.359 | 756 | 1,816 | 885 |
 | this classifier, argmax | 0.759 | 0.967 | 0.850 | 1,587 | 505 | 54 |
 | this classifier, best F1 | 0.987 | 0.913 | 0.948 | 1,498 | 20 | 143 |
 | this classifier + b11 gate, argmax | 0.759 | 0.967 | 0.850 | 1,587 | 505 | 54 |
@@ -116,21 +136,16 @@ False alarms, by what the pixel actually was:
 
 | actually | pixels |
 |---|---|
-| Clouds | 1,348 |
-| Shallow Water | 202 |
-| Marine Water | 110 |
-| Cloud Shadows | 76 |
-| Waves | 45 |
-| Ship | 23 |
-| Mixed Water | 5 |
-| Natural Organic Material | 4 |
+| Clouds | 52 |
+| Ship | 9 |
+| Natural Organic Material | 2 |
 
 Sargassum pixels missed, by annotated class:
 
 | annotated | pixels |
 |---|---|
-| Dense Sargassum | 733 |
-| Sparse Sargassum | 152 |
+| Sparse Sargassum | 740 |
+| Dense Sargassum | 29 |
 
 ### this classifier, argmax
 
@@ -178,10 +193,10 @@ Sargassum pixels missed, by annotated class:
 
 | tile | pixels | sargassum | LANOT F1 | classifier F1 |
 |---|---|---|---|---|
-| 16PCC | 112,549 | 821 | 0.155 | 0.762 |
-| 16PDC | 44,430 | 67 | 0.195 | 0.591 |
+| 16PCC | 112,549 | 821 | 0.845 | 0.762 |
+| 16PDC | 44,430 | 67 | 0.449 | 0.591 |
 | 16PEC | 25,838 | 0 | 0.000 | 0.000 |
-| 16QED | 7,614 | 753 | 0.767 | 0.993 |
+| 16QED | 7,614 | 753 | 0.431 | 0.993 |
 
 ## What this does not say
 

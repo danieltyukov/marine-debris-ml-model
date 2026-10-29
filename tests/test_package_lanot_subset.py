@@ -83,12 +83,12 @@ def dataset(tmp_path: Path) -> Path:
     # Dark water everywhere, then a few pixels that the operator either fires on or not.
     image = np.full((len(MARIDA_BANDS), SIZE, SIZE), 0.02, dtype="float32")
     b04, b08, b8a, b11 = (MARIDA_BANDS.index(b) for b in ("B04", "B08", "B8A", "B11"))
-    # (0, 0): sargassum that satisfies expression (1).
-    image[b04, 0, 0], image[b08, 0, 0], image[b8a, 0, 0], image[b11, 0, 0] = 0.03, 0.06, 0.05, 0.02
+    # (0, 0): a dense mat, bright in the NIR, that satisfies expression (1).
+    image[b04, 0, 0], image[b08, 0, 0], image[b8a, 0, 0], image[b11, 0, 0] = 0.03, 0.09, 0.08, 0.02
     # (0, 1): thick cloud, bright in SWIR, so the b11 term rejects it.
     image[:, 0, 1] = 0.3
-    # (0, 2): thin cloud, dim in SWIR, red edge lifted, so expression (1) fires.
-    image[b04, 0, 2], image[b08, 0, 2], image[b8a, 0, 2], image[b11, 0, 2] = 0.05, 0.065, 0.06, 0.03
+    # (0, 2): thin cloud, dim in SWIR, NIR lifted over the floor, so expression (1) fires.
+    image[b04, 0, 2], image[b08, 0, 2], image[b8a, 0, 2], image[b11, 0, 2] = 0.05, 0.08, 0.075, 0.03
     # (1, 0): shadow that has a NaN band and must be dropped.
     image[3, 1, 0] = np.nan
 
@@ -165,6 +165,20 @@ def test_expression_column_is_the_published_operator(script, dataset: Path) -> N
     assert (df["lanot_expr1"].to_numpy() == lanot_operator(bands)).all()
 
 
+def test_operator_uses_the_operational_b8a_floor(script) -> None:
+    from eval_lanot_operator import lanot_operator, lanot_operator_as_printed
+
+    # Identical except for B8A: a bright mat over the floor and a dark pixel under it.
+    bands = {
+        "B04": np.array([0.03, 0.03]),
+        "B08": np.array([0.09, 0.09]),
+        "B8A": np.array([0.20, 0.05]),
+        "B11": np.array([0.02, 0.02]),
+    }
+    assert lanot_operator(bands).tolist() == [True, False]
+    assert lanot_operator_as_printed(bands).tolist() == [False, True]
+
+
 def test_confidence_and_date_are_decoded(script, dataset: Path) -> None:
     df = script.build_subset(dataset).set_index(["row", "col"])
     assert df.loc[(0, 3), "confidence"] == "Low"
@@ -203,11 +217,11 @@ def test_per_term_diagnostic_names_the_rejecting_term(script, dataset: Path) -> 
     summary = script.summarise(script.build_subset(dataset))
     clouds = summary["per_term"]["Clouds"]
     assert list(clouds) == list(script.EXPRESSION_TERMS)
-    # The thick cloud fails the SWIR term and the b8A ceiling; the thin one passes both.
+    # The thick cloud fails the SWIR term; both clouds are over the B8A floor.
     assert clouds["b11 < 0.05"] == 0.5
-    assert clouds["b8A < 0.07"] == 0.5
+    assert clouds["b8A > 0.07"] == 1.0
     assert summary["per_term"]["Dense Sargassum"] == dict.fromkeys(script.EXPRESSION_TERMS, 1.0)
-    assert summary["per_class"]["Dense Sargassum"]["median_b8a"] == pytest.approx(0.05)
+    assert summary["per_class"]["Dense Sargassum"]["median_b8a"] == pytest.approx(0.08)
     text = script._markdown(summary, "lanot_subset.csv.gz")
     assert "## Which term does the work" in text
 

@@ -1,6 +1,10 @@
 {
   "pixels": 190431,
   "sargassum_pixels": 1641,
+  "sargassum_by_class": {
+    "Dense Sargassum": 760,
+    "Sparse Sargassum": 881
+  },
   "tiles": [
     "16PCC",
     "16PDC",
@@ -9,6 +13,14 @@
   ],
   "results": {
     "LANOT expression (1)": {
+      "precision": 0.932620320855615,
+      "recall": 0.5313833028641073,
+      "f1": 0.6770186335403727,
+      "tp": 872,
+      "fp": 63,
+      "fn": 769
+    },
+    "LANOT expression (1), as printed": {
       "precision": 0.2939346811819596,
       "recall": 0.4606946983546618,
       "f1": 0.35888915262283405,
@@ -54,18 +66,13 @@
   "breakdowns": {
     "LANOT expression (1)": {
       "false_alarms_from": {
-        "Clouds": 1348,
-        "Shallow Water": 202,
-        "Marine Water": 110,
-        "Cloud Shadows": 76,
-        "Waves": 45,
-        "Ship": 23,
-        "Mixed Water": 5,
-        "Natural Organic Material": 4
+        "Clouds": 52,
+        "Ship": 9,
+        "Natural Organic Material": 2
       },
       "missed_as_truth": {
-        "Dense Sargassum": 733,
-        "Sparse Sargassum": 152
+        "Sparse Sargassum": 740,
+        "Dense Sargassum": 29
       }
     },
     "this classifier, argmax": {
@@ -107,36 +114,33 @@
     "of_those_passing_gate": 390,
     "median_b11_all_cloud": 0.061181098222732544,
     "median_b11_classifier_cloud_fp": 0.040553219616413116,
-    "median_b11_lanot_cloud_fp": 0.03915132209658623,
+    "median_b11_lanot_cloud_fp": 0.04155457019805908,
     "sargassum_passing_gate_fraction": 0.9987812309567337
   },
   "agreement": {
-    "identical_calls_fraction": 0.9860736959843723,
-    "sargassum_found_by_both": 715,
-    "sargassum_only_classifier": 872,
-    "sargassum_only_lanot": 41,
-    "sargassum_found_by_neither": 13,
-    "false_positives_shared": 291,
+    "identical_calls_fraction": 0.993619736282433,
+    "sargassum_found_by_both": 867,
+    "sargassum_only_classifier": 720,
+    "sargassum_only_lanot": 5,
+    "sargassum_found_by_neither": 49,
+    "false_positives_shared": 39,
     "shared_false_positives_from": {
-      "Clouds": 260,
-      "Shallow Water": 13,
-      "Marine Water": 12,
-      "Cloud Shadows": 6
+      "Clouds": 39
     },
-    "sargassum_found_by_either": 1628,
-    "union_recall": 0.992078001218769
+    "sargassum_found_by_either": 1592,
+    "union_recall": 0.9701401584399756
   },
   "per_tile": {
     "16PCC": {
       "pixels": 112549,
       "sargassum": 821,
       "lanot": {
-        "precision": 0.1250936329588015,
-        "recall": 0.20341047503045068,
-        "f1": 0.15491651205936918,
-        "tp": 167,
-        "fp": 1168,
-        "fn": 654
+        "precision": 0.9135977337110481,
+        "recall": 0.7856272838002436,
+        "f1": 0.8447937131630648,
+        "tp": 645,
+        "fp": 61,
+        "fn": 176
       },
       "classifier_argmax": {
         "precision": 0.625,
@@ -151,12 +155,12 @@
       "pixels": 44430,
       "sargassum": 67,
       "lanot": {
-        "precision": 0.11428571428571428,
-        "recall": 0.6567164179104478,
-        "f1": 0.19469026548672563,
-        "tp": 44,
-        "fp": 341,
-        "fn": 23
+        "precision": 0.9090909090909091,
+        "recall": 0.29850746268656714,
+        "f1": 0.44943820224719094,
+        "tp": 20,
+        "fp": 2,
+        "fn": 47
       },
       "classifier_argmax": {
         "precision": 0.7083333333333334,
@@ -175,7 +179,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "fp": 184,
+        "fp": 0,
         "fn": 0
       },
       "classifier_argmax": {
@@ -191,12 +195,12 @@
       "pixels": 7614,
       "sargassum": 753,
       "lanot": {
-        "precision": 0.8158682634730539,
-        "recall": 0.7237715803452855,
-        "f1": 0.7670654468684025,
-        "tp": 545,
-        "fp": 123,
-        "fn": 208
+        "precision": 1.0,
+        "recall": 0.2749003984063745,
+        "f1": 0.43124999999999997,
+        "tp": 207,
+        "fp": 0,
+        "fn": 546
       },
       "classifier_argmax": {
         "precision": 0.9856020942408377,
